@@ -82,3 +82,9 @@ INSERT INTO naus (nom, velocitat, descripcio, imatge_url, disponible) VALUES
 ('X-Wing', 1, 'Nau inicial perfecta per començar', '/assets/images/naus/x-wing.png', true),
 ('TIE Fighter', 2, 'Nau ràpida de l''Imperi', '/assets/images/naus/tie-fighter.png', false),
 ('Millennium Falcon', 3, 'La nau més ràpida', '/assets/images/naus/millennium-falcon.png', false);
+
+-- Inserts bàsics d'assoliments
+INSERT INTO assoliments (nom, descripcio, imatge_url, punts_requerits, tipus) VALUES
+('Pilot Novell', 'Primera partida completada', '/assets/images/assoliments/novell.png', 0, 'punts'),
+('As Espacial', 'Aconsegueix 1000 punts', '/assets/images/assoliments/as.png', 1000, 'punts'),
+('Mestre Jedi', 'Sobreviu 5 minuts', '/assets/images/assoliments/jedi.png', 300, 'temps')
