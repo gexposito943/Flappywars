@@ -45,3 +45,14 @@ CREATE TABLE partides (
     FOREIGN KEY (usuari_id) REFERENCES usuaris(id),
     FOREIGN KEY (nau_utilitzada) REFERENCES naus(id)
 );
+-- 4. CRUD amb Relació N:M (Usuaris i Assoliments)
+-- Sistema d'assoliments del joc
+CREATE TABLE assoliments (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(100) NOT NULL,
+    descripcio TEXT,
+    imatge_url VARCHAR(255),
+    punts_requerits INT NOT NULL,
+    tipus ENUM('distancia', 'punts', 'temps') NOT NULL,
+    data_creacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
