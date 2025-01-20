@@ -4,7 +4,7 @@
 
       <!-- Sign In Form -->
       <form action="#" class="sign-in-form" aria-labelledby="signin-title">
-        <h2 class="title" id="signin-title">Inicieu la sessió al vostre compte</h2>
+        <h2 class="title" id="signin-title">Accede a la Galaxia</h2>
         <div class="input-field-2">
           <label for="signin-email" class="visually-hidden">Email</label>
           <input type="email" 
@@ -16,27 +16,27 @@
         </div>
         
         <div class="input-field-2">
-          <label for="signin-password" class="visually-hidden">Contrasenya</label>
+          <label for="signin-password" class="visually-hidden">Contraseña</label>
           <input type="password"
                  id="signin-password"
                  name="password"
                  [(ngModel)]="password"
-                 placeholder="Contrasenya"
+                 placeholder="Contraseña"
                  aria-required="true" />
         </div>
 
         <button id="sign-in-btn" 
-                class="btn solid" 
+                class="btn-login solid" 
                 (click)="handleSignIn()"
                 type="submit"
-                aria-label="Iniciar sessió"> 
-          Inicieu Sessió
+                aria-label="Iniciar sesion"> 
+          Unirse a la Fuerza
         </button>
       </form>
 
       <!-- Sign Up Form -->
       <form action="#" class="sign-up-form" aria-labelledby="signup-title">
-        <h2 class="title" id="signup-title">Registreu-vos per obtenir un compte</h2>
+        <h2 class="title" id="signup-title">Únete a la Rebelión</h2>
         <div class="input-field" [class.input-error]="usernameError">
           <label for="signup-username" class="visually-hidden">Usuari</label>
           <input type="text"
@@ -95,9 +95,9 @@
         
         <button (click)="onSubmit()" 
                 type="submit"
-                class="btn"
+                class="btn-login"
                 aria-label="Registrar-se">
-          Registra't
+          Comenzar el Entrenamiento
         </button>
       </form>
     </div>
@@ -107,35 +107,33 @@
     <!-- Left Panel -->
     <div class="panel left-panel" role="complementary">
       <div class="content">
-        <h1 class="service-title">Servei Educatiu de la Garrotxa</h1>
+        <h1 class="service-title">Star Wars: The Force Runner</h1>
         <br>
-        <p> Sistema de Gestió de Competències Específiques </p>
+        <p>¡Que la Fuerza te acompañe en esta aventura!</p>
         <br>
         <button class="btn transparent" 
                 id="sign-up-btn" 
                 #signUpBtn
                 aria-label="Canviar a formulari de registre">
-          Registra't
+          Unirse a la Rebelión
         </button>
       </div>
-      <img src="/log.svg" class="image" alt="Il·lustració del formulari de registre" /> 
     </div>
 
     <!-- Right Panel -->
     <div class="panel right-panel" role="complementary">
       <div class="content">
-        <h1>Servei Educatiu de la Garrotxa</h1>
+        <h1>Star Wars: The Force Runner</h1>
         <br>
-        <p>Sistema de Gestió de Competències Específiques</p>
+        <p>Tu viaje por la galaxia está a punto de comenzar</p>
         <br>
         <button class="btn transparent" 
                 id="sign-in-btn" 
                 #signInBtn
                 aria-label="Canviar a formulari d'inici de sessió">
-          Inicieu sessió
+          Acceder a la Galaxia
         </button> 
       </div>
-      <img src="/register.svg" class="image" alt="Il·lustració del formulari d'inici de sessió" />
     </div>
   </div>
 </div>
