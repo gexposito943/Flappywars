@@ -56,3 +56,12 @@ CREATE TABLE assoliments (
     tipus ENUM('distancia', 'punts', 'temps') NOT NULL,
     data_creacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+-- Taula intermitja per la relació N:M entre usuaris i assoliments
+CREATE TABLE usuaris_assoliments (
+    usuari_id INT,
+    assoliment_id INT,
+    data_obtencio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (usuari_id, assoliment_id),
+    FOREIGN KEY (usuari_id) REFERENCES usuaris(id),
+    FOREIGN KEY (assoliment_id) REFERENCES assoliments(id)
+);
