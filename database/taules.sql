@@ -30,3 +30,18 @@ CREATE TABLE usuaris (
     nau_actual INT,
     FOREIGN KEY (nau_actual) REFERENCES naus(id)
 );
+-- 3. CRUD amb Relació 1:N (Un usuari pot tenir moltes partides)
+-- Registra cada partida jugada i les seves estadístiques
+CREATE TABLE partides (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    usuari_id INT NOT NULL,
+    puntuacio INT NOT NULL DEFAULT 0,
+    duracio_segons INT NOT NULL,
+    nau_utilitzada INT NOT NULL,
+    nivell_dificultat ENUM('facil', 'mitja', 'dificil') DEFAULT 'facil',
+    data_partida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    obstacles_superats INT DEFAULT 0,
+    completada BOOLEAN DEFAULT true,
+    FOREIGN KEY (usuari_id) REFERENCES usuaris(id),
+    FOREIGN KEY (nau_utilitzada) REFERENCES naus(id)
+);
