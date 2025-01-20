@@ -65,3 +65,14 @@ CREATE TABLE usuaris_assoliments (
     FOREIGN KEY (usuari_id) REFERENCES usuaris(id),
     FOREIGN KEY (assoliment_id) REFERENCES assoliments(id)
 );
+-- Taula d'estadístiques
+-- Resum d'estadístiques per consulta ràpida
+CREATE TABLE estadistiques_usuari (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    usuari_id INT NOT NULL,
+    millor_puntuacio INT DEFAULT 0,
+    total_partides INT DEFAULT 0,
+    temps_total_jugat INT DEFAULT 0,
+    data_actualitzacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuari_id) REFERENCES usuaris(id)
+);
