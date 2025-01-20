@@ -76,3 +76,9 @@ CREATE TABLE estadistiques_usuari (
     data_actualitzacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuari_id) REFERENCES usuaris(id)
 );
+
+-- Inserts bàsics de naus
+INSERT INTO naus (nom, velocitat, descripcio, imatge_url, disponible) VALUES
+('X-Wing', 1, 'Nau inicial perfecta per començar', '/assets/images/naus/x-wing.png', true),
+('TIE Fighter', 2, 'Nau ràpida de l''Imperi', '/assets/images/naus/tie-fighter.png', false),
+('Millennium Falcon', 3, 'La nau més ràpida', '/assets/images/naus/millennium-falcon.png', false);

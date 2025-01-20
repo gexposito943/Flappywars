@@ -40,3 +40,11 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Excluir node_modules y otros
+node_modules/
+.env
+*.log
+
+# NO excluir las imágenes
+!public/assets/images/**
