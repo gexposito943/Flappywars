@@ -33,10 +33,7 @@ export class RegistreService {
   }
 
   getToken(): string | null {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      return localStorage.getItem('authToken');
-    }
-    return this.storage['authToken'] || null;
+    return localStorage.getItem('token');
   }
 
   setToken(token: string): void {
@@ -50,5 +47,10 @@ export class RegistreService {
   getUserData(): any {
     const userData = localStorage.getItem('userData');
     return userData ? JSON.parse(userData) : null;
+  }
+
+  logout(): void {
+    localStorage.removeItem('userData');
+    localStorage.removeItem('token');
   }
 }

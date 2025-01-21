@@ -3,6 +3,12 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RegistreService } from './registre.service';
 
+interface UserStats {
+  millor_puntuacio: number;
+  total_partides: number;
+  temps_total_jugat: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -19,8 +25,8 @@ export class GameService {
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  getUserStats(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/user/stats`, {
+  getUserStats(): Observable<UserStats> {
+    return this.http.get<UserStats>(`${this.apiUrl}/user/stats`, {
       headers: this.getHeaders()
     });
   }
@@ -33,6 +39,12 @@ export class GameService {
 
   updateUserShip(shipId: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/user/ship`, { shipId }, {
+      headers: this.getHeaders()
+    });
+  }
+
+  getUserAchievements(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/user/achievements`, {
       headers: this.getHeaders()
     });
   }

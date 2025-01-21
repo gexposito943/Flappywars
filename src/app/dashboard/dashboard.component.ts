@@ -10,12 +10,31 @@ interface UserStats {
   temps_total_jugat: number;
 }
 
+interface UserData {
+  username: string;
+  nivel: number;
+  puntosTotales: number;
+  naveActual?: number;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule],
   template: `
     <div class="dashboard-container">
+      <!-- Capçalera del perfil -->
+      <header class="profile-header">
+        <div class="user-info">
+          <h1>Benvingut, {{ userData?.username }}!</h1>
+          <div class="user-level">
+            Nivell: <span>{{ userData?.nivel }}</span>
+            <div class="points">Punts: {{ userData?.puntosTotales }}</div>
+          </div>
+        </div>
+        <button class="logout-button" (click)="logout()">Sortir</button>
+      </header>
+
       <!-- Estadístiques de l'usuari -->
       <section class="stats-section">
         <h2>Les Teves Estadístiques</h2>
@@ -108,12 +127,47 @@ interface UserStats {
       margin-top: 10px;
       font-size: 0.9em;
     }
+    .profile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background: #2a2a3e;
+      color: white;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .user-info {
+      h1 {
+        margin: 0;
+        font-size: 1.5em;
+      }
+    }
+    .user-level {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px;
+      font-size: 1.1em;
+    }
+    .logout-button {
+      padding: 10px 20px;
+      background: #f44336;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .logout-button:hover {
+      background: #d32f2f;
+    }
   `]
 })
 export class DashboardComponent implements OnInit {
   userStats?: UserStats;
   statsError: boolean = false;
   selectedShipId: number | null = null;
+  userData?: UserData;
 
   constructor(
     private router: Router,
@@ -123,11 +177,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loadUserStats();
-    // Carregar la nau seleccionada de l'usuari si existeix
-    const userData = this.registreService.getUserData();
-    if (userData?.naveActual) {
-      this.selectedShipId = userData.naveActual;
-    }
+    this.updateUserData();
   }
 
   loadUserStats() {
@@ -142,6 +192,19 @@ export class DashboardComponent implements OnInit {
         this.statsError = true;
       }
     });
+  }
+
+  updateUserData() {
+    const data = this.registreService.getUserData();
+    if (data) {
+      this.userData = data;
+      this.selectedShipId = data.naveActual || null;
+    }
+  }
+
+  logout() {
+    this.registreService.logout();
+    this.router.navigate(['/']);
   }
 
   formatTime(seconds: number): string {
