@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
             [width]="canvasWidth" 
             [height]="canvasHeight">
     </canvas>
+    <button (click)="startGame()">Començar</button>
   `,
   styles: []
 })
@@ -20,6 +21,7 @@ export class DashboardComponent implements OnInit {
   canvasWidth: number = 800;
   canvasHeight: number = 600;
   private ctx!: CanvasRenderingContext2D;
+  private gameLoop: any;
 
   ngOnInit() {
     this.initializeCanvas();
@@ -27,5 +29,19 @@ export class DashboardComponent implements OnInit {
 
   private initializeCanvas() {
     this.ctx = this.gameCanvas.nativeElement.getContext('2d')!;
+  }
+
+  startGame() {
+    if (this.isGameRunning) return;
+    
+    this.isGameRunning = true;
+    this.score = 0;
+    this.gameLoop = setInterval(() => {
+      this.updateGame();
+    }, 1000 / 60);
+  }
+
+  private updateGame() {
+    this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
   }
 }
