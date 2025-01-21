@@ -96,4 +96,28 @@ describe('DashboardComponent', () => {
       expect(mockRouter.navigate).not.toHaveBeenCalled();
     });
   });
+  //Proves de perfil d'usuari, tencament sessio actualizar nivell etc..
+  describe('User Profile', () => {
+    it('should logout user correctly', () => {
+      component.logout();
+      
+      expect(mockRegistreService.logout).toHaveBeenCalled();
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+    });
+
+    it('should update user level display when experience changes', () => {
+      const newUserData = {
+        ...mockUserData,
+        nivel: 6,
+        puntosTotales: 1500
+      };
+      
+      mockRegistreService.getUserData.and.returnValue(newUserData);
+      component.updateUserData();
+      
+      const levelElement = fixture.nativeElement.querySelector('.user-level');
+      expect(levelElement.textContent).toContain('6');
+    });
+  });
+  
 });
