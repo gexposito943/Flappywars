@@ -33,4 +33,9 @@ describe('DashboardComponent', () => {
     expect(canvasElement.width).toBe(component.canvasWidth);
     expect(canvasElement.height).toBe(component.canvasHeight);
   });
+  it('should get 2D context from canvas', () => {
+    const canvas = component.gameCanvas.nativeElement;
+    const ctx = canvas.getContext('2d');
+    expect(ctx).toBeTruthy();
+  });
 });
