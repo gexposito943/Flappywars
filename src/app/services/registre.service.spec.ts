@@ -2,6 +2,11 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { RegistreService } from './registre.service';
 
+interface AuthResponse {
+  token: string;
+  user?: any; 
+}
+
 describe('RegistreService', () => {
   let service: RegistreService;
   let httpMock: HttpTestingController;
@@ -29,10 +34,10 @@ describe('RegistreService', () => {
   });
 
   it('Hauria de verificar si l\'usuari està registrat', () => {
-    const mockResponse = { valid: true };
-
+    const mockResponse: AuthResponse = { token: 'mock-token' };
+    
     service.validateUser('usuariTest', 'contra1234').subscribe((response) => {
-      expect(response.valid).toBe(true);
+      expect(response.token).toBeDefined();
     });
 
     const req = httpMock.expectOne('http://localhost:3000/api/v1/login');

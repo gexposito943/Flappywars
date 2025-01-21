@@ -13,7 +13,7 @@ interface UserStats {
   providedIn: 'root'
 })
 export class GameService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'http://localhost:3000/api/v1';
 
   constructor(
     private http: HttpClient,
@@ -26,7 +26,7 @@ export class GameService {
   }
 
   getUserStats(): Observable<any> {
-    // Simulación temporal - reemplazar con llamada real al backend
+
     return of({
       millor_puntuacio: 1000,
       total_partides: 50,

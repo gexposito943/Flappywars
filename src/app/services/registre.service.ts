@@ -1,35 +1,41 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
+
+interface AuthResponse {
+  token: string;
+  user?: any;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class RegistreService {
-  private apiURLRegister = 'http://localhost:3000/api/v1/register';
-  private apiURLValidate = 'http://localhost:3000/api/v1/login';
+  private apiUrl = 'http://localhost:3000/api/v1';
   private storage: Record<string, string> = {};
 
   constructor(private http: HttpClient) {}
 
   register(username: string, email: string, password: string): Observable<any> {
     const body = { username, email, password };
-    console.log(body);
-    return this.http.post(this.apiURLRegister, body);
+    console.log('Enviando petición de registro:', body);
+    return this.http.post(`${this.apiUrl}/register`, body);
   }
 
-  validateUser(username: string, password: string): Observable<any> {
-    const body = { username, password };
-    console.log(body);
-    return this.http.post<any>(this.apiURLValidate, body);
+  validateUser(email: string, password: string): Observable<AuthResponse> {
+    console.log('Enviando petición de login:', { email });
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
+        tap(response => {
+            if (response && response.token) {
+                this.setToken(response.token);
+            }
+        })
+    );
   }
 
   saveToken(token: string): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem('authToken', token);
-    } else {
-      this.storage['authToken'] = token;
-    }
+    localStorage.setItem('token', token);
   }
 
   getToken(): string | null {
@@ -37,11 +43,7 @@ export class RegistreService {
   }
 
   setToken(token: string): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem('authToken', token);
-    } else {
-      this.storage['authToken'] = token;
-    }
+    localStorage.setItem('token', token);
   }
 
   getUserData(): any {
@@ -55,6 +57,14 @@ export class RegistreService {
   }
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+    return !!this.getToken();
+  }
+
+  checkEmailExists(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/check-email`, { email });
+  }
+
+  checkUsernameExists(username: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/check-username`, { username });
   }
 }

@@ -35,7 +35,7 @@
       </form>
 
       <!-- Sign Up Form -->
-      <form action="#" class="sign-up-form" aria-labelledby="signup-title">
+      <form action="#" class="sign-up-form" (ngSubmit)="onSubmit()" #registerForm="ngForm">
         <h2 class="title" id="signup-title">Únete a la Rebelión</h2>
         <div class="input-field" [class.input-error]="usernameError">
           <label for="signup-username" class="visually-hidden">Usuari</label>
@@ -45,10 +45,10 @@
                  [(ngModel)]="username"
                  required
                  placeholder="Usuari"
-                 aria-required="true"
-                 [attr.aria-invalid]="usernameError"
-                 aria-describedby="username-error" />
-          <div *ngIf="usernameError" class="error-message" id="username-error" role="alert">El nom d'usuari és obligatori!</div>
+                 #usernameInput="ngModel">
+          <div *ngIf="usernameError" class="error-message">
+            El nom d'usuari és obligatori
+          </div>
         </div>
         
         <div class="input-field" [class.input-error]="emailError">
@@ -58,14 +58,15 @@
                  name="email"
                  [(ngModel)]="email"
                  required
+                 email
                  placeholder="Email"
-                 aria-required="true"
-                 [attr.aria-invalid]="emailError"
-                 aria-describedby="email-error" />
-          <div *ngIf="emailError" class="error-message" id="email-error" role="alert">L'email és obligatori!</div>
+                 #emailInput="ngModel">
+          <div *ngIf="emailError" class="error-message">
+            L'email és obligatori i ha de ser vàlid
+          </div>
         </div>
         
-        <div class="input-field" [class.input-error]="passwordError">
+        <div class="input-field" [class.input-error]="passwordError || passwordRegexError">
           <label for="signup-password" class="visually-hidden">Contrasenya</label>
           <input type="password"
                  id="signup-password"
@@ -73,10 +74,13 @@
                  [(ngModel)]="password"
                  required
                  placeholder="Contrasenya"
-                 [attr.aria-invalid]="passwordError"
-                 aria-describedby="password-error" />
-          <div *ngIf="passwordError" class="error-message" id="password-error" role="alert">La contrasenya és obligatoria!</div>
-          <div *ngIf="passwordRegexError" class="error-message-2" id="password-error-2" role="alert">Ha de contenir caràcters especials i mínim 6 caràcters</div>
+                 #passwordInput="ngModel">
+          <div *ngIf="passwordError" class="error-message">
+            La contrasenya és obligatòria
+          </div>
+          <div *ngIf="passwordRegexError" class="error-message">
+            La contrasenya ha de tenir mínim 6 caràcters i un símbol especial
+          </div>
         </div>
         
         <div class="input-field" [class.input-error]="confirmPasswordMismatchError">
@@ -86,17 +90,16 @@
                  name="confirmPassword"
                  [(ngModel)]="confirmPassword"
                  required
-                 placeholder="Confirmació Contrasenya"
-                 aria-required="true"
-                 [attr.aria-invalid]="confirmPasswordMismatchError"
-                 aria-describedby="confirm-password-error" />
-          <div *ngIf="confirmPasswordMismatchError" class="error-message" id="confirm-password-error" role="alert">Les contrasenyes no coincideixen</div>
+                 placeholder="Confirma la contrasenya"
+                 #confirmPasswordInput="ngModel">
+          <div *ngIf="confirmPasswordMismatchError" class="error-message">
+            Les contrasenyes no coincideixen
+          </div>
         </div>
         
-        <button (click)="onSubmit()" 
-                type="submit"
-                class="btn-login"
-                aria-label="Registrar-se">
+        <button type="submit" 
+                class="btn-login" 
+                [disabled]="!registerForm.form.valid">
           Comenzar el Entrenamiento
         </button>
       </form>

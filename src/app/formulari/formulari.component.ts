@@ -30,6 +30,9 @@ export class FormulariComponent implements AfterViewInit {
   user: any = null;
   loggedIn: boolean = false;
 
+  loginError: boolean = false;
+  registrationError: boolean = false;
+
   constructor(
     private router: Router,
     private authService: RegistreService,
@@ -52,57 +55,42 @@ export class FormulariComponent implements AfterViewInit {
   }
 
   onSubmit() {
-    this.usernameError = false;
-    this.emailError = false;
-    this.passwordError = false;
-    this.confirmPasswordMismatchError = false;
-    this.passwordRegexError = false;
-
-    let formValid = true;
-
-    if (!this.username) {
-      this.usernameError = true;
-      formValid = false;
+    // Resetear errores
+    this.registrationError = false;
+    
+    if (!this.username || !this.email || !this.password || !this.confirmPassword) {
+        this.registrationError = true;
+        return;
     }
 
-    if (!this.email) {
-      this.emailError = true;
-      formValid = false;
+    if (this.password !== this.confirmPassword) {
+        alert('Les contrasenyes no coincideixen');
+        return;
     }
 
-    if (!this.password) {
-      this.passwordError = true;
-      formValid = false;
-    } else if (!this.passwordValidator()) {
-      this.passwordRegexError = true;
-      formValid = false;
-    }
+    console.log('Intentando registro con:', { 
+        username: this.username, 
+        email: this.email 
+    });
 
-    if (!this.confirmPassword) {
-      this.passwordError = true;
-      formValid = false;
-    }
-
-    if (!this.passwordMatchValidator()) {
-      this.confirmPasswordMismatchError = true;
-      formValid = false;
-    }
-
-    if (formValid) {
-      this.authService.register(this.username, this.email, this.password).subscribe({
+    this.registreService.register(this.username, this.email, this.password).subscribe({
         next: (response) => {
-          console.log('Registre correcte', response);
-          this.container.nativeElement.classList.remove('sign-up-mode');
-          this.clearInputs();
+            console.log('Registro exitoso:', response);
+            alert('Registre completat amb èxit! Ara pots iniciar sessió.');
+            this.container.nativeElement.classList.remove('sign-up-mode');
+            this.clearInputs();
         },
         error: (error) => {
-          console.error('Error en el registre', error);
-          if (error.error.message.includes('ja existeix')) {
-            // Manejar usuario duplicado
-          }
+            console.error('Error en el registre:', error);
+            this.registrationError = true;
+
+            if (error.error && error.error.error) {
+                alert(error.error.error);
+            } else {
+                alert('Error en el registre');
+            }
         }
-      });
-    }
+    });
   }
 
   clearInputs() {
@@ -124,27 +112,69 @@ export class FormulariComponent implements AfterViewInit {
   }
 
   handleSignIn() {
+    // Resetear errores
+    this.loginError = false;
+    
     if (!this.email || !this.password) {
-      return;
+        this.loginError = true;
+        return;
     }
-  
+
+    console.log('Intentando login con:', { email: this.email });
+
     this.registreService.validateUser(this.email, this.password).subscribe({
-      next: (response) => {
-        if (response && response.token) {
-          this.router.navigate(['/dashboard']);
+        next: (response) => {
+            console.log('Login exitoso:', response);
+            if (response && response.token) {
+                // Guardar el token
+                this.registreService.setToken(response.token);
+                
+                // Guardar datos del usuario si vienen en la respuesta
+                if (response.user) {
+                    localStorage.setItem('userData', JSON.stringify(response.user));
+                }
+                
+                // Redirigir al dashboard
+                this.router.navigate(['/dashboard']);
+            }
+        },
+        error: (error) => {
+            console.error('Error al verificar l\'usuari:', error);
+            this.loginError = true;
+            
+            if (error.status === 401) {
+                alert('Contrasenya incorrecta');
+            } else if (error.status === 404) {
+                alert('Usuari no trobat');
+            } else {
+                alert('Error en iniciar sessió');
+            }
         }
-      },
-      error: (error) => {
-        console.error('Error al verificar l\'usuari:', error);
-        if (error.status === 404) {
-          // Usuario no encontrado
-        } else if (error.status === 401) {
-          // Contraseña incorrecta
-        }
-      }
     });
   }
   // handleSignInAdmin() {
   //   this.router.navigate(['/formulari-admin']);
   // }
+
+  // Añadir método para verificar si el email ya existe
+  async checkEmailExists(email: string): Promise<boolean> {
+    try {
+        const [users] = await this.authService.checkEmailExists(email).toPromise();
+        return users.length > 0;
+    } catch (error) {
+        console.error('Error checking email:', error);
+        return false;
+    }
+  }
+
+  // Añadir método para verificar si el username ya existe
+  async checkUsernameExists(username: string): Promise<boolean> {
+    try {
+        const [users] = await this.authService.checkUsernameExists(username).toPromise();
+        return users.length > 0;
+    } catch (error) {
+        console.error('Error checking username:', error);
+        return false;
+    }
+  }
 }
