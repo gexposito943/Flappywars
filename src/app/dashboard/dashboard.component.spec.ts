@@ -79,4 +79,21 @@ describe('DashboardComponent', () => {
       expect(errorMessage).toBeTruthy();
     });
   });
+  //Proves de navegacio
+  describe('Navigation', () => {
+    it('should navigate to game when play button is clicked', () => {
+      const playButton = fixture.nativeElement.querySelector('.play-button');
+      playButton.click();
+      
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/game']);
+    });
+
+    it('should prevent navigation if no ship is selected', () => {
+      component.selectedShipId = null;
+      const playButton = fixture.nativeElement.querySelector('.play-button');
+      playButton.click();
+      
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
+    });
+  });
 });
