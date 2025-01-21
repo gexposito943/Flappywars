@@ -51,12 +51,24 @@ describe('DashboardComponent', () => {
   });
   
   it('should stop game when stopGame is called', () => {
-    
     component.startGame();
     expect(component.isGameRunning).toBeTrue();
     component.stopGame();
     expect(component.isGameRunning).toBeFalse();
     // Verifica que el gameLoop esta null
     expect(component['gameLoop']).toBeNull();
+  });
+  
+  it('should pause and resume game correctly', () => {
+    
+    component.startGame();
+    expect(component.isGameRunning).toBeTrue();
+    component.togglePause();
+    expect(component.isPaused).toBeTrue();
+    expect(component.isGameRunning).toBeTrue();
+    component.togglePause();
+    expect(component.isPaused).toBeFalse();
+    expect(component.isGameRunning).toBeTrue();
+    expect(component['gameLoop']).toBeDefined();
   });
 });
