@@ -20,6 +20,13 @@ describe('GameComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should initialize with default values', () => {
+    expect(component.score).toBe(0);
+    expect(component.isGameRunning).toBeFalse();
+    expect(component.canvasWidth).toBe(800);
+    expect(component.canvasHeight).toBe(600);
+  });
   //s'ha de moura a game
   it('should have a canvas element', () => {
     const canvasElement = fixture.nativeElement.querySelector('canvas');

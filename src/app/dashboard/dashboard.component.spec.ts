@@ -27,12 +27,6 @@ describe('DashboardComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize with default values game canvas', () => {
-    expect(component.score).toBe(0);
-    expect(component.isGameRunning).toBeFalse();
-    expect(component.canvasWidth).toBe(800);
-    expect(component.canvasHeight).toBe(600);
-  });
   it('should select ship and update user preferences', () => {
     // Mock de una nau disponible
     const shipId = 2;

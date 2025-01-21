@@ -176,8 +176,8 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.userData = this.registreService.getUserData();
     this.loadUserStats();
-    this.updateUserData();
   }
 
   loadUserStats() {
@@ -192,14 +192,6 @@ export class DashboardComponent implements OnInit {
         this.statsError = true;
       }
     });
-  }
-
-  updateUserData() {
-    const data = this.registreService.getUserData();
-    if (data) {
-      this.userData = data;
-      this.selectedShipId = data.naveActual || null;
-    }
   }
 
   logout() {
