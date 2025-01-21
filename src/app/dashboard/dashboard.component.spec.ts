@@ -119,5 +119,20 @@ describe('DashboardComponent', () => {
       expect(levelElement.textContent).toContain('6');
     });
   });
+  //proves d'assoliments
+  escribe('Achievements', () => {
+    it('should display user achievements', () => {
+      const mockAchievements = [
+        { id: 1, nom: 'Primer Vol', completat: true },
+        { id: 2, nom: 'Expert', completat: false }
+      ];
+      
+      mockGameService.getUserAchievements.and.returnValue(of(mockAchievements));
+      component.loadAchievements();
+      
+      const achievementElements = fixture.nativeElement.querySelectorAll('.achievement-item');
+      expect(achievementElements.length).toBe(2);
+      expect(achievementElements[0].classList.contains('completed')).toBeTrue();
+    });
   
 });
