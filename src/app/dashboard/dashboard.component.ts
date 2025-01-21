@@ -17,6 +17,20 @@ interface UserData {
   naveActual?: number;
 }
 
+export interface Ship {
+  id: number;
+  nom: string;
+  velocitat: number;
+  imatge_url: string;
+  descripcio: string;
+}
+
+interface Achievement {
+  id: number;
+  nom: string;
+  completat: boolean;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -26,10 +40,10 @@ interface UserData {
       <!-- Capçalera del perfil -->
       <header class="profile-header">
         <div class="user-info">
-          <h1>Benvingut, {{ userData?.username }}!</h1>
+          <h1>Benvingut, {{ userData.username }}!</h1>
           <div class="user-level">
-            Nivell: <span>{{ userData?.nivel }}</span>
-            <div class="points">Punts: {{ userData?.puntosTotales }}</div>
+            Nivell: <span>{{ userData.nivel }}</span>
+            <div class="points">Punts: {{ userData.puntosTotales }}</div>
           </div>
         </div>
         <button class="logout-button" (click)="logout()">Sortir</button>
@@ -167,7 +181,13 @@ export class DashboardComponent implements OnInit {
   userStats?: UserStats;
   statsError: boolean = false;
   selectedShipId: number | null = null;
-  userData?: UserData;
+  userData: UserData = {
+    username: '',
+    nivel: 1,
+    puntosTotales: 0
+  };
+  availableShips: Ship[] = [];
+  achievements: Achievement[] = [];
 
   constructor(
     private router: Router,
@@ -225,5 +245,27 @@ export class DashboardComponent implements OnInit {
   // Mètode auxiliar per comprovar si es pot començar el joc
   canStartGame(): boolean {
     return this.selectedShipId !== null;
+  }
+
+  selectShip(shipId: number) {
+    this.selectedShipId = shipId;
+    if (this.userData) {
+      this.userData.naveActual = shipId;
+    }
+    this.gameService.updateUserShip(shipId).subscribe();
+  }
+
+  updateUserData() {
+    const data = this.registreService.getUserData();
+    if (data) {
+      this.userData = data;
+      this.selectedShipId = data.naveActual;
+    }
+  }
+
+  loadAchievements() {
+    this.gameService.getUserAchievements().subscribe(achievements => {
+      this.achievements = achievements;
+    });
   }
 }

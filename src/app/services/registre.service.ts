@@ -53,4 +53,8 @@ export class RegistreService {
     localStorage.removeItem('userData');
     localStorage.removeItem('token');
   }
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
+  }
 }

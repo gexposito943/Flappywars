@@ -1,18 +1,35 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
+import { Router } from '@angular/router';
 
 import { DashboardComponent } from './dashboard.component';
 import { GameService } from '../services/game.service';
+import { RegistreService } from '../services/registre.service';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
   let mockGameService: jasmine.SpyObj<GameService>;
+  let mockRouter: jasmine.SpyObj<Router>;
+  let mockRegistreService: jasmine.SpyObj<RegistreService>;
+
+  const mockUserData = {
+    username: 'TestUser',
+    nivel: 5,
+    puntosTotales: 1000,
+    naveActual: 1
+  };
 
   beforeEach(async () => {
+    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockRegistreService = jasmine.createSpyObj('RegistreService', ['logout', 'getUserData']);
+
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
       providers: [
-        { provide: GameService, useValue: jasmine.createSpyObj('GameService', ['updateUserShip']) }
+        { provide: GameService, useValue: jasmine.createSpyObj('GameService', ['updateUserShip']) },
+        { provide: Router, useValue: mockRouter },
+        { provide: RegistreService, useValue: mockRegistreService }
       ]
     })
     .compileComponents();
@@ -20,6 +37,7 @@ describe('DashboardComponent', () => {
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
     mockGameService = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
+    mockRegistreService.getUserData.and.returnValue(mockUserData);
     fixture.detectChanges();
   });
 
@@ -44,8 +62,8 @@ describe('DashboardComponent', () => {
     expect(mockGameService.updateUserShip).toHaveBeenCalledWith(shipId);
     expect(component.userData.naveActual).toBe(shipId);
   });
-  //proves estadistiques del usuari 
-  escribe('User Statistics', () => {
+  // proves estadistiques del usuari 
+  describe('User Statistics', () => {
     it('should load and display user statistics correctly', () => {
       const mockStats = {
         millor_puntuacio: 1000,
@@ -114,7 +132,7 @@ describe('DashboardComponent', () => {
     });
   });
   //proves d'assoliments
-  escribe('Achievements', () => {
+  describe('Achievements', () => {
     it('should display user achievements', () => {
       const mockAchievements = [
         { id: 1, nom: 'Primer Vol', completat: true },
@@ -128,5 +146,5 @@ describe('DashboardComponent', () => {
       expect(achievementElements.length).toBe(2);
       expect(achievementElements[0].classList.contains('completed')).toBeTrue();
     });
-  
+  });
 });
