@@ -38,4 +38,15 @@ describe('DashboardComponent', () => {
     const ctx = canvas.getContext('2d');
     expect(ctx).toBeTruthy();
   });
+
+  it('should start game when startGame is called', () => {
+    // Verificar estado inicial
+    expect(component.isGameRunning).toBeFalse();
+    component.startGame();
+    // verifica que el joc esta en funcionamiento
+    expect(component.isGameRunning).toBeTrue();
+    expect(component.score).toBe(0);
+    // verifica que gameLoop esta definit 
+    expect(component['gameLoop']).toBeDefined();
+  });
 });
