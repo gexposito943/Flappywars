@@ -46,4 +46,9 @@ export class RegistreService {
       this.storage['authToken'] = token;
     }
   }
+
+  getUserData(): any {
+    const userData = localStorage.getItem('userData');
+    return userData ? JSON.parse(userData) : null;
+  }
 }
