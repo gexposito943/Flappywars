@@ -1,19 +1,25 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DashboardComponent } from './dashboard.component';
+import { GameService } from '../services/game.service';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
+  let mockGameService: jasmine.SpyObj<GameService>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DashboardComponent]
+      imports: [DashboardComponent],
+      providers: [
+        { provide: GameService, useValue: jasmine.createSpyObj('GameService', ['updateUserShip']) }
+      ]
     })
     .compileComponents();
 
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
+    mockGameService = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
     fixture.detectChanges();
   });
 
@@ -60,7 +66,6 @@ describe('DashboardComponent', () => {
   });
   
   it('should pause and resume game correctly', () => {
-    
     component.startGame();
     expect(component.isGameRunning).toBeTrue();
     component.togglePause();
@@ -70,5 +75,23 @@ describe('DashboardComponent', () => {
     expect(component.isPaused).toBeFalse();
     expect(component.isGameRunning).toBeTrue();
     expect(component['gameLoop']).toBeDefined();
+  });
+  
+  it('should select ship and update user preferences', () => {
+    // Mock de una nau disponible
+    const shipId = 2;
+    const mockShip = {
+      id: shipId,
+      nom: 'TIE Fighter',
+      velocitat: 2,
+      imatge_url: 'tie.png',
+      descripcio: 'Nave rápida'
+    };
+    component.availableShips = [mockShip];
+    component.selectShip(shipId);
+    
+    expect(component.selectedShipId).toBe(shipId);
+    expect(mockGameService.updateUserShip).toHaveBeenCalledWith(shipId);
+    expect(component.userData.naveActual).toBe(shipId);
   });
 });
