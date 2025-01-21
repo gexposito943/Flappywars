@@ -49,4 +49,14 @@ describe('DashboardComponent', () => {
     // verifica que gameLoop esta definit 
     expect(component['gameLoop']).toBeDefined();
   });
+  
+  it('should stop game when stopGame is called', () => {
+    
+    component.startGame();
+    expect(component.isGameRunning).toBeTrue();
+    component.stopGame();
+    expect(component.isGameRunning).toBeFalse();
+    // Verifica que el gameLoop esta null
+    expect(component['gameLoop']).toBeNull();
+  });
 });
