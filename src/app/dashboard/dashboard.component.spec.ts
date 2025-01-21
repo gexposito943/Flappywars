@@ -17,12 +17,14 @@ describe('DashboardComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   it('should create the component', () => {
     expect(component).toBeTruthy();
   });
-  
+
+  it('should initialize with default values game canvas', () => {
+    expect(component.score).toBe(0);
+    expect(component.isGameRunning).toBeFalse();
+    expect(component.canvasWidth).toBe(800);
+    expect(component.canvasHeight).toBe(600);
+  });
 });
