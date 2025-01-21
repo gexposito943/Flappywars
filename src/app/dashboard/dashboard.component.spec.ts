@@ -27,4 +27,10 @@ describe('DashboardComponent', () => {
     expect(component.canvasWidth).toBe(800);
     expect(component.canvasHeight).toBe(600);
   });
+  it('should have a canvas element', () => {
+    const canvasElement = fixture.nativeElement.querySelector('canvas');
+    expect(canvasElement).toBeTruthy();
+    expect(canvasElement.width).toBe(component.canvasWidth);
+    expect(canvasElement.height).toBe(component.canvasHeight);
+  });
 });
