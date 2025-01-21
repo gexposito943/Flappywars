@@ -89,21 +89,19 @@ export class FormulariComponent implements AfterViewInit {
     }
 
     if (formValid) {
-      console.log('Dades enviades:', {
-        username: this.username,
-        email: this.email,
-        password: this.password,
-      });
-
-      this.authService.register(this.username, this.email, this.password).subscribe(
-        (response) => {
+      this.authService.register(this.username, this.email, this.password).subscribe({
+        next: (response) => {
           console.log('Registre correcte', response);
+          this.container.nativeElement.classList.remove('sign-up-mode');
+          this.clearInputs();
         },
-        (error) => {
+        error: (error) => {
           console.error('Error en el registre', error);
+          if (error.error.message.includes('ja existeix')) {
+            // Manejar usuario duplicado
+          }
         }
-      );
-      this.clearInputs();
+      });
     }
   }
 
@@ -127,24 +125,24 @@ export class FormulariComponent implements AfterViewInit {
 
   handleSignIn() {
     if (!this.email || !this.password) {
-      console.error('Email i contrasenya requerits');
       return;
     }
   
-    this.registreService.validateUser(this.email, this.password).subscribe(
-      (response) => {
+    this.registreService.validateUser(this.email, this.password).subscribe({
+      next: (response) => {
         if (response && response.token) {
-          console.log('Login correcte:', response);
-          this.registreService.saveToken(response.token); 
-          this.router.navigate(['/app']);
-        } else {
-          console.error('Credencials incorrectes o falta el token a la resposta');
+          this.router.navigate(['/dashboard']);
         }
       },
-      (error) => {
+      error: (error) => {
         console.error('Error al verificar l\'usuari:', error);
+        if (error.status === 404) {
+          // Usuario no encontrado
+        } else if (error.status === 401) {
+          // Contraseña incorrecta
+        }
       }
-    );
+    });
   }
   // handleSignInAdmin() {
   //   this.router.navigate(['/formulari-admin']);
