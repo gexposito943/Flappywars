@@ -7,6 +7,9 @@ import { GameComponent } from './game/game.component';
 export const routes: Routes = [
   { path: '', component: FormulariComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
-  { path: 'game', component: GameComponent, canActivate: [AuthGuard] },
+  {
+    path: 'game',
+    loadComponent: () => import('./game/game.component').then(m => m.GameComponent)
+  },
   { path: '**', redirectTo: '' }
 ];

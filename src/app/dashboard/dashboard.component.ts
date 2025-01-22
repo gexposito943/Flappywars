@@ -119,20 +119,16 @@ export class DashboardComponent implements OnInit {
   }
 
   startGame() {
-    if (!this.selectedShipId) return;
-    
-    this.gameService.updateUserShip(this.selectedShipId).subscribe({
-      next: () => {
-        this.router.navigate(['/game']);
-      },
-      error: (error) => {
-        console.error('Error updating ship:', error);
-      }
-    });
+    if (this.selectedShipId) {
+      this.router.navigate(['/game']);
+    }
   }
 
   selectShip(shipId: number) {
     this.selectedShipId = shipId;
+    this.gameService.updateUserShip(shipId).subscribe({
+      error: (error) => console.error('Error updating ship:', error)
+    });
   }
 
   updateUserData() {

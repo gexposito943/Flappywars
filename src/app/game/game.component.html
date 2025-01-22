@@ -1,1 +1,21 @@
-<p>game works!</p>
+<div class="game-container">
+  <div class="score">Punts: <span class="score-value">{{ score }}</span></div>
+  
+  <canvas #gameCanvas 
+          [width]="canvasWidth" 
+          [height]="canvasHeight">
+  </canvas>
+
+  <div class="game-message" *ngIf="!isGameRunning">
+    Prem Enter per començar
+  </div>
+
+  <div class="game-controls">
+    <button (click)="startGame()">Iniciar</button>
+    <button (click)="togglePause()">{{ isPaused ? 'Continuar' : 'Pausar' }}</button>
+    <button (click)="stopGame()">Aturar</button>
+    <button (click)="goToDashboard()" class="dashboard-button">
+      Tornar al Dashboard
+    </button>
+  </div>
+</div>

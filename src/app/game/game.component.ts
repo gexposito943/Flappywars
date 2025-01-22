@@ -1,5 +1,6 @@
 import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 interface Obstacle {
   x: number;
@@ -12,25 +13,8 @@ interface Obstacle {
   selector: 'app-game',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <canvas #gameCanvas 
-            [width]="canvasWidth" 
-            [height]="canvasHeight">
-    </canvas>
-    <div class="game-controls">
-      <button (click)="startGame()">Iniciar</button>
-      <button (click)="togglePause()">{{ isPaused ? 'Continuar' : 'Pausar' }}</button>
-      <button (click)="stopGame()">Aturar</button>
-    </div>
-  `,
-  styles: [`
-    canvas {
-      border: 1px solid #000;
-    }
-    .game-controls {
-      margin-top: 10px;
-    }
-  `]
+  templateUrl: './game.component.html',
+  styleUrls: ['./game.component.css']
 })
 export class GameComponent implements OnInit {
   @ViewChild('gameCanvas', { static: true }) gameCanvas!: ElementRef<HTMLCanvasElement>;
@@ -54,6 +38,8 @@ export class GameComponent implements OnInit {
   
 
   obstacles: Obstacle[] = [];
+
+  constructor(private router: Router) {}
 
   ngOnInit() {
     this.initializeCanvas();
@@ -182,5 +168,10 @@ export class GameComponent implements OnInit {
 
   get isGameLoopRunning(): boolean {
     return this.gameLoop !== null;
+  }
+
+  goToDashboard() {
+    this.stopGame();  // Aseguramos que el juego se detiene
+    this.router.navigate(['/dashboard']);
   }
 }

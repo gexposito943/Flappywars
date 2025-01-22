@@ -140,4 +140,29 @@ describe('GameComponent', () => {
     });
   });
   
+describe('Game UI Elements', () => {
+  it('should show score display', () => {
+    const scoreElement = fixture.nativeElement.querySelector('.score');
+    expect(scoreElement).toBeTruthy();
+    expect(scoreElement.textContent).toContain('Punts: 0');
+  });
+
+  it('should show game message when not running', () => {
+    const messageElement = fixture.nativeElement.querySelector('.game-message');
+    expect(messageElement).toBeTruthy();
+    expect(messageElement.textContent).toContain('Prem Enter per començar');
+  });
+
+  it('should hide game message when running', () => {
+    component.startGame();
+    fixture.detectChanges();
+    const messageElement = fixture.nativeElement.querySelector('.game-message');
+    expect(messageElement).toBeFalsy();
+  });
+
+  it('should have all control buttons', () => {
+    const buttons = fixture.nativeElement.querySelectorAll('.game-controls button');
+    expect(buttons.length).toBe(4);
+  });
+});
 });

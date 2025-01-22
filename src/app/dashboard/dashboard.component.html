@@ -31,10 +31,14 @@
     <div class="ship-selection">
         <div class="selection-container">
             <div class="button-container">
-                <button class="play-button" [disabled]="!selectedShipId">
+                <button class="play-button" 
+                        [disabled]="!selectedShipId"
+                        (click)="startGame()">
                     {{ selectedShipId ? 'Jugar' : 'Selecciona una nau primer' }}
                 </button>
-                <p class="selection-message">Has de seleccionar una nau abans de començar</p>
+                <p class="selection-message" *ngIf="!selectedShipId">
+                    Has de seleccionar una nau abans de començar
+                </p>
             </div>
             <div class="ships-grid">
                 <div class="ship-option" 
