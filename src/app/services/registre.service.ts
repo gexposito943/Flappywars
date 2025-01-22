@@ -74,4 +74,8 @@ export class RegistreService {
   checkUsernameExists(username: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/check-username`, { username });
   }
+
+  setUserData(userData: any): void {
+    localStorage.setItem('userData', JSON.stringify(userData));
+  }
 }
