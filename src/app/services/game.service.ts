@@ -9,6 +9,12 @@ interface UserStats {
   temps_total_jugat: number;
 }
 
+interface GameData {
+  puntuacio: number;
+  temps_jugat: number;
+  nau_id: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -50,7 +56,7 @@ export class GameService {
     });
   }
 
-  saveGameResults(gameData: any): Observable<any> {
+  saveGameResults(gameData: GameData): Observable<any> {
     return this.http.post(`${this.apiUrl}/game/save`, gameData, {
       headers: this.getHeaders()
     });
