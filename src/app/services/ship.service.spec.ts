@@ -19,4 +19,15 @@ describe('ShipService', () => {
       done(); 
     });
   });
+  it('should return ships with correct properties', (done) => {
+    service.getShips().subscribe((ships) => {
+      const firstShip = ships[0];
+      expect(firstShip.id).toBe(1);
+      expect(firstShip.nom).toBe('X-Wing');
+      expect(firstShip.velocitat).toBe(1);
+      expect(firstShip.imatge_url).toBe('/assets/images/naus/x-wing.png');
+      expect(firstShip.descripcio).toBe('Nau de combat versàtil');
+      done();
+    });
+  });
 });
