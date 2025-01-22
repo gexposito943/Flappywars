@@ -35,11 +35,9 @@ describe('RegistreService', () => {
 
   it('Hauria de verificar si l\'usuari està registrat', () => {
     const mockResponse: AuthResponse = { token: 'mock-token' };
-    
     service.validateUser('usuariTest', 'contra1234').subscribe((response) => {
       expect(response.token).toBeDefined();
     });
-
     const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
     expect(req.request.method).toBe('POST');
     req.flush(mockResponse);
@@ -48,4 +46,22 @@ describe('RegistreService', () => {
   afterEach(() => {
     httpMock.verify();
   });
+  it('should handle registration errors', (done) => {
+    const errorResponse = { 
+      status: 400, 
+      statusText: 'Bad Request',
+      error: { message: 'L\'usuari ja existeix' }
+    };
+  
+    service.register('existingUser', 'test@test.com', 'password123!').subscribe({
+      error: (error) => {
+        expect(error.error.message).toBe('L\'usuari ja existeix');
+        done();
+      }
+    });
+  
+    const req = httpMock.expectOne('http://localhost:3000/api/v1/register');
+    req.flush(errorResponse.error, errorResponse);
+  });
+  
 });
