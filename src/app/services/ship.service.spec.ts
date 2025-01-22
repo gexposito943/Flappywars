@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
 import { ShipService } from './ship.service';
 
+
 describe('ShipService', () => {
   let service: ShipService;
 
@@ -84,16 +85,13 @@ describe('ShipService', () => {
   });
   it('should have all required Ship interface properties', (done) => {
     service.getShips().subscribe((ships) => {
-      const requiredProperties = ['id', 'nom', 'velocitat', 'imatge_url', 'descripcio'];
-      
+      const requiredProperties = ['id', 'nom', 'velocitat', 'imatge_url', 'descripcio'] as const;
       ships.forEach(ship => {
         requiredProperties.forEach(prop => {
-          expect(ship.hasOwnProperty(prop)).toBe(true);
-          expect(ship[prop]).not.toBeNull();
-          expect(ship[prop]).not.toBeUndefined();
+          expect(ship[prop as keyof typeof ship]).not.toBeNull();
+          expect(ship[prop as keyof typeof ship]).not.toBeUndefined();
         });
       });
-      
       done();
     });
   });
