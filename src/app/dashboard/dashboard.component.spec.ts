@@ -160,4 +160,8 @@ describe('DashboardComponent', () => {
     expect(shipDescriptions[1].textContent).toContain('Nau ràpida de l\'Imperi');
     expect(shipDescriptions[2].textContent).toContain('Nau llegendària');
   });
+  it('should show selection message when no ship is selected', () => {
+    const message = fixture.nativeElement.querySelector('.selection-message');
+    expect(message.textContent).toBe('Has de seleccionar una nau abans de començar');
+  });
 });
