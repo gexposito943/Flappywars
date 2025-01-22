@@ -45,4 +45,26 @@ describe('ShipService', () => {
       done();
     });
   });
+  it('should have valid image URLs for all ships', (done) => {
+    service.getShips().subscribe((ships) => {
+      ships.forEach(ship => {
+        expect(ship.imatge_url).toMatch(/^\/assets\/images\/naus\/.*\.png$/);
+        expect(ship.imatge_url.length).toBeGreaterThan(0);
+      });
+      done();
+    });
+  });
+  it('should have unique names for all ships', (done) => {
+    service.getShips().subscribe((ships) => {
+      const names = ships.map(ship => ship.nom);
+      const uniqueNames = new Set(names);
+      expect(uniqueNames.size).toBe(ships.length);
+      //verifica que els noms no estan buits
+      names.forEach(name => {
+        expect(name.length).toBeGreaterThan(0);
+      });
+      done();
+    });
+  });
+  
 });
