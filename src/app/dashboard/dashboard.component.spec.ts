@@ -147,4 +147,10 @@ describe('DashboardComponent', () => {
       expect(achievementElements[0].classList.contains('completed')).toBeTrue();
     });
   });
+  it('should format statistics display correctly', () => {
+    const statsElements = fixture.nativeElement.querySelectorAll('.stat-card');
+    expect(statsElements[0].textContent).toContain('MILLOR PUNTUACIÓ');
+    expect(statsElements[1].textContent).toContain('TOTAL PARTIDES');
+    expect(statsElements[2].textContent).toContain('TEMPS TOTAL JUGAT');
+  });
 });
