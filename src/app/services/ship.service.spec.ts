@@ -37,4 +37,12 @@ describe('ShipService', () => {
       done();
     });
   });
+  it('should have unique ship IDs', (done) => {
+    service.getShips().subscribe((ships) => {
+      const ids = ships.map(ship => ship.id);
+      const uniqueIds = new Set(ids);
+      expect(uniqueIds.size).toBe(ships.length);
+      done();
+    });
+  });
 });
