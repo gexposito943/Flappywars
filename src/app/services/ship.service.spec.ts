@@ -66,5 +66,12 @@ describe('ShipService', () => {
       done();
     });
   });
+  it('should return an Observable', () => {
+    const ships$ = service.getShips();
+    expect(ships$).toBeTruthy();
+    expect(ships$.subscribe).toBeDefined();
+    // Verificar que es un Observable i no un Promise
+    expect(ships$ instanceof Observable).toBe(true);
+  });
   
 });
