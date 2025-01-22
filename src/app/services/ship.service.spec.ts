@@ -30,4 +30,11 @@ describe('ShipService', () => {
       done();
     });
   });
+  it('should have ships with increasing velocities', (done) => {
+    service.getShips().subscribe((ships) => {
+      expect(ships[0].velocitat).toBeLessThan(ships[1].velocitat);
+      expect(ships[1].velocitat).toBeLessThan(ships[2].velocitat);
+      done();
+    });
+  });
 });
