@@ -63,5 +63,27 @@ describe('RegistreService', () => {
     const req = httpMock.expectOne('http://localhost:3000/api/v1/register');
     req.flush(errorResponse.error, errorResponse);
   });
+  it('should store and retrieve token correctly', () => {
+    const mockToken = 'mock-jwt-token';
+    const mockResponse: AuthResponse = { token: mockToken };
+    
+    service.validateUser('testUser', 'password123').subscribe(() => {
+      expect(service.getToken()).toBe(mockToken);
+    });
   
+    const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
+    req.flush(mockResponse);
+  });
+  it('should clear user data on logout', () => {
+    const mockUserData = {
+      username: 'testUser',
+      nivel: 1,
+      puntosTotales: 100
+    };
+    service.setUserData(mockUserData);
+    service.logout();
+    expect(service.getUserData()).toBeNull();
+    expect(service.getToken()).toBeNull();
+    expect(service.isLoggedIn()).toBeFalse();
+  });
 });
