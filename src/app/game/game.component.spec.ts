@@ -94,6 +94,29 @@ describe('GameComponent', () => {
       expect(component.playerVelocity).toBeLessThan(0);
     });
   });
-  
+  describe('Obstacle Mechanics', () => {
+    it('should initialize obstacles array', () => {
+      component.startGame();
+      expect(component.obstacles.length).toBeGreaterThan(0);
+    });
+
+    it('should move obstacles left', () => {
+      component.startGame();
+      const initialX = component.obstacles[0].x;
+      component.moveObstacles();
+      expect(component.obstacles[0].x).toBeLessThan(initialX);
+    });
+
+    it('should detect collision with obstacles', () => {
+      component.startGame();
+      // aqui es força la colisio
+      component.playerY = 0;
+      expect(component.checkCollision()).toBeTrue();
+      
+      // Sense colisio 
+      component.playerY = component.canvasHeight / 2;
+      expect(component.checkCollision()).toBeFalse();
+    });
+  });
   
 });
