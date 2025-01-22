@@ -40,10 +40,7 @@ export class RegistreService {
   }
 
   getToken(): string | null {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem('token');
-    }
-    return null;
+    return localStorage.getItem('token');
   }
 
   setToken(token: string): void {
@@ -56,15 +53,13 @@ export class RegistreService {
   }
 
   logout(): void {
-    localStorage.removeItem('userData');
     localStorage.removeItem('token');
+    localStorage.removeItem('userData');
   }
 
   isLoggedIn(): boolean {
-    if (isPlatformBrowser(this.platformId)) {
-      return this.getToken() !== null;
-    }
-    return false;
+    const token = this.getToken();
+    return token !== null && token !== undefined;
   }
 
   checkEmailExists(email: string): Observable<any> {

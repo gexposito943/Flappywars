@@ -86,4 +86,18 @@ describe('RegistreService', () => {
     expect(service.getToken()).toBeNull();
     expect(service.isLoggedIn()).toBeFalse();
   });
+  it('should correctly report authentication status', () => {
+    expect(service.isLoggedIn()).toBeFalse();    
+    // Simulalogin
+    const mockResponse: AuthResponse = { token: 'mock-token' };
+    service.validateUser('testUser', 'password123').subscribe(() => {
+      // hauria d'estar autenticat després del login
+      expect(service.isLoggedIn()).toBeTrue();
+      // Després del logout, no hauria d'estar autentificat
+      service.logout();
+      expect(service.isLoggedIn()).toBeFalse();
+    });
+    const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
+    req.flush(mockResponse);
+  });
 });
