@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -39,6 +39,9 @@ export class GameComponent implements OnInit {
 
   obstacles: Obstacle[] = [];
 
+  gameMessage: string = 'Prem Enter per començar';
+  showMessage: boolean = true;
+
   constructor(private router: Router) {}
 
   ngOnInit() {
@@ -49,10 +52,21 @@ export class GameComponent implements OnInit {
     this.ctx = this.gameCanvas.nativeElement.getContext('2d')!;
   }
 
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !this.isGameRunning) {
+      this.startGame();
+    }
+    if ((event.key === ' ' || event.key === 'ArrowUp') && this.isGameRunning) {
+      this.jump();
+    }
+  }
+
   startGame() {
     if (this.isGameRunning) return;
     
     this.isGameRunning = true;
+    this.showMessage = false;
     this.score = 0;
     this.playerY = this.canvasHeight / 2;
     this.playerVelocity = 0;
@@ -62,6 +76,8 @@ export class GameComponent implements OnInit {
 
   stopGame() {
     this.isGameRunning = false;
+    this.showMessage = true;
+    this.gameMessage = 'Game Over - Prem Enter per tornar a jugar';
     if (this.gameLoop) {
       clearInterval(this.gameLoop);
       this.gameLoop = null;
@@ -151,6 +167,12 @@ export class GameComponent implements OnInit {
   }
 
   private drawGame() {
+    this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+    this.ctx.fillStyle = 'white';
+    this.ctx.font = '24px Arial';
+    this.ctx.fillText(`Punts: ${this.score}`, 10, 30);
+
     this.ctx.fillStyle = 'red';
     this.ctx.fillRect(this.PLAYER_X, this.playerY, this.PLAYER_SIZE, this.PLAYER_SIZE);
 
