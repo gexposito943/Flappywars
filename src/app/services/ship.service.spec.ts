@@ -13,10 +13,10 @@ describe('ShipService', () => {
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
-
-  it('should return a list of ships', () => {
+  it('should return a list of ships', (done) => {
     service.getShips().subscribe((ships) => {
       expect(ships.length).toBeGreaterThan(0);
+      done(); 
     });
   });
 });
