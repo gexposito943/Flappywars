@@ -100,4 +100,23 @@ describe('RegistreService', () => {
     const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
     req.flush(mockResponse);
   });
+  it('should check if email exists', () => {
+    service.checkEmailExists('test@test.com').subscribe();
+    const req = httpMock.expectOne(`${service['apiUrl']}/check-email`);
+    expect(req.request.method).toBe('POST');
+  });
+  it('should check if username exists', () => {
+    service.checkUsernameExists('testuser').subscribe();
+    const req = httpMock.expectOne(`${service['apiUrl']}/check-username`);
+    expect(req.request.method).toBe('POST');
+  });
+  it('should save and set token correctly', () => {
+    const token = 'test-token';
+    service.saveToken(token);
+    expect(service.getToken()).toBe(token);
+    
+    const newToken = 'new-token';
+    service.setToken(newToken);
+    expect(service.getToken()).toBe(newToken);
+  });
 });
