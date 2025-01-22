@@ -119,4 +119,16 @@ describe('RegistreService', () => {
     service.setToken(newToken);
     expect(service.getToken()).toBe(newToken);
   });
+  it('should persist user data between page reloads', () => {
+    const mockUserData = {
+      username: 'testUser',
+      nivel: 5,
+      puntosTotales: 1000
+    };
+    service.setUserData(mockUserData);
+    const newServiceInstance = TestBed.inject(RegistreService);
+    // Verificar que les dades persisteixen
+    const persistedData = newServiceInstance.getUserData();
+    expect(persistedData).toEqual(mockUserData);
+  });
 });
