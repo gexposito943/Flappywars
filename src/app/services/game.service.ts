@@ -47,7 +47,11 @@ export class GameService {
   }
 
   updateUserShip(shipId: number): Observable<any> {
-    return of({ success: true });
+    return this.http.put(
+      `${this.apiUrl}/user/ship`, 
+      { shipId }, 
+      { headers: this.getHeaders() }
+    );
   }
 
   getUserAchievements(): Observable<any> {
