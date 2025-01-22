@@ -35,12 +35,12 @@ describe('DashboardComponent', () => {
     mockGameService.getUserStats.and.returnValue(of({
       millor_puntuacio: 1000,
       total_partides: 50,
-      temps_total_jugat: '2h 0m'
+      temps_total_jugat: 7200
     }));
 
     mockGameService.getUserAchievements.and.returnValue(of([
-      { id: 1, name: 'First Flight', unlocked: true },
-      { id: 2, name: 'Speed Demon', unlocked: false }
+      { id: 1, nom: 'Primer vol', completat: true },
+      { id: 2, nom: 'As Espacial', completat: false }
     ]));
 
     mockRegistreService.getUserData.and.returnValue(of(mockUserData));

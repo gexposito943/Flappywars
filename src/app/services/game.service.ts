@@ -1,12 +1,19 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { RegistreService } from './registre.service';
 
-interface UserStats {
+export interface UserStats {
   millor_puntuacio: number;
   total_partides: number;
   temps_total_jugat: number;
+}
+
+export interface Achievement {
+  id: number;
+  nom: string;
+  completat: boolean;
 }
 
 interface GameData {
@@ -31,38 +38,54 @@ export class GameService {
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  getUserStats(): Observable<any> {
+  private handleError(error: HttpErrorResponse) {
+    return throwError(() => error);
+  }
 
-    return of({
-      millor_puntuacio: 1000,
-      total_partides: 50,
-      temps_total_jugat: 7200
-    });
+  getUserStats(): Observable<UserStats> {
+    return this.http.get<UserStats>(
+      `${this.apiUrl}/user/stats`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
   getAvailableShips(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/user/ships`, {
-      headers: this.getHeaders()
-    });
+    return this.http.get(
+      `${this.apiUrl}/user/ships`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
   updateUserShip(shipId: number): Observable<any> {
     return this.http.put(
-      `${this.apiUrl}/user/ship`, 
-      { shipId }, 
+      `${this.apiUrl}/user/ship`,
+      { shipId },
       { headers: this.getHeaders() }
+    ).pipe(
+      catchError(this.handleError)
     );
   }
 
-  getUserAchievements(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/user/achievements`, {
-      headers: this.getHeaders()
-    });
+  getUserAchievements(): Observable<Achievement[]> {
+    return this.http.get<Achievement[]>(
+      `${this.apiUrl}/user/achievements`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  saveGameResults(gameData: GameData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/game/save`, gameData, {
-      headers: this.getHeaders()
-    });
+  saveGameResults(gameData: any): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/game/save`,
+      gameData,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 }

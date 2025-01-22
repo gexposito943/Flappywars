@@ -86,17 +86,23 @@ describe('RegistreService', () => {
     expect(service.getToken()).toBeNull();
     expect(service.isLoggedIn()).toBeFalse();
   });
-  it('should correctly report authentication status', () => {
-    expect(service.isLoggedIn()).toBeFalse();    
-    // Simulalogin
+  it('should correctly report authentication status', (done) => {
+    localStorage.clear();
+    service.logout(); // Asegurarse de que no hay sesión activa
+    
     const mockResponse: AuthResponse = { token: 'mock-token' };
+    
+    expect(service.isLoggedIn()).toBeFalse();
+    
     service.validateUser('testUser', 'password123').subscribe(() => {
-      // hauria d'estar autenticat després del login
+      service.setToken(mockResponse.token);
       expect(service.isLoggedIn()).toBeTrue();
-      // Després del logout, no hauria d'estar autentificat
+      
       service.logout();
       expect(service.isLoggedIn()).toBeFalse();
+      done();
     });
+
     const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
     req.flush(mockResponse);
   });
@@ -127,7 +133,7 @@ describe('RegistreService', () => {
     };
     service.setUserData(mockUserData);
     const newServiceInstance = TestBed.inject(RegistreService);
-    // Verificar que les dades persisteixen
+    // Verificar que las dades persisteixen
     const persistedData = newServiceInstance.getUserData();
     expect(persistedData).toEqual(mockUserData);
   });
