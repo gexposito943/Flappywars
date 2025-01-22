@@ -82,5 +82,19 @@ describe('ShipService', () => {
       done();
     });
   });
-  
+  it('should have all required Ship interface properties', (done) => {
+    service.getShips().subscribe((ships) => {
+      const requiredProperties = ['id', 'nom', 'velocitat', 'imatge_url', 'descripcio'];
+      
+      ships.forEach(ship => {
+        requiredProperties.forEach(prop => {
+          expect(ship.hasOwnProperty(prop)).toBe(true);
+          expect(ship[prop]).not.toBeNull();
+          expect(ship[prop]).not.toBeUndefined();
+        });
+      });
+      
+      done();
+    });
+  });
 });
