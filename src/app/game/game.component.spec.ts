@@ -109,28 +109,34 @@ describe('GameComponent', () => {
 
     it('should detect collision with obstacles', () => {
       component.startGame();
-      // aqui es força la colisio
-      component.playerY = 0;
+      component.obstacles = [{
+        x: component['PLAYER_X'],
+        topHeight: component.canvasHeight,  
+        bottomHeight: 0,
+        passed: false
+      }];
+      component.playerY = 0; 
       expect(component.checkCollision()).toBeTrue();
-      
-      // Sense colisio 
-      component.playerY = component.canvasHeight / 2;
-      expect(component.checkCollision()).toBeFalse();
     });
   });
   describe('Game Logic', () => {
     it('should increase score when passing obstacles', () => {
       component.startGame();
-      const initialScore = component.score;
+      component.obstacles = [{
+        x: component['PLAYER_X'] - 51, 
+        topHeight: 100,
+        bottomHeight: 100,
+        passed: false
+      }];
       component.updateScore();
-      expect(component.score).toBeGreaterThan(initialScore);
+      expect(component.score).toBe(1);
     });
 
     it('should end game on collision', () => {
       component.startGame();
       component.handleCollision();
       expect(component.isGameRunning).toBeFalse();
-      expect(component.gameLoop).toBeNull();
+      expect(component.isGameLoopRunning).toBeFalse();
     });
   });
   

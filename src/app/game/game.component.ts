@@ -5,6 +5,7 @@ interface Obstacle {
   x: number;
   topHeight: number;
   bottomHeight: number;
+  passed: boolean;
 }
 
 @Component({
@@ -46,9 +47,10 @@ export class GameComponent implements OnInit {
   playerVelocity: number = 0;
   private readonly GRAVITY: number = 0.5;
   private readonly JUMP_FORCE: number = -10;
-  private readonly OBSTACLE_SPEED = 2;
-  private readonly PLAYER_SIZE = 30;
-  private readonly PLAYER_X = 50;
+  private readonly OBSTACLE_SPEED: number = 2;
+  private readonly PLAYER_SIZE: number = 30;
+  private readonly PLAYER_X: number = 50;
+  private readonly GAP_SIZE: number = 150;
   
 
   obstacles: Obstacle[] = [];
@@ -68,6 +70,7 @@ export class GameComponent implements OnInit {
     this.score = 0;
     this.playerY = this.canvasHeight / 2;
     this.playerVelocity = 0;
+    this.obstacles = [this.createObstacle()];
     this.gameLoop = setInterval(() => this.updateGame(), 1000 / 60);
   }
 
@@ -94,7 +97,9 @@ export class GameComponent implements OnInit {
   }
 
   jump() {
+    if (!this.isGameRunning) return;
     this.playerVelocity = this.JUMP_FORCE;
+    this.playerY += this.playerVelocity;
   }
 
   moveObstacles() {
@@ -113,30 +118,69 @@ export class GameComponent implements OnInit {
     });
   }
 
+  updateScore() {
+    const passedObstacle = this.obstacles.find(obstacle => 
+      obstacle.x + 50 < this.PLAYER_X && !obstacle.passed
+    );
+    if (passedObstacle) {
+      this.score++;
+      passedObstacle.passed = true;
+    }
+  }
+
+  handleCollision() {
+    this.stopGame();
+  }
+
+  private createObstacle(): Obstacle {
+    const topHeight = Math.random() * (this.canvasHeight - this.GAP_SIZE);
+    return {
+      x: this.canvasWidth,
+      topHeight: topHeight,
+      bottomHeight: this.canvasHeight - topHeight - this.GAP_SIZE,
+      passed: false
+    };
+  }
+
   private updateGame() {
     if (this.isPaused) return;
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     
     this.applyGravity();
     this.moveObstacles();
+    this.updateScore();
     
     if (this.checkCollision()) {
-      this.stopGame();
+      this.handleCollision();
+      return;
     }
+    
+    if (this.obstacles[this.obstacles.length - 1].x < this.canvasWidth - 300) {
+      this.obstacles.push(this.createObstacle());
+    }
+    
+    this.obstacles = this.obstacles.filter(obstacle => obstacle.x > -50);
     
     this.drawGame();
   }
 
   private drawGame() {
-    // Dibujar el jugador
     this.ctx.fillStyle = 'red';
-    this.ctx.fillRect(50, this.playerY, 30, 30);
+    this.ctx.fillRect(this.PLAYER_X, this.playerY, this.PLAYER_SIZE, this.PLAYER_SIZE);
 
-    // Dibujar obstáculos
     this.ctx.fillStyle = 'green';
     this.obstacles.forEach(obstacle => {
-      this.ctx.fillRect(obstacle.x, 0, 20, obstacle.topHeight);
-      this.ctx.fillRect(obstacle.x, this.canvasHeight - obstacle.bottomHeight, 20, obstacle.bottomHeight);
+      this.ctx.fillRect(obstacle.x, 0, 50, obstacle.topHeight);
+      this.ctx.fillRect(
+        obstacle.x, 
+        this.canvasHeight - obstacle.bottomHeight, 
+        50, 
+        obstacle.bottomHeight
+      );
     });
+  }
+
+  get isGameLoopRunning(): boolean {
+    return this.gameLoop !== null;
   }
 }
