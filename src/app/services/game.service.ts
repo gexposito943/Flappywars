@@ -16,10 +16,15 @@ export interface Achievement {
   completat: boolean;
 }
 
-interface GameData {
+export interface GameData {
   puntuacio: number;
   temps_jugat: number;
   nau_id: number;
+}
+
+export interface Ship {
+  id: number;
+  name: string;
 }
 
 @Injectable({
@@ -51,8 +56,8 @@ export class GameService {
     );
   }
 
-  getAvailableShips(): Observable<any> {
-    return this.http.get(
+  getAvailableShips(): Observable<Ship[]> {
+    return this.http.get<Ship[]>(
       `${this.apiUrl}/user/ships`,
       { headers: this.getHeaders() }
     ).pipe(
@@ -60,8 +65,8 @@ export class GameService {
     );
   }
 
-  updateUserShip(shipId: number): Observable<any> {
-    return this.http.put(
+  updateUserShip(shipId: number): Observable<{success: boolean}> {
+    return this.http.put<{success: boolean}>(
       `${this.apiUrl}/user/ship`,
       { shipId },
       { headers: this.getHeaders() }
@@ -79,8 +84,8 @@ export class GameService {
     );
   }
 
-  saveGameResults(gameData: any): Observable<any> {
-    return this.http.post(
+  saveGameResults(gameData: GameData): Observable<{success: boolean}> {
+    return this.http.post<{success: boolean}>(
       `${this.apiUrl}/game/save`,
       gameData,
       { headers: this.getHeaders() }

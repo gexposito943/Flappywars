@@ -54,6 +54,7 @@ describe('GameService', () => {
 
     const req = httpMock.expectOne(`${service['apiUrl']}/user/ship`);
     expect(req.request.method).toBe('PUT');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
     req.flush(expectedResponse);
   });
 
@@ -117,6 +118,66 @@ describe('GameService', () => {
     const req = httpMock.expectOne(`${service['apiUrl']}/user/stats`);
     req.flush(
       { message: 'Token invàlid' },
+      { status: 401, statusText: 'Unauthorized' }
+    );
+  });
+
+  it('should include auth headers when updating ship', () => {
+    const shipId = 1;
+    service.updateUserShip(shipId).subscribe();
+    
+    const req = httpMock.expectOne(`${service['apiUrl']}/user/ship`);
+    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+    req.flush({ success: true });
+  });
+
+  it('should handle error when saving game results', () => {
+    const gameData = {
+      puntuacio: 1500,
+      temps_jugat: 180,
+      nau_id: 1
+    };
+
+    service.saveGameResults(gameData).subscribe({
+      error: (error) => {
+        expect(error.status).toBe(500);
+        expect(error.error.message).toBe('Error al guardar resultados');
+      }
+    });
+
+    const req = httpMock.expectOne(`${service['apiUrl']}/game/save`);
+    req.flush(
+      { message: 'Error al guardar resultados' },
+      { status: 500, statusText: 'Internal Server Error' }
+    );
+  });
+
+  it('should handle error when getting available ships', () => {
+    service.getAvailableShips().subscribe({
+      error: (error) => {
+        expect(error.status).toBe(404);
+        expect(error.error.message).toBe('No se encontraron naves');
+      }
+    });
+
+    const req = httpMock.expectOne(`${service['apiUrl']}/user/ships`);
+    req.flush(
+      { message: 'No se encontraron naves' },
+      { status: 404, statusText: 'Not Found' }
+    );
+  });
+
+  it('should handle error when getting achievements', () => {
+    service.getUserAchievements().subscribe({
+      error: (error) => {
+        expect(error.status).toBe(401);
+        expect(error.error.message).toBe('No autorizado');
+      }
+    });
+
+    const req = httpMock.expectOne(`${service['apiUrl']}/user/achievements`);
+    req.flush(
+      { message: 'No autorizado' },
       { status: 401, statusText: 'Unauthorized' }
     );
   });
