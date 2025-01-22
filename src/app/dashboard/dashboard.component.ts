@@ -5,11 +5,6 @@ import { GameService } from '../services/game.service';
 import { RegistreService } from '../services/registre.service';
 import { ShipService } from '../services/ship.service';
 
-interface UserStats {
-  millor_puntuacio: number;
-  total_partides: number;
-  temps_total_jugat: number;
-}
 
 interface UserData {
   username: string;
@@ -32,6 +27,12 @@ interface Achievement {
   completat: boolean;
 }
 
+interface UserStats {
+  millor_puntuacio: number;
+  total_partides: number;
+  temps_total_jugat: number;
+}
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -40,7 +41,11 @@ interface Achievement {
   imports: [CommonModule]
 })
 export class DashboardComponent implements OnInit {
-  userStats?: UserStats;
+  userStats: UserStats = {
+    millor_puntuacio: 0,
+    total_partides: 0,
+    temps_total_jugat: 0
+  };
   statsError: boolean = false;
   selectedShipId: number | null = null;
   userData: UserData = {
@@ -48,7 +53,29 @@ export class DashboardComponent implements OnInit {
     nivel: 1,
     puntosTotales: 0
   };
-  availableShips: any[] = [];
+  availableShips: Ship[] = [
+    {
+      id: 1,
+      nom: 'Nau de Combat',
+      velocitat: 100,
+      imatge_url: 'assets/ship1.png',
+      descripcio: 'Nau de combat versàtil'
+    },
+    {
+      id: 2,
+      nom: 'Nau Imperial',
+      velocitat: 120,
+      imatge_url: 'assets/ship2.png',
+      descripcio: 'Nau ràpida de l\'Imperi'
+    },
+    {
+      id: 3,
+      nom: 'Nau Llegendària',
+      velocitat: 150,
+      imatge_url: 'assets/ship3.png',
+      descripcio: 'Nau llegendària'
+    }
+  ];
   achievements: Achievement[] = [];
   ships: any[] = [];
   selectedShip: any;
@@ -73,8 +100,8 @@ export class DashboardComponent implements OnInit {
         this.statsError = false;
       },
       error: (error) => {
-        console.error('Error carregant estadístiques:', error);
-        this.userStats = undefined;
+        console.error('Error loading stats:', error);
+        this.userStats = { millor_puntuacio: 0, total_partides: 0, temps_total_jugat: 0 };
         this.statsError = true;
       }
     });
@@ -92,30 +119,20 @@ export class DashboardComponent implements OnInit {
   }
 
   startGame() {
-    if (!this.selectedShipId) {
-      return; // No fer res si no hi ha nau seleccionada
-    }
+    if (!this.selectedShipId) return;
     
-    // Guardar la nau seleccionada abans de començar
     this.gameService.updateUserShip(this.selectedShipId).subscribe({
       next: () => {
-        // Navegar al component del joc
         this.router.navigate(['/game']);
       },
       error: (error) => {
-        console.error('Error actualitzant la nau:', error);
+        console.error('Error updating ship:', error);
       }
     });
   }
 
-  // Mètode auxiliar per comprovar si es pot començar el joc
-  canStartGame(): boolean {
-    return this.selectedShipId !== null;
-  }
-
   selectShip(shipId: number) {
     this.selectedShipId = shipId;
-    this.gameService.updateUserShip(shipId);
   }
 
   updateUserData() {
@@ -137,8 +154,8 @@ export class DashboardComponent implements OnInit {
       next: (ships) => {
         this.availableShips = ships;
       },
-      error: (error: Error) => {
-        console.error('Error fetching ships:', error);
+      error: (error) => {
+        console.error('Error loading ships:', error);
       }
     });
   }

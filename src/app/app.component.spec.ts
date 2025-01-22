@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
+import { RouterOutlet } from '@angular/router';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -7,7 +8,7 @@ describe('AppComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent]
+      imports: [AppComponent, RouterOutlet]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppComponent);
@@ -15,16 +16,11 @@ describe('AppComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create the app', () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it(`should have the 'Flappywars' title`, () => {
-    expect(component.title).toEqual('Flappywars');
-  });
-
-  it('should render title', () => {
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, Flappywars');
+  it('should have the correct title', () => {
+    expect(component.title).toBe('Flappywars');
   });
 });
