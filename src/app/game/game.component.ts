@@ -1,6 +1,12 @@
 import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+interface Obstacle {
+  x: number;
+  topHeight: number;
+  bottomHeight: number;
+}
+
 @Component({
   selector: 'app-game',
   standalone: true,
@@ -40,6 +46,12 @@ export class GameComponent implements OnInit {
   playerVelocity: number = 0;
   private readonly GRAVITY: number = 0.5;
   private readonly JUMP_FORCE: number = -10;
+  private readonly OBSTACLE_SPEED = 2;
+  private readonly PLAYER_SIZE = 30;
+  private readonly PLAYER_X = 50;
+  
+
+  obstacles: Obstacle[] = [];
 
   ngOnInit() {
     this.initializeCanvas();
@@ -85,13 +97,46 @@ export class GameComponent implements OnInit {
     this.playerVelocity = this.JUMP_FORCE;
   }
 
+  moveObstacles() {
+    this.obstacles = this.obstacles.map(obstacle => ({
+      ...obstacle,
+      x: obstacle.x - this.OBSTACLE_SPEED
+    }));
+  }
+
+  checkCollision(): boolean {
+    return this.obstacles.some(obstacle => {
+      const inXRange = this.PLAYER_X < obstacle.x + 50 && this.PLAYER_X + this.PLAYER_SIZE > obstacle.x;
+      const hitTop = this.playerY < obstacle.topHeight;
+      const hitBottom = this.playerY + this.PLAYER_SIZE > this.canvasHeight - obstacle.bottomHeight;
+      return inXRange && (hitTop || hitBottom);
+    });
+  }
+
   private updateGame() {
     if (this.isPaused) return;
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     
     this.applyGravity();
+    this.moveObstacles();
+    
+    if (this.checkCollision()) {
+      this.stopGame();
+    }
+    
+    this.drawGame();
+  }
+
+  private drawGame() {
     // Dibujar el jugador
     this.ctx.fillStyle = 'red';
     this.ctx.fillRect(50, this.playerY, 30, 30);
+
+    // Dibujar obstáculos
+    this.ctx.fillStyle = 'green';
+    this.obstacles.forEach(obstacle => {
+      this.ctx.fillRect(obstacle.x, 0, 20, obstacle.topHeight);
+      this.ctx.fillRect(obstacle.x, this.canvasHeight - obstacle.bottomHeight, 20, obstacle.bottomHeight);
+    });
   }
 }

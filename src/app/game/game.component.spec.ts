@@ -118,5 +118,20 @@ describe('GameComponent', () => {
       expect(component.checkCollision()).toBeFalse();
     });
   });
+  describe('Game Logic', () => {
+    it('should increase score when passing obstacles', () => {
+      component.startGame();
+      const initialScore = component.score;
+      component.updateScore();
+      expect(component.score).toBeGreaterThan(initialScore);
+    });
+
+    it('should end game on collision', () => {
+      component.startGame();
+      component.handleCollision();
+      expect(component.isGameRunning).toBeFalse();
+      expect(component.gameLoop).toBeNull();
+    });
+  });
   
 });
