@@ -6,6 +6,7 @@ import { By } from '@angular/platform-browser';
 import { DashboardComponent } from './dashboard.component';
 import { GameService } from '../services/game.service';
 import { RegistreService } from '../services/registre.service';
+import { fakeAsync, tick } from '@angular/core/testing';
 
 interface UserStats {
   millor_puntuacio: number;
@@ -87,12 +88,16 @@ describe('DashboardComponent', () => {
     expect(statsElements[2].textContent.toUpperCase()).toContain('TEMPS TOTAL JUGAT');
   });
 
-  it('should navigate to game when play button is clicked', async () => {
+  it('should navigate to game when play button is clicked', fakeAsync(() => {
     component.selectedShipId = 1;
+    fixture.detectChanges();
+
     component.startGame();
+    tick();
+
     expect(mockGameService.updateUserShip).toHaveBeenCalledWith(1);
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/game']);
-  });
+  }));
 
   describe('User Statistics', () => {
     it('should display statistics correctly', async () => {
@@ -148,8 +153,9 @@ describe('DashboardComponent', () => {
   });
 
   it('should show selection message when no ship is selected', () => {
-    const message = fixture.nativeElement.querySelector('.selection-message');
-    expect(message.textContent).toBe('Has de seleccionar una nau abans de començar');
+    const messageElement = fixture.nativeElement.querySelector('.selection-message');
+    expect(messageElement.textContent.trim())
+      .toBe('Has de seleccionar una nau abans de començar');
   });
 
   it('should enable play button when ship is selected', async () => {

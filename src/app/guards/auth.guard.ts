@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { RegistreService } from '../services/registre.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -8,14 +9,20 @@ import { RegistreService } from '../services/registre.service';
 export class AuthGuard implements CanActivate {
   constructor(
     private registreService: RegistreService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   canActivate(): boolean {
-    if (!this.registreService.isLoggedIn()) {
-      this.router.navigate(['/login']);
-      return false;
+    if (!isPlatformBrowser(this.platformId)) {
+      return true; // Permitir acceso durante SSR
     }
-    return true;
+
+    if (this.registreService.isLoggedIn()) {
+      return true;
+    }
+
+    this.router.navigate(['/login']);
+    return false;
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { RegistreService } from './registre.service';
 
 export interface UserStats {
@@ -43,16 +43,36 @@ export class GameService {
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  private handleError(error: HttpErrorResponse) {
-    return throwError(() => error);
+  private handleError<T>(operation = 'operation', result?: T) {
+    return (error: HttpErrorResponse): Observable<T> => {
+      console.error(`${operation} failed:`, error);
+
+      // Si el error es 404, devolvemos el resultado por defecto
+      if (error.status === 404) {
+        console.warn(`${operation}: API endpoint not found, using default values`);
+        return of(result as T);
+      }
+
+      // Registramos el error para debugging
+      console.error(`${operation} error details:`, {
+        status: error.status,
+        message: error.message,
+        url: error.url
+      });
+
+      // Devolvemos un resultado seguro por defecto
+      return of(result as T);
+    };
   }
 
   getUserStats(): Observable<UserStats> {
-    return this.http.get<UserStats>(
-      `${this.apiUrl}/user/stats`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      catchError(this.handleError)
+    return this.http.get<UserStats>(`${this.apiUrl}/user/stats`).pipe(
+      tap(response => console.log('Stats response:', response)),
+      catchError(this.handleError<UserStats>('getUserStats', {
+        millor_puntuacio: 0,
+        total_partides: 0,
+        temps_total_jugat: 0
+      }))
     );
   }
 
@@ -61,26 +81,20 @@ export class GameService {
       `${this.apiUrl}/user/ships`,
       { headers: this.getHeaders() }
     ).pipe(
-      catchError(this.handleError)
+      catchError(this.handleError<Ship[]>('getAvailableShips', []))
     );
   }
 
-  updateUserShip(shipId: number): Observable<{success: boolean}> {
-    return this.http.put<{success: boolean}>(
-      `${this.apiUrl}/user/ship`,
-      { shipId },
-      { headers: this.getHeaders() }
-    ).pipe(
-      catchError(this.handleError)
+  updateUserShip(shipId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/user/ship`, { shipId }).pipe(
+      tap(response => console.log('Update ship response:', response)),
+      catchError(this.handleError<any>('updateUserShip', null))
     );
   }
 
-  getUserAchievements(): Observable<Achievement[]> {
-    return this.http.get<Achievement[]>(
-      `${this.apiUrl}/user/achievements`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      catchError(this.handleError)
+  getUserAchievements(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/user/achievements`).pipe(
+      catchError(this.handleError<any[]>('getUserAchievements', []))
     );
   }
 
@@ -90,7 +104,7 @@ export class GameService {
       gameData,
       { headers: this.getHeaders() }
     ).pipe(
-      catchError(this.handleError)
+      catchError(this.handleError<{success: boolean}>('saveGameResults', { success: false }))
     );
   }
 }

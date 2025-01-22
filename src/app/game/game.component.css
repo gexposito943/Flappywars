@@ -1,7 +1,7 @@
 .game-container {
   height: 100vh;
   width: 100vw;
-  background: url('/assets/starwars1.jpeg') no-repeat center center fixed;
+  background: url('/starwars1.jpeg') no-repeat center center fixed;
   background-size: cover;
   overflow: hidden;
   position: relative;

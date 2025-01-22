@@ -1,10 +1,10 @@
 <div class="game-container">
     <div class="top-bar">
         <div class="profile">
-            <h1>Benvingut, {{ userData.username }}!</h1>
+            <h1>Benvingut, {{ userData?.username || 'Usuario' }}!</h1>
             <div class="user-stats">
-                <span class="stat-badge">Nivell: {{ userData.nivel }}</span>
-                <span class="stat-badge">Punts: {{ userData.puntosTotales }}</span>
+                <span class="stat-badge">Nivell: {{ userData?.nivel || 0 }}</span>
+                <span class="stat-badge">Punts: {{ userData?.puntosTotales || 0 }}</span>
             </div>
         </div>
         <button class="logout-button" (click)="logout()">Sortir</button>
@@ -36,9 +36,7 @@
                         (click)="startGame()">
                     {{ selectedShipId ? 'Jugar' : 'Selecciona una nau primer' }}
                 </button>
-                <p class="selection-message" *ngIf="!selectedShipId">
-                    Has de seleccionar una nau abans de començar
-                </p>
+                <p class="selection-message" *ngIf="!selectedShipId">Has de seleccionar una nau abans de començar</p>
             </div>
             <div class="ships-grid">
                 <div class="ship-option" 

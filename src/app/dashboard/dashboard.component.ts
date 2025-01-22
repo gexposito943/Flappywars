@@ -88,7 +88,10 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.userData = this.registreService.getUserData();
+    const data = this.registreService.getUserData();
+    if (data) {
+      this.userData = data;
+    }
     this.loadUserStats();
     this.loadShips();
   }
@@ -120,7 +123,11 @@ export class DashboardComponent implements OnInit {
 
   startGame() {
     if (this.selectedShipId) {
-      this.router.navigate(['/game']);
+      this.router.navigate(['/game'], {
+        queryParams: {
+          shipId: this.selectedShipId
+        }
+      });
     }
   }
 
