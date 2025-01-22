@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { FormulariComponent } from './formulari.component';
 
@@ -11,12 +11,11 @@ describe('FormulariComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ 
-        FormulariComponent, 
-        FormsModule, 
-        HttpClientModule
+        ReactiveFormsModule, 
+        HttpClientModule,
+        FormulariComponent
       ]
-    })
-    .compileComponents();
+    }).compileComponents();
   });
 
   beforeEach(() => {
@@ -26,11 +25,13 @@ describe('FormulariComponent', () => {
     spyOn(component, 'handleSignIn');
   });
 
-  function testErrorField(field: 'username' | 'email' | 'password' | 'confirmPassword', expectedError: string) {
-    component[field] = ''; 
-    component.onSubmit(); 
-    expect(component[`${expectedError}Error` as keyof FormulariComponent]).toBeTrue(); 
-  }
+  const testErrorField = (fieldName: string, value: string = '') => {
+    const control = component.registerForm.get(fieldName);
+    control?.setValue(value);
+    control?.markAsTouched();
+    fixture.detectChanges();
+    return control?.errors && control.touched;
+  };
 
   it('should validate username', () => {
     expect(component.username).toBeDefined(); 
@@ -64,33 +65,37 @@ describe('FormulariComponent', () => {
     expect(component.confirmPassword).toBe(component.password); 
   });
 
-  it('should show error if password is incorrect during login', () => {
-    component.password = 'incorrectPassword';
-    component.onSubmit(); 
-    expect(component.passwordError).toBeTrue();
-  });
-
   it('should show error if username is empty', () => {
-    testErrorField('username', 'username'); 
+    expect(testErrorField('username')).toBeTrue();
   });
 
   it('should show error if email is empty', () => {
-    testErrorField('email', 'email'); 
+    expect(testErrorField('email')).toBeTrue();
   });
 
   it('should show error if password is empty', () => {
-    testErrorField('password', 'password'); 
+    expect(testErrorField('password')).toBeTrue();
   });
 
   it('should show error if confirm password is empty', () => {
-    testErrorField('confirmPassword', 'password'); 
+    expect(testErrorField('confirmPassword')).toBeTrue();
+  });
+
+  it('should show error if password is incorrect during login', () => {
+    component.registerForm.get('password')?.setValue('123');
+    component.registerForm.get('password')?.markAsTouched();
+    fixture.detectChanges();
+    expect(component.registerForm.get('password')?.errors).toBeTruthy();
   });
 
   it('should show error if passwords do not match', () => {
-    component.password = 'Test@123';
-    component.confirmPassword = 'Different@123'; 
-    component.onSubmit(); 
-    expect(component.confirmPasswordMismatchError).toBeTrue(); 
+    component.registerForm.patchValue({
+      password: '123456',
+      confirmPassword: '123457'
+    });
+    component.registerForm.get('confirmPassword')?.markAsTouched();
+    fixture.detectChanges();
+    expect(component.registerForm.hasError('passwordMismatch')).toBeTrue();
   });
 
   it('should trigger sign-in button click', () => {

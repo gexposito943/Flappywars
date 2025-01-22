@@ -18,7 +18,7 @@ interface UserData {
   naveActual?: number;
 }
 
-interface Ship {
+export interface Ship {
   id: number;
   nom: string;
   velocitat: number;
@@ -48,7 +48,7 @@ export class DashboardComponent implements OnInit {
     nivel: 1,
     puntosTotales: 0
   };
-  availableShips: Ship[] = [];
+  availableShips: any[] = [];
   achievements: Achievement[] = [];
   ships: any[] = [];
   selectedShip: any;
@@ -134,7 +134,7 @@ export class DashboardComponent implements OnInit {
 
   loadShips() {
     this.shipService.getShips().subscribe({
-      next: (ships: Ship[]) => {
+      next: (ships) => {
         this.availableShips = ships;
       },
       error: (error: Error) => {

@@ -1,8 +1,10 @@
 import { CommonModule, NgIf } from '@angular/common';
-import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RegistreService } from '../services/registre.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
 @Component({
   selector: 'etiqueta-formulari',
   standalone: true,
@@ -11,7 +13,7 @@ import { RegistreService } from '../services/registre.service';
   templateUrl: './formulari.component.html',
   styleUrls: ['./formulari.component.css']
 })
-export class FormulariComponent implements AfterViewInit {
+export class FormulariComponent implements AfterViewInit, OnInit {
   @ViewChild('signInBtn') signInBtn!: ElementRef<HTMLButtonElement>;
   @ViewChild('signUpBtn') signUpBtn!: ElementRef<HTMLButtonElement>;
   @ViewChild('container') container!: ElementRef<HTMLElement>;
@@ -33,12 +35,23 @@ export class FormulariComponent implements AfterViewInit {
   loginError: boolean = false;
   registrationError: boolean = false;
 
+  registerForm: FormGroup;
+
   constructor(
     private router: Router,
     private authService: RegistreService,
-    private registreService: RegistreService
-  ) {}
-
+    private registreService: RegistreService,
+    private fb: FormBuilder
+  ) {
+    this.registerForm = this.fb.group({
+      username: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', Validators.required]
+    }, {
+      validators: this.passwordMatchValidator
+    });
+  }
 
   ngAfterViewInit() {
     if (this.signUpBtn && this.container) {
@@ -100,8 +113,9 @@ export class FormulariComponent implements AfterViewInit {
     this.confirmPassword = '';
   }
 
-  passwordMatchValidator() {
-    return this.password === this.confirmPassword;
+  passwordMatchValidator(g: FormGroup) {
+    return g.get('password')?.value === g.get('confirmPassword')?.value
+      ? null : { passwordMismatch: true };
   }
 
   passwordValidator() {
@@ -177,4 +191,6 @@ export class FormulariComponent implements AfterViewInit {
         return false;
     }
   }
+
+  ngOnInit() {}
 }

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { DashboardComponent } from './dashboard.component';
 import { GameService } from '../services/game.service';
@@ -24,10 +25,18 @@ describe('DashboardComponent', () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockRegistreService = jasmine.createSpyObj('RegistreService', ['logout', 'getUserData']);
 
+    mockGameService = jasmine.createSpyObj('GameService', ['updateUserShip', 'getUserStats', 'getUserAchievements']);
+    mockGameService.getUserStats.and.returnValue(of({
+      millor_puntuacio: 1000,
+      total_partides: 50,
+      temps_total_jugat: '2h 0m'
+    }));
+
     await TestBed.configureTestingModule({
-      imports: [DashboardComponent],
+      imports: [HttpClientTestingModule],
+      declarations: [DashboardComponent],
       providers: [
-        { provide: GameService, useValue: jasmine.createSpyObj('GameService', ['updateUserShip']) },
+        { provide: GameService, useValue: mockGameService },
         { provide: Router, useValue: mockRouter },
         { provide: RegistreService, useValue: mockRegistreService }
       ]
@@ -36,7 +45,6 @@ describe('DashboardComponent', () => {
 
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
-    mockGameService = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
     mockRegistreService.getUserData.and.returnValue(mockUserData);
     fixture.detectChanges();
   });
@@ -148,7 +156,7 @@ describe('DashboardComponent', () => {
     });
   });
   it('should format statistics display correctly', () => {
-    // configuracio de la prova.
+    // configuracio estats
     component.userStats = {
       millor_puntuacio: 1000,
       total_partides: 50,
