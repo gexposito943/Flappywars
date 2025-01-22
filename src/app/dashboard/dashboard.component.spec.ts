@@ -153,4 +153,11 @@ describe('DashboardComponent', () => {
     expect(statsElements[1].textContent).toContain('TOTAL PARTIDES');
     expect(statsElements[2].textContent).toContain('TEMPS TOTAL JUGAT');
   });
+  
+  it('should display correct ship descriptions', () => {
+    const shipDescriptions = fixture.nativeElement.querySelectorAll('.ship-desc');
+    expect(shipDescriptions[0].textContent).toContain('Nau de combat versàtil');
+    expect(shipDescriptions[1].textContent).toContain('Nau ràpida de l\'Imperi');
+    expect(shipDescriptions[2].textContent).toContain('Nau llegendària');
+  });
 });
