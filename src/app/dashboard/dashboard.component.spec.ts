@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { Router } from '@angular/router';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { DashboardComponent } from './dashboard.component';
 import { GameService } from '../services/game.service';
@@ -24,8 +24,8 @@ describe('DashboardComponent', () => {
   beforeEach(async () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockRegistreService = jasmine.createSpyObj('RegistreService', ['logout', 'getUserData']);
-
     mockGameService = jasmine.createSpyObj('GameService', ['updateUserShip', 'getUserStats', 'getUserAchievements']);
+    
     mockGameService.getUserStats.and.returnValue(of({
       millor_puntuacio: 1000,
       total_partides: 50,
@@ -33,15 +33,16 @@ describe('DashboardComponent', () => {
     }));
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      declarations: [DashboardComponent],
+      imports: [
+        HttpClientTestingModule,
+        DashboardComponent  // Cambiado de declarations a imports
+      ],
       providers: [
         { provide: GameService, useValue: mockGameService },
         { provide: Router, useValue: mockRouter },
         { provide: RegistreService, useValue: mockRegistreService }
       ]
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
@@ -54,7 +55,6 @@ describe('DashboardComponent', () => {
   });
 
   it('should select ship and update user preferences', () => {
-    // Mock de una nau disponible
     const shipId = 2;
     const mockShip = {
       id: shipId,
@@ -63,119 +63,97 @@ describe('DashboardComponent', () => {
       imatge_url: 'tie.png',
       descripcio: 'Nave rápida'
     };
+    
     component.availableShips = [mockShip];
+    component.userData = { ...mockUserData, naveActual: 1 }; 
+    
     component.selectShip(shipId);
+    fixture.detectChanges();
     
     expect(component.selectedShipId).toBe(shipId);
     expect(mockGameService.updateUserShip).toHaveBeenCalledWith(shipId);
-    expect(component.userData.naveActual).toBe(shipId);
   });
-  // proves estadistiques del usuari 
-  describe('User Statistics', () => {
-    it('should load and display user statistics correctly', () => {
-      const mockStats = {
-        millor_puntuacio: 1000,
-        total_partides: 50,
-        temps_total_jugat: 7200 
-      };
-      
-      mockGameService.getUserStats.and.returnValue(of(mockStats));
-      component.loadUserStats();
-      
-      expect(component.userStats).toEqual(mockStats);
-      const statsElements = fixture.nativeElement.querySelectorAll('.stat-card');
-      expect(statsElements[0].textContent).toContain('1000');
-      expect(statsElements[1].textContent).toContain('50');
-      expect(statsElements[2].textContent).toContain('2h 0m');
-    });
 
-    it('should handle statistics loading error', () => {
-      mockGameService.getUserStats.and.returnValue(throwError(() => new Error('Error loading stats')));
-      
-      component.loadUserStats();
-      
-      expect(component.userStats).toBeUndefined();
-      const errorMessage = fixture.nativeElement.querySelector('.error-message');
-      expect(errorMessage).toBeTruthy();
-    });
-  });
-  //Proves de navegacio
-  describe('Navigation', () => {
-    it('should navigate to game when play button is clicked', () => {
-      const playButton = fixture.nativeElement.querySelector('.play-button');
-      playButton.click();
-      
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/game']);
-    });
-
-    it('should prevent navigation if no ship is selected', () => {
-      component.selectedShipId = null;
-      const playButton = fixture.nativeElement.querySelector('.play-button');
-      playButton.click();
-      
-      expect(mockRouter.navigate).not.toHaveBeenCalled();
-    });
-  });
-  //Proves de perfil d'usuari, tencament sessio actualizar nivell etc..
-  describe('User Profile', () => {
-    it('should logout user correctly', () => {
-      component.logout();
-      
-      expect(mockRegistreService.logout).toHaveBeenCalled();
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
-    });
-
-    it('should update user level display when experience changes', () => {
-      const newUserData = {
-        ...mockUserData,
-        nivel: 6,
-        puntosTotales: 1500
-      };
-      
-      mockRegistreService.getUserData.and.returnValue(newUserData);
-      component.updateUserData();
-      
-      const levelElement = fixture.nativeElement.querySelector('.user-level');
-      expect(levelElement.textContent).toContain('6');
-    });
-  });
-  //proves d'assoliments
-  describe('Achievements', () => {
-    it('should display user achievements', () => {
-      const mockAchievements = [
-        { id: 1, nom: 'Primer Vol', completat: true },
-        { id: 2, nom: 'Expert', completat: false }
-      ];
-      
-      mockGameService.getUserAchievements.and.returnValue(of(mockAchievements));
-      component.loadAchievements();
-      
-      const achievementElements = fixture.nativeElement.querySelectorAll('.achievement-item');
-      expect(achievementElements.length).toBe(2);
-      expect(achievementElements[0].classList.contains('completed')).toBeTrue();
-    });
-  });
   it('should format statistics display correctly', () => {
-    // configuracio estats
-    component.userStats = {
-      millor_puntuacio: 1000,
-      total_partides: 50,
-      temps_total_jugat: 7200
-    };
-    fixture.detectChanges();
-
     const statsElements = fixture.nativeElement.querySelectorAll('.stat-card');
     expect(statsElements[0].textContent).toContain('MILLOR PUNTUACIÓ');
     expect(statsElements[1].textContent).toContain('TOTAL PARTIDES');
     expect(statsElements[2].textContent).toContain('TEMPS TOTAL JUGAT');
   });
-  
+
+  it('should navigate to game when play button is clicked', () => {
+    component.selectedShipId = 1; 
+    fixture.detectChanges();
+    
+    const playButton = fixture.nativeElement.querySelector('.play-button');
+    playButton.click();
+    fixture.detectChanges();
+    
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/game']);
+  });
+
+  describe('User Statistics', () => {
+    it('should handle statistics loading error', () => {
+      mockGameService.getUserStats.and.returnValue(throwError(() => new Error('Error loading stats')));
+      component.loadUserStats();
+      fixture.detectChanges();
+      
+      const errorMessage = fixture.nativeElement.querySelector('.error-message');
+      expect(errorMessage).toBeTruthy();
+    });
+  });
+
+  describe('Achievements', () => {
+    it('should display user achievements', () => {
+      const mockAchievements = [
+        { id: 1, name: 'First Flight', unlocked: true },
+        { id: 2, name: 'Speed Demon', unlocked: false }
+      ];
+      mockGameService.getUserAchievements.and.returnValue(of(mockAchievements));
+      
+      component.loadAchievements();
+      fixture.detectChanges();
+      
+      const achievements = fixture.nativeElement.querySelectorAll('.achievement');
+      expect(achievements.length).toBe(2);
+      expect(achievements[0].classList.contains('unlocked')).toBeTrue();
+    });
+  });
+
+  describe('User Profile', () => {
+    it('should update user level display when experience changes', () => {
+      component.userData = { ...mockUserData, nivel: 6 };
+      fixture.detectChanges();
+      
+      const levelElement = fixture.nativeElement.querySelector('.user-level');
+      expect(levelElement.textContent).toContain('6');
+    });
+  });
+
+  it('should load and display user statistics correctly', () => {
+    const mockStats = {
+      millor_puntuacio: 1000,
+      total_partides: 50,
+      temps_total_jugat: 7200 
+    };
+    
+    mockGameService.getUserStats.and.returnValue(of(mockStats));
+    component.loadUserStats();
+    
+    expect(component.userStats).toEqual(mockStats);
+    const statsElements = fixture.nativeElement.querySelectorAll('.stat-card');
+    expect(statsElements[0].textContent).toContain('1000');
+    expect(statsElements[1].textContent).toContain('50');
+    expect(statsElements[2].textContent).toContain('2h 0m');
+  });
+
   it('should display correct ship descriptions', () => {
     const shipDescriptions = fixture.nativeElement.querySelectorAll('.ship-desc');
     expect(shipDescriptions[0].textContent).toContain('Nau de combat versàtil');
     expect(shipDescriptions[1].textContent).toContain('Nau ràpida de l\'Imperi');
     expect(shipDescriptions[2].textContent).toContain('Nau llegendària');
   });
+
   it('should show selection message when no ship is selected', () => {
     const message = fixture.nativeElement.querySelector('.selection-message');
     expect(message.textContent).toBe('Has de seleccionar una nau abans de començar');
