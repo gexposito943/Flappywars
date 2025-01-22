@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-
+import { Observable } from 'rxjs';
 import { ShipService } from './ship.service';
 
 describe('ShipService', () => {
@@ -72,6 +72,15 @@ describe('ShipService', () => {
     expect(ships$.subscribe).toBeDefined();
     // Verificar que es un Observable i no un Promise
     expect(ships$ instanceof Observable).toBe(true);
+  });
+  it('should have positive velocities for all ships', (done) => {
+    service.getShips().subscribe((ships) => {
+      ships.forEach(ship => {
+        expect(ship.velocitat).toBeGreaterThan(0);
+        expect(Number.isInteger(ship.velocitat)).toBe(true);
+      });
+      done();
+    });
   });
   
 });
