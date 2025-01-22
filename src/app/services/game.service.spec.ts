@@ -68,4 +68,14 @@ describe('GameService', () => {
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(gameData);
   });
+  it('should update user ship with authentication', () => {
+    const mockToken = 'test-token';
+    spyOn(registreService, 'getToken').and.returnValue(mockToken);
+    const shipId = 2;
+    service.updateUserShip(shipId).subscribe();
+    const req = httpMock.expectOne(`${service['apiUrl']}/user/ship`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ shipId });
+    expect(req.request.headers.get('Authorization')).toBe(`Bearer ${mockToken}`);
+  });
 });
