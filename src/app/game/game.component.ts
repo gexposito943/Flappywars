@@ -72,6 +72,6 @@ export class GameComponent implements OnInit {
   private updateGame() {
     if (this.isPaused) return;
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-    // Aquí irá la lógica del juego
+   
   }
 }

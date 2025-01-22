@@ -71,4 +71,29 @@ describe('GameComponent', () => {
     expect(component.isGameRunning).toBeTrue();
     expect(component['gameLoop']).toBeDefined();
   });
+  describe('Player Mechanics', () => {
+    it('should initialize player with default position', () => {
+      component.startGame();
+      expect(component.playerY).toBe(component.canvasHeight / 2);
+      expect(component.playerVelocity).toBe(0);
+    });
+
+    it('should apply gravity to player', () => {
+      component.startGame();
+      const initialY = component.playerY;
+      component.applyGravity();
+      expect(component.playerY).toBeGreaterThan(initialY);
+      expect(component.playerVelocity).toBeGreaterThan(0);
+    });
+
+    it('should make player jump', () => {
+      component.startGame();
+      const initialY = component.playerY;
+      component.jump();
+      expect(component.playerY).toBeLessThan(initialY);
+      expect(component.playerVelocity).toBeLessThan(0);
+    });
+  });
+  
+  
 });

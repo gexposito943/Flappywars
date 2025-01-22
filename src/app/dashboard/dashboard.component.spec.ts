@@ -45,7 +45,7 @@ describe('DashboardComponent', () => {
 
     mockRegistreService.getUserData.and.returnValue(of(mockUserData));
 
-    mockGameService.updateUserShip.and.returnValue(of({}));
+    mockGameService.updateUserShip.and.returnValue(of({ success: true }));
 
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
@@ -69,7 +69,7 @@ describe('DashboardComponent', () => {
 
   it('should select ship and update user preferences', () => {
     const shipId = 2;
-    mockGameService.updateUserShip.and.returnValue(of({}));
+    mockGameService.updateUserShip.and.returnValue(of({ success: true }));
     
     component.selectShip(shipId);
     component.startGame();
