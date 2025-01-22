@@ -36,6 +36,11 @@ export class GameComponent implements OnInit {
   private ctx!: CanvasRenderingContext2D;
   private gameLoop: any = null;
 
+  playerY: number = 0;
+  playerVelocity: number = 0;
+  private readonly GRAVITY: number = 0.5;
+  private readonly JUMP_FORCE: number = -10;
+
   ngOnInit() {
     this.initializeCanvas();
   }
@@ -49,6 +54,8 @@ export class GameComponent implements OnInit {
     
     this.isGameRunning = true;
     this.score = 0;
+    this.playerY = this.canvasHeight / 2;
+    this.playerVelocity = 0;
     this.gameLoop = setInterval(() => this.updateGame(), 1000 / 60);
   }
 
@@ -69,9 +76,22 @@ export class GameComponent implements OnInit {
     }
   }
 
+  applyGravity() {
+    this.playerVelocity += this.GRAVITY;
+    this.playerY += this.playerVelocity;
+  }
+
+  jump() {
+    this.playerVelocity = this.JUMP_FORCE;
+  }
+
   private updateGame() {
     if (this.isPaused) return;
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-   
+    
+    this.applyGravity();
+    // Dibujar el jugador
+    this.ctx.fillStyle = 'red';
+    this.ctx.fillRect(50, this.playerY, 30, 30);
   }
 }
