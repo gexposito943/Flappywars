@@ -148,6 +148,14 @@ describe('DashboardComponent', () => {
     });
   });
   it('should format statistics display correctly', () => {
+    // configuracio de la prova.
+    component.userStats = {
+      millor_puntuacio: 1000,
+      total_partides: 50,
+      temps_total_jugat: 7200
+    };
+    fixture.detectChanges();
+
     const statsElements = fixture.nativeElement.querySelectorAll('.stat-card');
     expect(statsElements[0].textContent).toContain('MILLOR PUNTUACIÓ');
     expect(statsElements[1].textContent).toContain('TOTAL PARTIDES');
