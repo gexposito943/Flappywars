@@ -1,0 +1,291 @@
+:root {
+  --dark-bg: #1a1a1a;
+  --card-bg: rgba(32, 34, 37, 0.95);
+  --hover-bg: rgba(45, 47, 51, 0.95);
+  --border-color: #2f3136;
+  --text-primary: #ffffff;
+  --text-secondary: #8e9297;
+  --accent-blue: #5865f2;
+}
+
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+:host::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/fonsdash.jpg') no-repeat center center fixed;
+  background-size: cover;
+  filter: brightness(0.5); /* Hace la imagen más oscura */
+  z-index: -2;
+}
+
+:host::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Overlay negro semi-transparente */
+  z-index: -1;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.game-container {
+  position: relative;
+  height: 100vh;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Top Bar con efecto de cristal espacial */
+.top-bar {
+  background: rgba(13, 20, 37, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 255, 0.2);
+  padding: 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile h1 {
+  color: #fff;
+  font-size: 1.8rem;
+  text-shadow: 0 0 10px rgba(0, 195, 255, 0.5);
+  margin: 0;
+  margin-bottom: 0.8rem;
+}
+
+/* Badges con estilo futurista */
+.user-stats {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.stat-badge {
+  background: linear-gradient(145deg, rgba(255, 215, 0, 0.2), rgba(255, 180, 0, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 0.7rem 1.5rem;
+  border-radius: 20px;
+  font-size: 1rem;
+  color: #fff;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.stat-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Botón de salida con efecto de alerta */
+.logout-button {
+  background: linear-gradient(45deg, #ff4444, #ff0000);
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+}
+
+.logout-button:hover {
+  background: linear-gradient(45deg, #ff0000, #cc0000);
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+/* Sección de estadísticas con efecto holográfico */
+.stats-section {
+  margin: 3rem 0;
+}
+
+.stats-title {
+  color: #ffffff;
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 2.5rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-shadow: 0 0 15px rgba(68, 68, 68, 0.5),
+               0 0 30px rgba(68, 68, 68, 0.3);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.stat-card {
+  background: rgba(13, 20, 37, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+}
+
+.stat-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.stat-card h3 {
+  color: #FFE81F;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.stat-card p {
+  color: #fff;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Botón de jugar con efecto energético */
+.play-button {
+  background: linear-gradient(45deg, #FFE81F, #FFA500);
+  color: black;
+  border: none;
+  padding: 1.2rem 3.5rem;
+  border-radius: 8px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  margin: 2rem 0;
+  font-weight: bold;
+}
+
+.play-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.6),
+              0 0 60px rgba(255, 255, 255, 0.3);
+}
+
+.selection-message {
+  color: #ffffff;
+  font-size: 1.3rem;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+  .game-container {
+    padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .top-bar {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .user-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+.selection-container {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.ships-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    max-width: 500px;
+}
+
+.ship-option {
+    background: rgba(13, 20, 37, 0.8);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.ship-option:hover {
+    transform: translateY(-5px);
+    border-color: #FFFFFF;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.ship-option img {
+    width: 100%;
+    height: auto;
+    max-height: 100px;
+    object-fit: contain;
+}
+
+.ship-name {
+    color: #FFE81F;
+    margin-top: 0.5rem;
+    display: block;
+    font-size: 0.9rem;
+}
+
+.ship-desc {
+    color: #ffffff;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.ship-option.selected {
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+}

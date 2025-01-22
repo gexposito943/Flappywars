@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 
 interface AuthResponse {
   token: string;
@@ -15,7 +16,7 @@ export class RegistreService {
   private apiUrl = 'http://localhost:3000/api/v1';
   private storage: Record<string, string> = {};
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {}
 
   register(username: string, email: string, password: string): Observable<any> {
     const body = { username, email, password };
@@ -39,7 +40,10 @@ export class RegistreService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem('token');
+    }
+    return null;
   }
 
   setToken(token: string): void {
@@ -57,7 +61,10 @@ export class RegistreService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    if (isPlatformBrowser(this.platformId)) {
+      return this.getToken() !== null;
+    }
+    return false;
   }
 
   checkEmailExists(email: string): Observable<any> {

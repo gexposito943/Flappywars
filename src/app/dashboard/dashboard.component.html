@@ -1,1 +1,51 @@
-<p>dashboard works!</p>
+<div class="game-container">
+    <div class="top-bar">
+        <div class="profile">
+            <h1>Benvingut, {{ userData.username }}!</h1>
+            <div class="user-stats">
+                <span class="stat-badge">Nivell: {{ userData.nivel }}</span>
+                <span class="stat-badge">Punts: {{ userData.puntosTotales }}</span>
+            </div>
+        </div>
+        <button class="logout-button" (click)="logout()">Sortir</button>
+    </div>
+
+    <div class="stats-section">
+        <h2 class="stats-title">Les Teves Estadístiques</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Millor Puntuació</h3>
+                <p>1000</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Partides</h3>
+                <p>50</p>
+            </div>
+            <div class="stat-card">
+                <h3>Temps Total Jugat</h3>
+                <p>2h 0m</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="ship-selection">
+        <div class="selection-container">
+            <div class="button-container">
+                <button class="play-button" [disabled]="!selectedShipId">
+                    {{ selectedShipId ? 'Jugar' : 'Selecciona una nau primer' }}
+                </button>
+                <p class="selection-message">Has de seleccionar una nau abans de començar</p>
+            </div>
+            <div class="ships-grid">
+                <div class="ship-option" 
+                     *ngFor="let ship of availableShips" 
+                     (click)="selectShip(ship.id)"
+                     [class.selected]="selectedShipId === ship.id">
+                    <img [src]="ship.imatge_url" [alt]="ship.nom">
+                    <span class="ship-name">{{ ship.nom }}</span>
+                    <span class="ship-desc">{{ ship.descripcio }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
