@@ -193,7 +193,7 @@ export class GameComponent implements OnInit {
   }
 
   goToDashboard() {
-    this.stopGame();  // Aseguramos que el juego se detiene
+    this.stopGame(); 
     this.router.navigate(['/dashboard']);
   }
 }

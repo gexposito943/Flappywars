@@ -49,30 +49,31 @@ export class DashboardComponent implements OnInit {
   statsError: boolean = false;
   selectedShipId: number | null = null;
   userData: UserData = {
-    username: '',
+    username: 'Usuario',
     nivel: 1,
-    puntosTotales: 0
+    puntosTotales: 0,
+    naveActual: 1  // X-Wing por defecto
   };
   availableShips: Ship[] = [
     {
       id: 1,
       nom: 'Nau de Combat',
       velocitat: 100,
-      imatge_url: 'assets/ship1.png',
+      imatge_url: 'assets/x-wing.png',
       descripcio: 'Nau de combat versàtil'
     },
     {
       id: 2,
       nom: 'Nau Imperial',
       velocitat: 120,
-      imatge_url: 'assets/ship2.png',
+      imatge_url: 'assets/tie-fighter.png',
       descripcio: 'Nau ràpida de l\'Imperi'
     },
     {
       id: 3,
       nom: 'Nau Llegendària',
       velocitat: 150,
-      imatge_url: 'assets/ship3.png',
+      imatge_url: 'assets/millenium-falcon.png',
       descripcio: 'Nau llegendària'
     }
   ];
@@ -90,8 +91,9 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     const data = this.registreService.getUserData();
     if (data) {
-      this.userData = data;
+      this.userData = { ...this.userData, ...data };
     }
+    this.selectedShipId = this.userData.naveActual || 1;
     this.loadUserStats();
     this.loadShips();
   }
@@ -122,20 +124,23 @@ export class DashboardComponent implements OnInit {
   }
 
   startGame() {
-    if (this.selectedShipId) {
-      this.router.navigate(['/game'], {
-        queryParams: {
-          shipId: this.selectedShipId
-        }
-      });
+    if (!this.selectedShipId) {
+      
+      return;
     }
+    
+    this.gameService.updateUserShip(this.selectedShipId).subscribe({
+      next: () => {
+        this.router.navigate(['/game']);
+      },
+      error: (error) => {
+        console.error('Error updating ship:', error);
+      }
+    });
   }
 
   selectShip(shipId: number) {
     this.selectedShipId = shipId;
-    this.gameService.updateUserShip(shipId).subscribe({
-      error: (error) => console.error('Error updating ship:', error)
-    });
   }
 
   updateUserData() {

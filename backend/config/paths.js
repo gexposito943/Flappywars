@@ -1,5 +1,12 @@
+/**
+ * @fileoverview Configuració de les rutes dels recursos estàtics
+ */
+
 module.exports = {
-    NAUS_IMAGES_PATH: '/assets/images/naus/',
-    ASSOLIMENTS_IMAGES_PATH: '/assets/images/assoliments/',
-    DEFAULT_NAU_IMAGE: '/assets/images/naus/x-wing.png'
+    
+    RUTA_IMATGES_NAUS: '/assets/images/naus/',
+
+    RUTA_IMATGES_ASSOLIMENTS: '/assets/images/assoliments/',
+
+    RUTA_IMATGE_NAU_DEFECTE: '/assets/images/naus/x-wing.png'
 }; 

@@ -1,8 +1,11 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import { pool, connectToDatabase } from './database.js';
 import { logRequest } from './middlewares/logger.js';
-import { registerUsers, loginUsers } from './controllers/loginController.js';
+import routes from './routes/routes.js';
+
+dotenv.config();
 
 const app = express();
 
@@ -41,10 +44,7 @@ app.get('/test-db', async (req, res) => {
   }
 });
 
-// Rutas de auth
-app.post('/api/v1/register', registerUsers);
-app.post('/api/v1/login', loginUsers);
-
+app.use('/api/v1', routes);
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
 }); 

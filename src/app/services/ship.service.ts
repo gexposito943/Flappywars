@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, catchError } from 'rxjs';
+import { RegistreService } from './registre.service';
 
 export interface Ship {
   id: number;
@@ -13,31 +15,34 @@ export interface Ship {
   providedIn: 'root'
 })
 export class ShipService {
-  private ships: Ship[] = [
-    {
-      id: 1,
-      nom: 'X-Wing',
-      velocitat: 1,
-      imatge_url: '/assets/images/naus/x-wing.png',
-      descripcio: 'Nau de combat versàtil'
-    },
-    {
-      id: 2,
-      nom: 'TIE Fighter',
-      velocitat: 2,
-      imatge_url: '/assets/images/naus/tie-fighter.png',
-      descripcio: 'Nau ràpida de l\'Imperi'
-    },
-    {
-      id: 3,
-      nom: 'Millennium Falcon',
-      velocitat: 3,
-      imatge_url: '/assets/images/naus/millennium-falcon.png',
-      descripcio: 'Nau llegendària'
-    }
-  ];
+  private apiUrl = 'http://localhost:3000/api/v1';
+
+  constructor(
+    private http: HttpClient,
+    private registreService: RegistreService
+  ) {}
+
+  private getHeaders(): HttpHeaders {
+    const token = this.registreService.getToken();
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
 
   getShips(): Observable<Ship[]> {
-    return of(this.ships);
+    return this.http.get<Ship[]>(`${this.apiUrl}/naus`, { 
+      headers: this.getHeaders() 
+    });
+  }
+
+  getUserShip(userId: number): Observable<Ship> {
+    return this.http.get<Ship>(`${this.apiUrl}/users/${userId}/ship`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  updateUserShip(userId: number, shipId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/users/${userId}/ship`, 
+      { shipId }, 
+      { headers: this.getHeaders() }
+    );
   }
 }
