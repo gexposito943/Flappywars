@@ -15,6 +15,8 @@ interface AuthResponse {
 })
 export class RegistreService {
   private apiUrl = 'http://localhost:3000/api/v1';
+  private tokenKey = 'auth_token';
+  private userDataKey = 'user_data';
 
   constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {}
 
@@ -50,18 +52,14 @@ export class RegistreService {
   }
 
   getToken(): string | null {
-    const storage = this.getStorage();
-    if (storage) {
-      return storage.getItem('token');
-    }
-    return null;
+    const token = localStorage.getItem(this.tokenKey);
+    console.log('Retrieved token:', token); // Debug log
+    return token;
   }
 
   setToken(token: string): void {
-    const storage = this.getStorage();
-    if (storage) {
-      storage.setItem('token', token);
-    }
+    console.log('Setting token:', token); // Debug log
+    localStorage.setItem(this.tokenKey, token);
   }
 
   getUserData() {
@@ -73,12 +71,9 @@ export class RegistreService {
     return null;
   }
 
-  logout() {
-    const storage = this.getStorage();
-    if (storage) {
-      storage.removeItem('token');
-      storage.removeItem('userData');
-    }
+  logout(): void {
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.userDataKey);
   }
 
   isLoggedIn(): boolean {

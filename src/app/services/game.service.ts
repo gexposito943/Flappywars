@@ -40,6 +40,10 @@ export class GameService {
 
   private getHeaders(): HttpHeaders {
     const token = this.registreService.getToken();
+    if (!token) {
+      console.warn('No token found');
+      return new HttpHeaders();
+    }
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
@@ -66,16 +70,24 @@ export class GameService {
   }
 
   getUserStats(): Observable<UserStats> {
-    return this.http.get<UserStats>(
-      `${this.apiUrl}/user/stats`,
-      { headers: this.getHeaders() }
-    ).pipe(
+    const headers = this.getHeaders();
+    console.log('Headers for getUserStats:', headers); // Debug log
+
+    return this.http.get<UserStats>(`${this.apiUrl}/user/stats`, { headers }).pipe(
       tap(response => console.log('Stats response:', response)),
-      catchError(this.handleError<UserStats>('getUserStats', {
-        millor_puntuacio: 0,
-        total_partides: 0,
-        temps_total_jugat: 0
-      }))
+      catchError((error) => {
+        console.error('getUserStats error:', error);
+        // Redirigir al login si el token es inválido
+        if (error.status === 403) {
+          this.registreService.logout();
+          // Puedes inyectar Router y redirigir aquí si lo necesitas
+        }
+        return of({
+          millor_puntuacio: 0,
+          total_partides: 0,
+          temps_total_jugat: 0
+        });
+      })
     );
   }
 
