@@ -45,7 +45,7 @@ export class GameService {
       return new HttpHeaders();
     }
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
+      'Authorization': token,
       'Content-Type': 'application/json'
     });
   }
@@ -73,16 +73,17 @@ export class GameService {
   }
 
   getUserStats(): Observable<UserStats> {
-    const token = this.registreService.getToken();
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
-
+    console.log('Obteniendo estadísticas del usuario');
+    const headers = this.getHeaders();
+    
     return this.http.get<UserStats>(`${this.apiUrl}/user/stats`, { headers }).pipe(
-      tap(response => console.log('Stats response:', response)),
+      tap(stats => console.log('Estadísticas recibidas:', stats)),
       catchError(error => {
         console.error('Error en getUserStats:', error);
+        if (error.status === 403) {
+          console.log('Token inválido, redirigiendo a login');
+          this.registreService.logout();
+        }
         return of({
           millor_puntuacio: 0,
           total_partides: 0,
@@ -102,31 +103,48 @@ export class GameService {
   }
 
   updateUserShip(shipId: number): Observable<any> {
-    const token = this.registreService.getToken();
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
-
-    return this.http.post(`${this.apiUrl}/user/ship`, { shipId }, { headers });
+    console.log('Actualizando nave del usuario:', shipId);
+    const headers = this.getHeaders();
+    
+    return this.http.post(`${this.apiUrl}/user/ship`, { shipId }, { headers }).pipe(
+      tap(response => console.log('Respuesta actualización nave:', response)),
+      catchError(error => {
+        console.error('Error al actualizar nave:', error);
+        if (error.status === 403) {
+          this.registreService.logout();
+        }
+        return throwError(() => error);
+      })
+    );
   }
 
-  getUserAchievements(): Observable<any[]> {
-    return this.http.get<any[]>(
-      `${this.apiUrl}/user/achievements`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      catchError(this.handleError<any[]>('getUserAchievements', []))
+  getUserAchievements(): Observable<Achievement[]> {
+    console.log('Obteniendo logros del usuario');
+    const headers = this.getHeaders();
+    
+    return this.http.get<Achievement[]>(`${this.apiUrl}/user/achievements`, { headers }).pipe(
+      tap(achievements => console.log('Logros recibidos:', achievements)),
+      catchError(error => {
+        console.error('Error al obtener logros:', error);
+        return of([]);
+      })
     );
   }
 
   saveGameResults(gameData: GameData): Observable<{success: boolean}> {
+    console.log('Guardando resultados del juego:', gameData);
+    const headers = this.getHeaders();
+    
     return this.http.post<{success: boolean}>(
       `${this.apiUrl}/game/save`,
       gameData,
-      { headers: this.getHeaders() }
+      { headers }
     ).pipe(
-      catchError(this.handleError<{success: boolean}>('saveGameResults', { success: false }))
+      tap(response => console.log('Respuesta guardado:', response)),
+      catchError(error => {
+        console.error('Error al guardar resultados:', error);
+        return of({ success: false });
+      })
     );
   }
 }

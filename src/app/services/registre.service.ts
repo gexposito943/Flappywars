@@ -6,8 +6,16 @@ import { isPlatformBrowser } from '@angular/common';
 
 
 interface AuthResponse {
+  success: boolean;
   token: string;
-  user?: any;
+  user: {
+    id: number;
+    username: string;
+    nivel: number;
+    puntosTotales: number;
+    naveActual: number;
+    nombreNave: string;
+  };
 }
 
 @Injectable({
@@ -31,61 +39,56 @@ export class RegistreService {
   }
 
   validateUser(email: string, password: string): Observable<AuthResponse> {
-    console.log('Enviando petición de login:', { email });
+    console.log('Iniciando login:', email);
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
-        tap(response => {
-            if (response && response.token) {
-                this.setToken(response.token);
-            }
-        })
+      tap(response => {
+        if (response.success && response.token) {
+          console.log('Login exitoso, token recibido');
+          const tokenToStore = response.token.startsWith('Bearer ') 
+            ? response.token 
+            : `Bearer ${response.token}`;
+          
+          localStorage.setItem(this.tokenKey, tokenToStore);
+          
+          if (response.user) {
+            localStorage.setItem(this.userDataKey, JSON.stringify(response.user));
+          }
+        }
+      })
     );
   }
 
-  saveToken(token: string): void {
-    if (!this.isInBrowser()) {
-      return;
+  private isValidJWT(token: string): boolean {
+    if (!token) return false;
+    const actualToken = token.startsWith('Bearer ') ? token.split(' ')[1] : token;
+    const parts = actualToken.split('.');
+    if (parts.length !== 3) return false;
+    
+    try {
+      parts.forEach(part => {
+        atob(part.replace(/-/g, '+').replace(/_/g, '/'));
+      });
+      return true;
+    } catch (e) {
+      console.error('Error validando token JWT:', e);
+      return false;
     }
-    localStorage.setItem('token', token);
   }
 
   getToken(): string | null {
-    if (!this.isInBrowser()) {
-      return null;
-    }
     const token = localStorage.getItem(this.tokenKey);
-    console.log('Retrieved token:', token);
+    console.log('Token recuperado:', token);
     return token;
   }
 
-  setToken(token: string): void {
-    if (!this.isInBrowser()) {
-      return;
-    }
-    console.log('Setting token:', token);
-    localStorage.setItem(this.tokenKey, token);
-  }
-
-  getUserData() {
-    if (!this.isInBrowser()) {
-      return null;
-    }
-    const userData = localStorage.getItem('userData');
-    return userData ? JSON.parse(userData) : null;
-  }
-
   logout(): void {
-    if (!this.isInBrowser()) {
-      return;
-    }
+    if (!this.isInBrowser()) return;
     console.log('Logging out, clearing storage');
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userDataKey);
   }
 
   isLoggedIn(): boolean {
-    if (!this.isInBrowser()) {
-      return false;
-    }
     return !!this.getToken();
   }
 
@@ -98,9 +101,19 @@ export class RegistreService {
   }
 
   setUserData(userData: any): void {
-    if (!this.isInBrowser()) {
-      return;
+    if (this.isInBrowser()) {
+      localStorage.setItem(this.userDataKey, JSON.stringify(userData));
     }
-    localStorage.setItem('userData', JSON.stringify(userData));
+  }
+
+  getUserData() {
+    const userData = localStorage.getItem(this.userDataKey);
+    return userData ? JSON.parse(userData) : null;
+  }
+
+  setToken(token: string): void {
+    if (this.isInBrowser() && token) {
+      localStorage.setItem(this.tokenKey, token);
+    }
   }
 }

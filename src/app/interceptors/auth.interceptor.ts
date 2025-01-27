@@ -9,10 +9,17 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
   const token = registreService.getToken();
+  
   if (token) {
-    // Asegurarse de que el token está limpio (sin espacios extras)
+    // Asegurarse de que el token está limpio y es válido
     const cleanToken = token.trim();
-    console.log('Token a enviar:', cleanToken);
+    
+    if (!cleanToken || cleanToken === 'undefined' || cleanToken === 'null') {
+      console.log('Token inválido detectado');
+      registreService.logout();
+      router.navigate(['/']);
+      return throwError(() => new Error('Token inválido'));
+    }
 
     req = req.clone({
       setHeaders: {
@@ -20,9 +27,8 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
         'Content-Type': 'application/json'
       }
     });
-    
-    // Debug del header completo
-    console.log('Header de autorización:', req.headers.get('Authorization'));
+
+    console.log('Token enviado:', cleanToken);
   }
 
   return next(req).pipe(

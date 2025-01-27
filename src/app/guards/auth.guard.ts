@@ -18,12 +18,15 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
+    const token = this.registreService.getToken();
+    console.log('Token actual:', token); // Debug
+
     const isLoggedIn = this.registreService.isLoggedIn();
     console.log('AuthGuard check - isLoggedIn:', isLoggedIn);
 
-    if (!isLoggedIn) {
+    if (!isLoggedIn || !token || token === 'undefined' || token === 'null') {
       console.log('Token inválido o expirado, redirigiendo al login');
-      this.registreService.logout(); // Limpiamos el storage
+      this.registreService.logout();
       this.router.navigate(['/']);
       return false;
     }

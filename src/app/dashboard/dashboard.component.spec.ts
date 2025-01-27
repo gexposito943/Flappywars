@@ -36,21 +36,24 @@ describe('DashboardComponent', () => {
       nom: 'Nau de Combat',
       velocitat: 100,
       imatge_url: 'assets/x-wing.png',
-      descripcio: 'Nau de combat versàtil'
+      descripcio: 'Nau de combat versàtil',
+      required_points: 0
     },
     {
       id: 2,
       nom: 'Nau Imperial',
       velocitat: 120,
       imatge_url: 'assets/tie-fighter.png',
-      descripcio: 'Nau ràpida de l\'Imperi'
+      descripcio: 'Nau ràpida de l\'Imperi',
+      required_points: 1000
     },
     {
       id: 3,
       nom: 'Nau Llegendària',
       velocitat: 150,
       imatge_url: 'assets/millenium-falcon.png',
-      descripcio: 'Nau llegendària'
+      descripcio: 'Nau llegendària',
+      required_points: 2500
     }
   ];
 

@@ -3,8 +3,16 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { RegistreService } from './registre.service';
 
 interface AuthResponse {
+  success: boolean;
   token: string;
-  user?: any; 
+  user: {
+    id: number;
+    username: string;
+    nivel: number;
+    puntosTotales: number;
+    naveActual: number;
+    nombreNave: string;
+  };
 }
 
 describe('RegistreService', () => {
@@ -34,7 +42,19 @@ describe('RegistreService', () => {
   });
 
   it('Hauria de verificar si l\'usuari està registrat', () => {
-    const mockResponse: AuthResponse = { token: 'mock-token' };
+    const mockToken = 'mock-jwt-token';
+    const mockResponse: AuthResponse = { 
+      success: true,
+      token: mockToken,
+      user: {
+        id: 1,
+        username: 'usuariProva',
+        nivel: 1,
+        puntosTotales: 0,
+        naveActual: 1,
+        nombreNave: 'Nau de Combat'
+      }
+    };
     service.validateUser('usuariTest', 'contra1234').subscribe((response) => {
       expect(response.token).toBeDefined();
     });
@@ -65,7 +85,18 @@ describe('RegistreService', () => {
   });
   it('should store and retrieve token correctly', () => {
     const mockToken = 'mock-jwt-token';
-    const mockResponse: AuthResponse = { token: mockToken };
+    const mockResponse: AuthResponse = { 
+      success: true,
+      token: mockToken,
+      user: {
+        id: 1,
+        username: 'usuariProva',
+        nivel: 1,
+        puntosTotales: 0,
+        naveActual: 1,
+        nombreNave: 'Nau de Combat'
+      }
+    };
     
     service.validateUser('testUser', 'password123').subscribe(() => {
       expect(service.getToken()).toBe(mockToken);
@@ -90,7 +121,18 @@ describe('RegistreService', () => {
     localStorage.clear();
     service.logout(); // Asegurarse de que no hay sesión activa
     
-    const mockResponse: AuthResponse = { token: 'mock-token' };
+    const mockResponse: AuthResponse = { 
+      success: true,
+      token: 'mock-token',
+      user: {
+        id: 1,
+        username: 'usuariProva',
+        nivel: 1,
+        puntosTotales: 0,
+        naveActual: 1,
+        nombreNave: 'Nau de Combat'
+      }
+    };
     
     expect(service.isLoggedIn()).toBeFalse();
     
@@ -118,12 +160,8 @@ describe('RegistreService', () => {
   });
   it('should save and set token correctly', () => {
     const token = 'test-token';
-    service.saveToken(token);
+    service.setToken(token);
     expect(service.getToken()).toBe(token);
-    
-    const newToken = 'new-token';
-    service.setToken(newToken);
-    expect(service.getToken()).toBe(newToken);
   });
   it('should persist user data between page reloads', () => {
     const mockUserData = {
@@ -136,5 +174,49 @@ describe('RegistreService', () => {
     // Verificar que las dades persisteixen
     const persistedData = newServiceInstance.getUserData();
     expect(persistedData).toEqual(mockUserData);
+  });
+  it('should handle successful login with valid JWT', (done) => {
+    const mockResponse: AuthResponse = { 
+      success: true,
+      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+      user: {
+        id: 1,
+        username: 'testUser',
+        nivel: 1,
+        puntosTotales: 100,
+        naveActual: 1,
+        nombreNave: 'X-Wing'
+      }
+    };
+    
+    service.validateUser('test@test.com', 'password123').subscribe(response => {
+      expect(response.success).toBeTrue();
+      expect(response.token).toBeDefined();
+      expect(service.getToken()).toContain('Bearer ');
+      expect(service.getUserData()).toEqual(mockResponse.user);
+      done();
+    });
+
+    const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
+    expect(req.request.method).toBe('POST');
+    req.flush(mockResponse);
+  });
+  it('should handle invalid JWT token', (done) => {
+    const mockResponse = { 
+      success: true,
+      token: 'invalid-token',
+      user: {
+        id: 1,
+        username: 'testUser'
+      }
+    };
+    
+    service.validateUser('test@test.com', 'password123').subscribe(response => {
+      expect(service.getToken()).toBeNull();
+      done();
+    });
+
+    const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
+    req.flush(mockResponse);
   });
 });

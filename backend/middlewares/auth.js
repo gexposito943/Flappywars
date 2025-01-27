@@ -3,11 +3,22 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const SECRET_KEY = process.env.SECRET_KEY;
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  console.error("ERROR: JWT_SECRET no está definida en las variables de entorno");
+  process.exit(1);
+}
 
 export const authenticateToken = (req, res, next) => {
   try {
     const authHeader = req.headers["authorization"];
+    console.log("Auth Header recibido:", authHeader);
+
+    // Si la ruta es pública, permitir el acceso sin token
+    if (req.path === '/api/v1/login' || req.path === '/api/v1/register') {
+      return next();
+    }
 
     if (!authHeader) {
       return res
@@ -16,25 +27,27 @@ export const authenticateToken = (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
+    console.log("Token extraído:", token);
 
     if (!token) {
       return res.status(401).json({ error: "No s'ha proporcionat el token" });
     }
 
-    jwt.verify(token, SECRET_KEY, (err, user) => {
+    jwt.verify(token, JWT_SECRET, (err, user) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
           try {
             const decodedToken = jwt.decode(token);
-
             const newToken = jwt.sign(
-              { userId: decodedToken.userId, email: decodedToken.email },
-              SECRET_KEY,
+              { 
+                userId: decodedToken.userId, 
+                username: decodedToken.username,
+                currentShip: decodedToken.currentShip
+              },
+              JWT_SECRET,
               { expiresIn: "1h" }
             );
-
             res.setHeader("New-Token", newToken);
-
             req.user = decodedToken;
             return next();
           } catch (renewError) {
@@ -51,19 +64,6 @@ export const authenticateToken = (req, res, next) => {
           error: "Token invàlid",
           details: err.message,
         });
-      }
-
-      const tokenExp = new Date(user.exp * 1000);
-      const now = new Date();
-      const fiveMinutes = 5 * 60 * 1000;
-      
-      if (tokenExp - now < fiveMinutes) {
-        const newToken = jwt.sign(
-          { userId: user.userId, email: user.email },
-          SECRET_KEY,
-          { expiresIn: "1h" }
-        );
-        res.setHeader("New-Token", newToken);
       }
 
       req.user = user;

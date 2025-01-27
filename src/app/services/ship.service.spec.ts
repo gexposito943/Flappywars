@@ -15,21 +15,24 @@ describe('ShipService', () => {
       nom: 'X-Wing',
       velocitat: 1,
       imatge_url: '/assets/images/naus/x-wing.png',
-      descripcio: 'Nau de combat versàtil'
+      descripcio: 'Nau de combat versàtil',
+      required_points: 0
     },
     {
       id: 2,
       nom: 'TIE Fighter',
       velocitat: 2,
       imatge_url: '/assets/images/naus/tie-fighter.png',
-      descripcio: 'Nau de combat imperial'
+      descripcio: 'Nau de combat imperial',
+      required_points: 1000
     },
     {
       id: 3,
       nom: 'Millennium Falcon',
       velocitat: 3,
       imatge_url: '/assets/images/naus/millennium-falcon.png',
-      descripcio: 'Nau de contrabandistes'
+      descripcio: 'Nau de contrabandistes',
+      required_points: 2500
     }
   ];
 

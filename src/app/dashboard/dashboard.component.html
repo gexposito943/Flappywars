@@ -15,15 +15,15 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <h3>Millor Puntuació</h3>
-                <p>1000</p>
+                <p>{{ userStats.millor_puntuacio }}</p>
             </div>
             <div class="stat-card">
                 <h3>Total Partides</h3>
-                <p>50</p>
+                <p>{{ userStats.total_partides }}</p>
             </div>
             <div class="stat-card">
                 <h3>Temps Total Jugat</h3>
-                <p>2h 0m</p>
+                <p>{{ formatTime(userStats.temps_total_jugat) }}</p>
             </div>
         </div>
     </div>
@@ -46,6 +46,9 @@
                     <img [src]="ship.imatge_url" [alt]="ship.nom">
                     <span class="ship-name">{{ ship.nom }}</span>
                     <span class="ship-desc">{{ ship.descripcio }}</span>
+                    <div class="ship-stats">
+                        <span>Velocitat: {{ ship.velocitat }}</span>
+                    </div>
                 </div>
             </div>
         </div>
