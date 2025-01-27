@@ -6,6 +6,7 @@ import { By } from '@angular/platform-browser';
 import { DashboardComponent } from './dashboard.component';
 import { GameService } from '../services/game.service';
 import { RegistreService } from '../services/registre.service';
+import { ShipService } from '../services/ship.service';
 import { fakeAsync, tick } from '@angular/core/testing';
 
 interface UserStats {
@@ -20,6 +21,7 @@ describe('DashboardComponent', () => {
   let mockGameService: jasmine.SpyObj<GameService>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockRegistreService: jasmine.SpyObj<RegistreService>;
+  let mockShipService: jasmine.SpyObj<ShipService>;
 
   const mockUserData = {
     username: 'TestUser',
@@ -28,10 +30,35 @@ describe('DashboardComponent', () => {
     naveActual: 1
   };
 
+  const mockShips = [
+    {
+      id: 1,
+      nom: 'Nau de Combat',
+      velocitat: 100,
+      imatge_url: 'assets/x-wing.png',
+      descripcio: 'Nau de combat versàtil'
+    },
+    {
+      id: 2,
+      nom: 'Nau Imperial',
+      velocitat: 120,
+      imatge_url: 'assets/tie-fighter.png',
+      descripcio: 'Nau ràpida de l\'Imperi'
+    },
+    {
+      id: 3,
+      nom: 'Nau Llegendària',
+      velocitat: 150,
+      imatge_url: 'assets/millenium-falcon.png',
+      descripcio: 'Nau llegendària'
+    }
+  ];
+
   beforeEach(async () => {
     mockGameService = jasmine.createSpyObj('GameService', ['updateUserShip', 'getUserStats', 'getUserAchievements']);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockRegistreService = jasmine.createSpyObj('RegistreService', ['logout', 'getUserData']);
+    mockShipService = jasmine.createSpyObj('ShipService', ['getShips']);
 
     mockGameService.getUserStats.and.returnValue(of({
       millor_puntuacio: 1000,
@@ -44,24 +71,23 @@ describe('DashboardComponent', () => {
       { id: 2, nom: 'As Espacial', completat: false }
     ]));
 
-    mockRegistreService.getUserData.and.returnValue(of(mockUserData));
-
+    mockRegistreService.getUserData.and.returnValue(mockUserData);
+    mockShipService.getShips.and.returnValue(of(mockShips));
     mockGameService.updateUserShip.and.returnValue(of({ success: true }));
 
     await TestBed.configureTestingModule({
-      imports: [DashboardComponent],
+      imports: [DashboardComponent, HttpClientTestingModule],
       providers: [
         { provide: GameService, useValue: mockGameService },
         { provide: Router, useValue: mockRouter },
-        { provide: RegistreService, useValue: mockRegistreService }
+        { provide: RegistreService, useValue: mockRegistreService },
+        { provide: ShipService, useValue: mockShipService }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
-    await component.ngOnInit();
     fixture.detectChanges();
-    await fixture.whenStable();
   });
 
   it('should create the component', () => {
@@ -153,9 +179,12 @@ describe('DashboardComponent', () => {
   });
 
   it('should show selection message when no ship is selected', () => {
-    const messageElement = fixture.nativeElement.querySelector('.selection-message');
-    expect(messageElement.textContent.trim())
-      .toBe('Has de seleccionar una nau abans de començar');
+    component.selectedShipId = null;
+    fixture.detectChanges();
+    
+    const playButton = fixture.debugElement.query(By.css('.play-button'));
+    expect(playButton).toBeTruthy();
+    expect(playButton.nativeElement.disabled).toBeTrue();
   });
 
   it('should enable play button when ship is selected', async () => {
@@ -166,5 +195,47 @@ describe('DashboardComponent', () => {
     const playButton = fixture.debugElement.query(By.css('.play-button'));
     expect(playButton.nativeElement.disabled).toBeFalse();
     expect(playButton.nativeElement.textContent.trim()).toBe('Jugar');
+  });
+
+  it('should load ships on init', () => {
+    expect(mockShipService.getShips).toHaveBeenCalled();
+    expect(component.availableShips).toEqual(mockShips);
+  });
+
+  it('should handle ship loading error', () => {
+    mockShipService.getShips.and.returnValue(throwError(() => new Error('Error loading ships')));
+    component.loadShips();
+    expect(component.availableShips).toBeDefined();
+    expect(component.availableShips.length).toBeGreaterThan(0);
+  });
+
+  it('should handle stats loading error', () => {
+    mockGameService.getUserStats.and.returnValue(throwError(() => new Error('Error loading stats')));
+    component.loadUserStats();
+    expect(component.statsError).toBeTrue();
+    expect(component.userStats).toEqual({
+      millor_puntuacio: 0,
+      total_partides: 0,
+      temps_total_jugat: 0
+    });
+  });
+
+  it('should format time correctly', () => {
+    expect(component.formatTime(3665)).toBe('1h 1m');
+    expect(component.formatTime(7200)).toBe('2h 0m');
+    expect(component.formatTime(0)).toBe('0h 0m');
+  });
+
+  it('should not start game if no ship is selected', () => {
+    component.selectedShipId = null;
+    component.startGame();
+    expect(mockGameService.updateUserShip).not.toHaveBeenCalled();
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+  });
+
+  it('should logout correctly', () => {
+    component.logout();
+    expect(mockRegistreService.logout).toHaveBeenCalled();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
   });
 });

@@ -127,7 +127,7 @@ export const loginUsers = async (req, res) => {
                 username: user.nom_usuari,
                 currentShip: user.nau_actual
             },
-            process.env.SECRET_KEY,
+            process.env.JWT_SECRET,
             { expiresIn: "1h" }
         );
 

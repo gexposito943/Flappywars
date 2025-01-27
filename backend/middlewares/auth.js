@@ -56,12 +56,12 @@ export const authenticateToken = (req, res, next) => {
       const tokenExp = new Date(user.exp * 1000);
       const now = new Date();
       const fiveMinutes = 5 * 60 * 1000;
-
+      
       if (tokenExp - now < fiveMinutes) {
         const newToken = jwt.sign(
           { userId: user.userId, email: user.email },
           SECRET_KEY,
-          { expiresIn: "5m" }
+          { expiresIn: "1h" }
         );
         res.setHeader("New-Token", newToken);
       }

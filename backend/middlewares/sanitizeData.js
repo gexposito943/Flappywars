@@ -12,3 +12,4 @@ export const sanitizeData = (req, res, next) => {
 
   next();
 };
+

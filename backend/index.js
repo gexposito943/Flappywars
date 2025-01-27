@@ -4,6 +4,11 @@ import dotenv from 'dotenv';
 import { pool, connectToDatabase } from './database.js';
 import { logRequest } from './middlewares/logger.js';
 import routes from './routes/routes.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -13,6 +18,27 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(logRequest);
+
+// Configuración para servir archivos estáticos
+app.use('/public', express.static(path.join(__dirname, 'public')));
+
+// Ruta de prueba para verificar las imágenes
+app.get('/test-images', (req, res) => {
+  const imagesPath = path.join(__dirname, 'public/assets/images/naus');
+  res.json({
+    publicPath: imagesPath,
+    exists: {
+      xwing: path.join(imagesPath, 'x-wing.png'),
+      tie: path.join(imagesPath, 'tie-fighter.png'),
+      falcon: path.join(imagesPath, 'millennium-falcon.png')
+    },
+    urls: {
+      xwing: '/public/assets/images/naus/x-wing.png',
+      tie: '/public/assets/images/naus/tie-fighter.png',
+      falcon: '/public/assets/images/naus/millennium-falcon.png'
+    }
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 

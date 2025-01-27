@@ -66,7 +66,10 @@ export class GameService {
   }
 
   getUserStats(): Observable<UserStats> {
-    return this.http.get<UserStats>(`${this.apiUrl}/user/stats`).pipe(
+    return this.http.get<UserStats>(
+      `${this.apiUrl}/user/stats`,
+      { headers: this.getHeaders() }
+    ).pipe(
       tap(response => console.log('Stats response:', response)),
       catchError(this.handleError<UserStats>('getUserStats', {
         millor_puntuacio: 0,
@@ -86,14 +89,21 @@ export class GameService {
   }
 
   updateUserShip(shipId: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/user/ship`, { shipId }).pipe(
+    return this.http.put(
+      `${this.apiUrl}/user/ship`, 
+      { shipId },
+      { headers: this.getHeaders() }
+    ).pipe(
       tap(response => console.log('Update ship response:', response)),
       catchError(this.handleError<any>('updateUserShip', null))
     );
   }
 
   getUserAchievements(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/user/achievements`).pipe(
+    return this.http.get<any[]>(
+      `${this.apiUrl}/user/achievements`,
+      { headers: this.getHeaders() }
+    ).pipe(
       catchError(this.handleError<any[]>('getUserAchievements', []))
     );
   }
