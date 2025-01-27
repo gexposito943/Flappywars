@@ -92,17 +92,12 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     this.loading = true;
     
-    // Cargar datos del usuario
     const data = this.registreService.getUserData();
     if (data) {
-        this.userData = { ...this.userData, ...data };
-        this.selectedShipId = this.userData.naveActual || 1;
+      this.userData = { ...this.userData, ...data };
     }
-
-    // Cargar estadísticas
+    this.selectedShipId = this.userData.naveActual || 1;
     this.loadUserStats();
-    
-    // Cargar naves disponibles
     this.loadShips();
     
     this.loading = false;
@@ -110,15 +105,22 @@ export class DashboardComponent implements OnInit {
 
   loadUserStats() {
     this.gameService.getUserStats().subscribe({
-        next: (stats) => {
-            console.log('Estadísticas cargadas:', stats);
-            this.userStats = stats;
-            this.statsError = false;
-        },
-        error: (error) => {
-            console.error('Error cargando estadísticas:', error);
-            this.statsError = true;
-        }
+      next: (stats) => {
+        console.log('Estadísticas cargadas:', stats);
+        this.userStats = {
+          millor_puntuacio: stats?.millor_puntuacio || 0,
+          total_partides: stats?.total_partides || 0,
+          temps_total_jugat: stats?.temps_total_jugat || 0
+        };
+      },
+      error: (error) => {
+        console.error('Error loading stats:', error);
+        this.userStats = {
+          millor_puntuacio: 0,
+          total_partides: 0,
+          temps_total_jugat: 0
+        };
+      }
     });
   }
 

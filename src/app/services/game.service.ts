@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, tap, map } from 'rxjs/operators';
 import { RegistreService } from './registre.service';
 
 export interface UserStats {
@@ -76,8 +76,9 @@ export class GameService {
     console.log('Obteniendo estadísticas del usuario');
     const headers = this.getHeaders();
     
-    return this.http.get<UserStats>(`${this.apiUrl}/user/stats`, { headers }).pipe(
-      tap(stats => console.log('Estadísticas recibidas:', stats)),
+    return this.http.get<{success: boolean, estadistiques: UserStats}>(`${this.apiUrl}/user/stats`, { headers }).pipe(
+      tap(response => console.log('Estadísticas recibidas:', response)),
+      map(response => response.estadistiques),
       catchError(error => {
         console.error('Error en getUserStats:', error);
         if (error.status === 403) {

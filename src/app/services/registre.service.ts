@@ -26,10 +26,15 @@ export class RegistreService {
   private tokenKey = 'auth_token';
   private userDataKey = 'user_data';
 
-  constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {}
-
-  private isInBrowser(): boolean {
-    return isPlatformBrowser(this.platformId);
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    // Verificar token al iniciar el servicio
+    if (this.isInBrowser()) {
+      const token = this.getToken();
+      console.log('Token inicial:', token);
+    }
   }
 
   register(username: string, email: string, password: string): Observable<any> {
@@ -43,16 +48,15 @@ export class RegistreService {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
       tap(response => {
         if (response.success && response.token) {
-          console.log('Login exitoso, token recibido');
-          const tokenToStore = response.token.startsWith('Bearer ') 
-            ? response.token 
-            : `Bearer ${response.token}`;
-          
-          localStorage.setItem(this.tokenKey, tokenToStore);
+          // Guardar el token tal cual viene del backend
+          localStorage.setItem(this.tokenKey, response.token);
           
           if (response.user) {
+            console.log('Guardando datos de usuario');
             localStorage.setItem(this.userDataKey, JSON.stringify(response.user));
           }
+        } else {
+          console.error('Respuesta de login inválida:', response);
         }
       })
     );
@@ -75,15 +79,22 @@ export class RegistreService {
     }
   }
 
+  getUserData() {
+    if (!this.isInBrowser()) {
+      return null;
+    }
+    const userData = localStorage.getItem(this.userDataKey);
+    return userData ? JSON.parse(userData) : null;
+  }
+
   getToken(): string | null {
     const token = localStorage.getItem(this.tokenKey);
-    console.log('Token recuperado:', token);
+    if (!token) return null;
+    // No añadir Bearer, usar el token tal cual está guardado
     return token;
   }
 
   logout(): void {
-    if (!this.isInBrowser()) return;
-    console.log('Logging out, clearing storage');
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userDataKey);
   }
@@ -100,20 +111,20 @@ export class RegistreService {
     return this.http.post(`${this.apiUrl}/check-username`, { username });
   }
 
-  setUserData(userData: any): void {
-    if (this.isInBrowser()) {
-      localStorage.setItem(this.userDataKey, JSON.stringify(userData));
-    }
-  }
-
-  getUserData() {
-    const userData = localStorage.getItem(this.userDataKey);
-    return userData ? JSON.parse(userData) : null;
+  private isInBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
   }
 
   setToken(token: string): void {
     if (this.isInBrowser() && token) {
+      // Guardar el token tal cual viene
       localStorage.setItem(this.tokenKey, token);
+    }
+  }
+
+  setUserData(userData: any): void {
+    if (this.isInBrowser()) {
+      localStorage.setItem(this.userDataKey, JSON.stringify(userData));
     }
   }
 }
