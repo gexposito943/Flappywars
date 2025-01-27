@@ -44,7 +44,10 @@ export class GameService {
       console.warn('No token found');
       return new HttpHeaders();
     }
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
   }
 
   private handleError<T>(operation = 'operation', result?: T) {
@@ -70,18 +73,16 @@ export class GameService {
   }
 
   getUserStats(): Observable<UserStats> {
-    const headers = this.getHeaders();
-    console.log('Headers for getUserStats:', headers); // Debug log
+    const token = this.registreService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
 
     return this.http.get<UserStats>(`${this.apiUrl}/user/stats`, { headers }).pipe(
       tap(response => console.log('Stats response:', response)),
-      catchError((error) => {
-        console.error('getUserStats error:', error);
-        // Redirigir al login si el token es inválido
-        if (error.status === 403) {
-          this.registreService.logout();
-          // Puedes inyectar Router y redirigir aquí si lo necesitas
-        }
+      catchError(error => {
+        console.error('Error en getUserStats:', error);
         return of({
           millor_puntuacio: 0,
           total_partides: 0,
@@ -101,14 +102,13 @@ export class GameService {
   }
 
   updateUserShip(shipId: number): Observable<any> {
-    return this.http.put(
-      `${this.apiUrl}/user/ship`, 
-      { shipId },
-      { headers: this.getHeaders() }
-    ).pipe(
-      tap(response => console.log('Update ship response:', response)),
-      catchError(this.handleError<any>('updateUserShip', null))
-    );
+    const token = this.registreService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.apiUrl}/user/ship`, { shipId }, { headers });
   }
 
   getUserAchievements(): Observable<any[]> {

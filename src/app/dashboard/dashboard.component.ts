@@ -59,21 +59,21 @@ export class DashboardComponent implements OnInit {
       id: 1,
       nom: 'Nau de Combat',
       velocitat: 100,
-      imatge_url: 'assets/x-wing.png',
+      imatge_url: 'assets/images/naus/x-wing.png',
       descripcio: 'Nau de combat versàtil'
     },
     {
       id: 2,
       nom: 'Nau Imperial',
       velocitat: 120,
-      imatge_url: 'assets/tie-fighter.png',
+      imatge_url: 'assets/images/naus/tie-fighter.png',
       descripcio: 'Nau ràpida de l\'Imperi'
     },
     {
       id: 3,
       nom: 'Nau Llegendària',
       velocitat: 150,
-      imatge_url: 'assets/millenium-falcon.png',
+      imatge_url: 'assets/images/naus/millenium-falcon.png',
       descripcio: 'Nau llegendària'
     }
   ];

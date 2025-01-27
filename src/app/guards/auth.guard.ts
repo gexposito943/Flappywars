@@ -15,14 +15,19 @@ export class AuthGuard implements CanActivate {
 
   canActivate(): boolean {
     if (!isPlatformBrowser(this.platformId)) {
-      return true; // Permitir acceso durante SSR
-    }
-
-    if (this.registreService.isLoggedIn()) {
       return true;
     }
 
-    this.router.navigate(['/login']);
-    return false;
+    const isLoggedIn = this.registreService.isLoggedIn();
+    console.log('AuthGuard check - isLoggedIn:', isLoggedIn);
+
+    if (!isLoggedIn) {
+      console.log('Token inválido o expirado, redirigiendo al login');
+      this.registreService.logout(); // Limpiamos el storage
+      this.router.navigate(['/']);
+      return false;
+    }
+
+    return true;
   }
 }

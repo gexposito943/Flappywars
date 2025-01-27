@@ -20,11 +20,8 @@ export class RegistreService {
 
   constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {}
 
-  private getStorage() {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage;
-    }
-    return null;
+  private isInBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
   }
 
   register(username: string, email: string, password: string): Observable<any> {
@@ -45,43 +42,51 @@ export class RegistreService {
   }
 
   saveToken(token: string): void {
-    const storage = this.getStorage();
-    if (storage) {
-      storage.setItem('token', token);
+    if (!this.isInBrowser()) {
+      return;
     }
+    localStorage.setItem('token', token);
   }
 
   getToken(): string | null {
+    if (!this.isInBrowser()) {
+      return null;
+    }
     const token = localStorage.getItem(this.tokenKey);
-    console.log('Retrieved token:', token); // Debug log
+    console.log('Retrieved token:', token);
     return token;
   }
 
   setToken(token: string): void {
-    console.log('Setting token:', token); // Debug log
+    if (!this.isInBrowser()) {
+      return;
+    }
+    console.log('Setting token:', token);
     localStorage.setItem(this.tokenKey, token);
   }
 
   getUserData() {
-    const storage = this.getStorage();
-    if (storage) {
-      const userData = storage.getItem('userData');
-      return userData ? JSON.parse(userData) : null;
+    if (!this.isInBrowser()) {
+      return null;
     }
-    return null;
+    const userData = localStorage.getItem('userData');
+    return userData ? JSON.parse(userData) : null;
   }
 
   logout(): void {
+    if (!this.isInBrowser()) {
+      return;
+    }
+    console.log('Logging out, clearing storage');
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userDataKey);
   }
 
   isLoggedIn(): boolean {
-    const storage = this.getStorage();
-    if (storage) {
-      return !!storage.getItem('token');
+    if (!this.isInBrowser()) {
+      return false;
     }
-    return false;
+    return !!this.getToken();
   }
 
   checkEmailExists(email: string): Observable<any> {
@@ -93,9 +98,9 @@ export class RegistreService {
   }
 
   setUserData(userData: any): void {
-    const storage = this.getStorage();
-    if (storage) {
-      storage.setItem('userData', JSON.stringify(userData));
+    if (!this.isInBrowser()) {
+      return;
     }
+    localStorage.setItem('userData', JSON.stringify(userData));
   }
 }

@@ -138,17 +138,15 @@ export class FormulariComponent implements AfterViewInit, OnInit {
 
     this.registreService.validateUser(this.email, this.password).subscribe({
         next: (response) => {
-            console.log('Login exitoso:', response);
+            console.log('Login response:', response);
             if (response && response.token) {
-                // Guardar el token
                 this.registreService.setToken(response.token);
+                console.log('Token guardado:', this.registreService.getToken());
                 
-                // Guardar datos del usuario si vienen en la respuesta
                 if (response.user) {
                     localStorage.setItem('userData', JSON.stringify(response.user));
                 }
                 
-                // Redirigir al dashboard
                 this.router.navigate(['/dashboard']);
             }
         },
