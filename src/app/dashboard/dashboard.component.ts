@@ -19,6 +19,7 @@ export interface Ship {
   velocitat: number;
   imatge_url: string;
   descripcio: string;
+  required_points: number;
 }
 
 interface Achievement {
@@ -60,21 +61,24 @@ export class DashboardComponent implements OnInit {
       nom: 'Nau de Combat',
       velocitat: 100,
       imatge_url: 'assets/images/naus/x-wing.png',
-      descripcio: 'Nau de combat versàtil'
+      descripcio: 'Nau de combat versàtil',
+      required_points: 0
     },
     {
       id: 2,
       nom: 'Nau Imperial',
       velocitat: 120,
       imatge_url: 'assets/images/naus/tie-fighter.png',
-      descripcio: 'Nau ràpida de l\'Imperi'
+      descripcio: 'Nau ràpida de l\'Imperi',
+      required_points: 1000
     },
     {
       id: 3,
       nom: 'Nau Llegendària',
       velocitat: 150,
       imatge_url: 'assets/images/naus/millenium-falcon.png',
-      descripcio: 'Nau llegendària'
+      descripcio: 'Nau llegendària',
+      required_points: 2500
     }
   ];
   achievements: Achievement[] = [];
@@ -96,9 +100,11 @@ export class DashboardComponent implements OnInit {
     if (data) {
       this.userData = { ...this.userData, ...data };
     }
-    this.selectedShipId = this.userData.naveActual || 1;
+    
+    // Inicialmente ninguna nave seleccionada
+    this.selectedShipId = null;
+    
     this.loadUserStats();
-    this.loadShips();
     
     this.loading = false;
   }
@@ -136,23 +142,35 @@ export class DashboardComponent implements OnInit {
   }
 
   startGame() {
-    if (!this.selectedShipId) {
-      
-      return;
+    console.log('Iniciando juego con nave:', this.selectedShipId);
+    if (this.selectedShipId) {
+      // Navegamos directamente al juego sin llamar a la API
+      this.router.navigate(['/game'], {
+        state: { 
+          shipId: this.selectedShipId,
+          userData: this.userData
+        }
+      });
+    } else {
+      console.log('No hay nave seleccionada');
     }
-    
-    this.gameService.updateUserShip(this.selectedShipId).subscribe({
-      next: () => {
-        this.router.navigate(['/game']);
-      },
-      error: (error) => {
-        console.error('Error updating ship:', error);
-      }
-    });
   }
 
   selectShip(shipId: number) {
-    this.selectedShipId = shipId;
+    const ship = this.availableShips.find(s => s.id === shipId);
+    if (ship && this.isShipUnlocked(ship)) {
+      this.selectedShipId = shipId;
+      console.log('Nave seleccionada:', shipId);
+      
+      // Actualizar el estado inmediatamente
+      this.userData = {
+        ...this.userData,
+        naveActual: shipId
+      };
+      
+      // Guardar en el servicio
+      this.registreService.setUserData(this.userData);
+    }
   }
 
   updateUserData() {
@@ -170,13 +188,12 @@ export class DashboardComponent implements OnInit {
   }
 
   loadShips() {
-    this.shipService.getShips().subscribe({
-      next: (ships) => {
-        this.availableShips = ships;
-      },
-      error: (error) => {
-        console.error('Error loading ships:', error);
-      }
-    });
+    console.log('Naves disponibles:', this.availableShips);
+  }
+
+  isShipUnlocked(ship: Ship): boolean {
+    const isUnlocked = this.userData.puntosTotales >= ship.required_points;
+    console.log(`Nave ${ship.id} desbloqueada:`, isUnlocked);
+    return isUnlocked;
   }
 }

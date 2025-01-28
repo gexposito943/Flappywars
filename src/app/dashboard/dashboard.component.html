@@ -34,20 +34,26 @@
                 <button class="play-button" 
                         [disabled]="!selectedShipId"
                         (click)="startGame()">
-                    {{ selectedShipId ? 'Jugar' : 'Selecciona una nau primer' }}
+                    {{ selectedShipId === null ? 'Selecciona una nau primer' : 'Jugar' }}
                 </button>
-                <p class="selection-message" *ngIf="!selectedShipId">Has de seleccionar una nau abans de començar</p>
+                <p class="selection-message" *ngIf="!selectedShipId">
+                    Has de seleccionar una nau abans de començar
+                </p>
             </div>
             <div class="ships-grid">
                 <div class="ship-option" 
                      *ngFor="let ship of availableShips" 
                      (click)="selectShip(ship.id)"
-                     [class.selected]="selectedShipId === ship.id">
+                     [class.selected]="selectedShipId === ship.id"
+                     [class.locked]="!isShipUnlocked(ship)">
                     <img [src]="ship.imatge_url" [alt]="ship.nom">
                     <span class="ship-name">{{ ship.nom }}</span>
                     <span class="ship-desc">{{ ship.descripcio }}</span>
                     <div class="ship-stats">
                         <span>Velocitat: {{ ship.velocitat }}</span>
+                        <span *ngIf="!isShipUnlocked(ship)" class="lock-message">
+                            Necessites {{ ship.required_points }} punts per desbloquejar
+                        </span>
                     </div>
                 </div>
             </div>

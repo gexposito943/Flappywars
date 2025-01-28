@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 import { RegistreService } from './registre.service';
 
 export interface UserStats {
@@ -31,22 +32,19 @@ export interface Ship {
   providedIn: 'root'
 })
 export class GameService {
-  private apiUrl = 'http://localhost:3000/api/v1';
+  private apiUrl = 'http://localhost:3000/api';
 
   constructor(
     private http: HttpClient,
-    private registreService: RegistreService
+    private registreService: RegistreService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   private getHeaders(): HttpHeaders {
     const token = this.registreService.getToken();
-    if (!token) {
-      console.warn('No token found');
-      return new HttpHeaders();
-    }
     return new HttpHeaders({
-      'Authorization': token,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
     });
   }
 
@@ -72,26 +70,21 @@ export class GameService {
     };
   }
 
-  getUserStats(): Observable<UserStats> {
-    console.log('Obteniendo estadísticas del usuario');
-    const headers = this.getHeaders();
-    
-    return this.http.get<{success: boolean, estadistiques: UserStats}>(`${this.apiUrl}/user/stats`, { headers }).pipe(
-      tap(response => console.log('Estadísticas recibidas:', response)),
-      map(response => response.estadistiques),
-      catchError(error => {
-        console.error('Error en getUserStats:', error);
-        if (error.status === 403) {
-          console.log('Token inválido, redirigiendo a login');
-          this.registreService.logout();
-        }
-        return of({
+  getUserStats(): Observable<any> {
+    if (!isPlatformBrowser(this.platformId)) {
+      // Retornar datos mock para SSR
+      return new Observable(observer => {
+        observer.next({
           millor_puntuacio: 0,
           total_partides: 0,
           temps_total_jugat: 0
         });
-      })
-    );
+        observer.complete();
+      });
+    }
+    
+    console.log('Obteniendo estadísticas del usuario');
+    return this.http.get(`${this.apiUrl}/stats`, { headers: this.getHeaders() });
   }
 
   getAvailableShips(): Observable<Ship[]> {
@@ -104,32 +97,23 @@ export class GameService {
   }
 
   updateUserShip(shipId: number): Observable<any> {
-    console.log('Actualizando nave del usuario:', shipId);
-    const headers = this.getHeaders();
-    
-    return this.http.post(`${this.apiUrl}/user/ship`, { shipId }, { headers }).pipe(
-      tap(response => console.log('Respuesta actualización nave:', response)),
-      catchError(error => {
-        console.error('Error al actualizar nave:', error);
-        if (error.status === 403) {
-          this.registreService.logout();
-        }
-        return throwError(() => error);
-      })
-    );
+    if (!isPlatformBrowser(this.platformId)) {
+      return new Observable(observer => {
+        observer.next({});
+        observer.complete();
+      });
+    }
+    return this.http.post(`${this.apiUrl}/updateShip`, { shipId }, { headers: this.getHeaders() });
   }
 
-  getUserAchievements(): Observable<Achievement[]> {
-    console.log('Obteniendo logros del usuario');
-    const headers = this.getHeaders();
-    
-    return this.http.get<Achievement[]>(`${this.apiUrl}/user/achievements`, { headers }).pipe(
-      tap(achievements => console.log('Logros recibidos:', achievements)),
-      catchError(error => {
-        console.error('Error al obtener logros:', error);
-        return of([]);
-      })
-    );
+  getUserAchievements(): Observable<any> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return new Observable(observer => {
+        observer.next([]);
+        observer.complete();
+      });
+    }
+    return this.http.get(`${this.apiUrl}/achievements`, { headers: this.getHeaders() });
   }
 
   saveGameResults(gameData: GameData): Observable<{success: boolean}> {

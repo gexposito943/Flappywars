@@ -6,16 +6,22 @@
           [height]="canvasHeight">
   </canvas>
 
-  <div class="game-message" *ngIf="!isGameRunning">
-    Prem Enter per començar
+  <div class="game-message" *ngIf="showMessage">
+    {{ gameMessage }}
   </div>
 
   <div class="game-controls">
-    <button (click)="startGame()">Iniciar</button>
-    <button (click)="togglePause()">{{ isPaused ? 'Continuar' : 'Pausar' }}</button>
-    <button (click)="stopGame()">Aturar</button>
-    <button (click)="goToDashboard()" class="dashboard-button">
-      Tornar al Dashboard
+    <button class="control-button start" (click)="startGame()" *ngIf="!isGameRunning">
+      🎮 Iniciar Partida
+    </button>
+    <button class="control-button pause" (click)="togglePause()" *ngIf="isGameRunning">
+      {{ isPaused ? '▶️ Continuar' : '⏸️ Pausar' }}
+    </button>
+    <button class="control-button save" (click)="saveGameResults()" *ngIf="!isGameRunning && score > 0">
+      💾 Guardar Partida
+    </button>
+    <button class="control-button dashboard" (click)="goToDashboard()">
+      🏠 Tornar al Dashboard
     </button>
   </div>
 </div>

@@ -25,6 +25,7 @@ export class RegistreService {
   private apiUrl = 'http://localhost:3000/api/v1';
   private tokenKey = 'auth_token';
   private userDataKey = 'user_data';
+  private token: string | null = null;
 
   constructor(
     private http: HttpClient,
@@ -79,24 +80,25 @@ export class RegistreService {
     }
   }
 
-  getUserData() {
-    if (!this.isInBrowser()) {
-      return null;
+  getUserData(): any {
+    if (isPlatformBrowser(this.platformId)) {
+      const userData = localStorage.getItem(this.userDataKey);
+      return userData ? JSON.parse(userData) : null;
     }
-    const userData = localStorage.getItem(this.userDataKey);
-    return userData ? JSON.parse(userData) : null;
+    return null;
   }
 
   getToken(): string | null {
-    const token = localStorage.getItem(this.tokenKey);
-    if (!token) return null;
-    // No añadir Bearer, usar el token tal cual está guardado
-    return token;
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem(this.tokenKey);
+    }
+    return this.token;
   }
 
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userDataKey);
+    this.removeToken();
   }
 
   isLoggedIn(): boolean {
@@ -116,14 +118,21 @@ export class RegistreService {
   }
 
   setToken(token: string): void {
-    if (this.isInBrowser() && token) {
-      // Guardar el token tal cual viene
+    if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(this.tokenKey, token);
     }
+    this.token = token;
+  }
+
+  removeToken(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.tokenKey);
+    }
+    this.token = null;
   }
 
   setUserData(userData: any): void {
-    if (this.isInBrowser()) {
+    if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(this.userDataKey, JSON.stringify(userData));
     }
   }
