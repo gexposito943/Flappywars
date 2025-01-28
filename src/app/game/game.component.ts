@@ -251,7 +251,7 @@ export class GameComponent implements OnInit {
     this.drawGame();
   }
 
-  private drawGame() {
+  public drawGame() {
     if (!isPlatformBrowser(this.platformId)) return;
     
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
