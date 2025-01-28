@@ -203,13 +203,18 @@ describe('RegistreService', () => {
   it('should handle invalid JWT token', (done) => {
     const mockResponse = { 
       success: false,
-      token: null,
+      token: null,  // El backend devuelve null para tokens inválidos
       user: null
     };
     
-    service.validateUser('test@test.com', 'password123').subscribe(response => {
-      expect(service.getToken()).toBeNull();
-      done();
+    service.validateUser('test@test.com', 'password123').subscribe({
+      next: (response) => {
+        expect(service.getToken()).toBeNull();
+        done();
+      },
+      error: (error) => {
+        done.fail(error);
+      }
     });
 
     const req = httpMock.expectOne('http://localhost:3000/api/v1/login');

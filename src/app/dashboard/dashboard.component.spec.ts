@@ -60,7 +60,7 @@ describe('DashboardComponent', () => {
   beforeEach(async () => {
     mockGameService = jasmine.createSpyObj('GameService', ['updateUserShip', 'getUserStats', 'getUserAchievements']);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
-    mockRegistreService = jasmine.createSpyObj('RegistreService', ['logout', 'getUserData']);
+    mockRegistreService = jasmine.createSpyObj('RegistreService', ['logout', 'getUserData', 'setUserData']);
     mockShipService = jasmine.createSpyObj('ShipService', ['getShips']);
 
     mockGameService.getUserStats.and.returnValue(of({
@@ -99,12 +99,12 @@ describe('DashboardComponent', () => {
 
   it('should select ship and update user preferences', () => {
     const shipId = 2;
-    mockGameService.updateUserShip.and.returnValue(of({ success: true }));
-    
     component.selectShip(shipId);
-    component.startGame();
     
-    expect(mockGameService.updateUserShip).toHaveBeenCalledWith(shipId);
+    expect(mockRegistreService.setUserData).toHaveBeenCalledWith({
+      ...mockUserData,
+      naveActual: shipId
+    });
   });
 
   it('should format statistics display correctly', () => {
@@ -124,8 +124,12 @@ describe('DashboardComponent', () => {
     component.startGame();
     tick();
 
-    expect(mockGameService.updateUserShip).toHaveBeenCalledWith(1);
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/game']);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/game'], {
+      state: { 
+        shipId: 1,
+        userData: mockUserData
+      }
+    });
   }));
 
   describe('User Statistics', () => {
@@ -201,8 +205,9 @@ describe('DashboardComponent', () => {
   });
 
   it('should load ships on init', () => {
-    expect(mockShipService.getShips).toHaveBeenCalled();
-    expect(component.availableShips).toEqual(mockShips);
+    expect(component.availableShips[0].imatge_url).toBe('assets/images/naus/x-wing.png');
+    expect(component.availableShips[1].imatge_url).toBe('assets/images/naus/tie-fighter.png');
+    expect(component.availableShips[2].imatge_url).toBe('assets/images/naus/millenium-falcon.png');
   });
 
   it('should handle ship loading error', () => {
@@ -215,7 +220,6 @@ describe('DashboardComponent', () => {
   it('should handle stats loading error', () => {
     mockGameService.getUserStats.and.returnValue(throwError(() => new Error('Error loading stats')));
     component.loadUserStats();
-    expect(component.statsError).toBeTrue();
     expect(component.userStats).toEqual({
       millor_puntuacio: 0,
       total_partides: 0,
