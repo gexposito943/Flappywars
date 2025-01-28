@@ -79,77 +79,73 @@ export const registerUsers = async (req, res) => {
  * @param {Response} res - Objecte de resposta
  * @description Verifica les credencials i retorna un token JWT si són correctes
  */
-export const loginUsers = async (req, res) => {
+export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const [users] = await db.execute(
-            `SELECT u.*, n.nom as nom_nau 
-             FROM usuaris u 
-             LEFT JOIN naus n ON u.nau_actual = n.id 
-             WHERE u.email = ?`,
+        console.log('Intento de login para:', email);
+
+        // Verificar que se proporcionaron las credenciales
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Es requereixen email i contrasenya'
+            });
+        }
+
+        // Buscar usuario
+        const [users] = await db.query(
+            'SELECT * FROM usuaris WHERE email = ?',
             [email]
         );
 
         if (users.length === 0) {
-            return res.status(404).json({ 
+            console.log('Usuario no encontrado:', email);
+            return res.status(401).json({
                 success: false,
-                error: "Usuari no trobat" 
+                message: 'Credencials incorrectes'
             });
         }
 
         const user = users[0];
-        const match = await bcrypt.compare(password, user.contrasenya);
-        if (!match) {
-            // Incrementar intents fallits
-            await db.execute(
-                'UPDATE usuaris SET intents_login = intents_login + 1 WHERE id = ?',
-                [user.id]
-            );
-            return res.status(401).json({ 
+
+        // Verificar contraseña
+        const validPassword = await bcrypt.compare(password, user.contrasenya);
+        if (!validPassword) {
+            console.log('Contraseña incorrecta para:', email);
+            return res.status(401).json({
                 success: false,
-                error: "Contrasenya incorrecta" 
+                message: 'Credencials incorrectes'
             });
         }
 
-        // Actualitzar últim accés i reiniciar intents
-        await db.execute(
-            `UPDATE usuaris 
-             SET ultim_acces = CURRENT_TIMESTAMP,
-                 intents_login = 0
-             WHERE id = ?`,
-            [user.id]
-        );
-
-        // Generar token JWT
+        // Generar token
         const token = jwt.sign(
             { 
-                userId: user.id, 
-                username: user.nom_usuari,
-                currentShip: user.nau_actual
+                userId: user.id,
+                email: user.email 
             },
             process.env.JWT_SECRET,
-            { expiresIn: "1h" }
+            { expiresIn: '24h' }
         );
 
-        // Retornar resposta amb token i dades d'usuari
-        res.status(200).json({ 
+        // Enviar respuesta exitosa
+        res.json({
             success: true,
+            message: 'Login correcte',
             token,
             user: {
                 id: user.id,
-                username: user.nom_usuari,
-                nivel: user.nivell,
-                puntosTotales: user.punts_totals,
-                naveActual: user.nau_actual,
-                nombreNave: user.nom_nau
+                nom: user.nom_usuari,
+                email: user.email
             }
         });
 
     } catch (error) {
-        console.error('Error al iniciar sessió:', error);
-        res.status(500).json({ 
+        console.error('Error en login:', error);
+        res.status(500).json({
             success: false,
-            error: "Error al iniciar sessió" 
+            message: 'Error en el servidor',
+            error: error.message
         });
     }
 };

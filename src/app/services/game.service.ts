@@ -28,11 +28,21 @@ export interface Ship {
   name: string;
 }
 
+export interface GameResult {
+  usuari_id: number;
+  puntuacio: number;
+  duracio_segons: number;
+  nau_utilitzada: number;
+  nivell_dificultat: string;
+  obstacles_superats: number;
+  completada: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'http://localhost:3000/api/v1';
 
   constructor(
     private http: HttpClient,
@@ -41,7 +51,7 @@ export class GameService {
   ) {}
 
   private getHeaders(): HttpHeaders {
-    const token = this.registreService.getToken();
+    const token = localStorage.getItem('token');
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -52,83 +62,95 @@ export class GameService {
     return (error: HttpErrorResponse): Observable<T> => {
       console.error(`${operation} failed:`, error);
 
-      // Si el error es 404, devolvemos el resultado por defecto
       if (error.status === 404) {
         console.warn(`${operation}: API endpoint not found, using default values`);
         return of(result as T);
       }
 
-      // Registramos el error para debugging
       console.error(`${operation} error details:`, {
         status: error.status,
         message: error.message,
         url: error.url
       });
-
-      // Devolvemos un resultado seguro por defecto
       return of(result as T);
     };
   }
 
   getUserStats(): Observable<any> {
-    if (!isPlatformBrowser(this.platformId)) {
-      // Retornar datos mock para SSR
-      return new Observable(observer => {
-        observer.next({
+    return this.http.get<any>(
+      `${this.apiUrl}/stats/user`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.estadistiques),
+      catchError(error => {
+        console.error('Error al obtener estadísticas:', error);
+        return of({
           millor_puntuacio: 0,
           total_partides: 0,
           temps_total_jugat: 0
         });
-        observer.complete();
-      });
-    }
-    
-    console.log('Obteniendo estadísticas del usuario');
-    return this.http.get(`${this.apiUrl}/stats`, { headers: this.getHeaders() });
+      })
+    );
   }
 
   getAvailableShips(): Observable<Ship[]> {
     return this.http.get<Ship[]>(
-      `${this.apiUrl}/user/ships`,
+      `${this.apiUrl}/ships`,
       { headers: this.getHeaders() }
     ).pipe(
-      catchError(this.handleError<Ship[]>('getAvailableShips', []))
+      catchError(error => throwError(() => error))
     );
   }
 
-  updateUserShip(shipId: number): Observable<any> {
-    if (!isPlatformBrowser(this.platformId)) {
-      return new Observable(observer => {
-        observer.next({});
-        observer.complete();
-      });
-    }
-    return this.http.post(`${this.apiUrl}/updateShip`, { shipId }, { headers: this.getHeaders() });
-  }
-
-  getUserAchievements(): Observable<any> {
-    if (!isPlatformBrowser(this.platformId)) {
-      return new Observable(observer => {
-        observer.next([]);
-        observer.complete();
-      });
-    }
-    return this.http.get(`${this.apiUrl}/achievements`, { headers: this.getHeaders() });
-  }
-
-  saveGameResults(gameData: GameData): Observable<{success: boolean}> {
-    console.log('Guardando resultados del juego:', gameData);
-    const headers = this.getHeaders();
-    
-    return this.http.post<{success: boolean}>(
-      `${this.apiUrl}/game/save`,
-      gameData,
-      { headers }
+  updateUserShip(shipId: number): Observable<{success: boolean}> {
+    return this.http.put<{success: boolean}>(
+      `${this.apiUrl}/user/ship`,
+      { shipId },
+      { headers: this.getHeaders() }
     ).pipe(
-      tap(response => console.log('Respuesta guardado:', response)),
+      catchError(error => throwError(() => error))
+    );
+  }
+
+  getUserAchievements(): Observable<Achievement[]> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return of([]);
+    }
+    
+    return this.http.get<Achievement[]>(
+      `${this.apiUrl}/achievements`, 
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(error => throwError(() => error))
+    );
+  }
+
+  saveGameResults(gameData: GameResult): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/stats/update`,
+      {
+        puntuacio: gameData.puntuacio,
+        temps_jugat: gameData.duracio_segons
+      },
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.estadistiques),
       catchError(error => {
         console.error('Error al guardar resultados:', error);
-        return of({ success: false });
+        return throwError(() => error);
+      })
+    );
+  }
+
+  updateUserStats(stats: UserStats): Observable<UserStats> {
+    return this.http.put<UserStats>(
+      `${this.apiUrl}/stats/update`,
+      stats,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(error => {
+        console.error('Error al actualizar estadísticas:', error);
+        return throwError(() => error);
       })
     );
   }

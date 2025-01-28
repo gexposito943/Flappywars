@@ -1,6 +1,6 @@
 import express from "express";
 import { sanitizeData } from "../middlewares/sanitizeData.js";
-import { registerUsers, loginUsers } from "../controllers/loginController.js";
+import { registerUsers, loginUser } from "../controllers/loginController.js";
 import { authenticateToken } from "../middlewares/auth.js";
 import { 
   getUserStats, 
@@ -20,28 +20,38 @@ import {
 
 const router = express.Router();
 
-// Middleware per sanejar les dades entrades
+// Middleware para sanear datos
 router.use(sanitizeData);
 
-// Endpoint per a registre i login d'usuaris
+// Rutas públicas
 router.post("/register", registerUsers);
-router.post("/login", loginUsers);
+router.post("/login", loginUser);
 
-// Rutas de naves (protegidas)
-router.get("/naus", authenticateToken, getShips);
-router.get("/users/:userId/ship", authenticateToken, getUserShip);
-router.put("/users/:userId/ship", authenticateToken, updateUserShip);
+// Rutas protegidas (requieren autenticación)
+router.use(authenticateToken);
 
-// Rutas de estadísticas (protegidas)
-router.get("/user/stats", authenticateToken, getUserStats);
-router.put("/user/stats", authenticateToken, updateStats);
+// Rutas de estadísticas
+router.get("/stats/user", getUserStats);
+router.post("/stats/update", updateStats);
 
-// Rutas de partidas (protegidas)
-router.post("/game/save", authenticateToken, saveGame);
-router.get("/game/history", authenticateToken, getGameHistory);
+// Rutas de naves
+router.get("/ships", getShips);
+router.get("/user/ship", getUserShip);
+router.put("/user/ship", updateUserShip);
+router.get("/user/ships", getUserShips);
 
-// Rutas de logros y naves del usuario (protegidas)
-router.get("/user/achievements", authenticateToken, getUserAchievements);
-router.get("/user/ships", authenticateToken, getUserShips);
+// Rutas de partidas
+router.post("/game/save", saveGame);
+router.get("/game/history", getGameHistory);
+
+// Rutas de logros
+router.get("/user/achievements", getUserAchievements);
+
+// Logging para debug
+router.use((req, res, next) => {
+  console.log(`Route accessed: ${req.method} ${req.originalUrl}`);
+  console.log('Request body:', req.body);
+  next();
+});
 
 export default router;

@@ -15,9 +15,9 @@
       🎮 Iniciar Partida
     </button>
     <button class="control-button pause" (click)="togglePause()" *ngIf="isGameRunning">
-      {{ isPaused ? '▶️ Continuar' : '⏸️ Pausar' }}
+      {{ isPaused ? '▶️ Continuar' : '⏸️ Pausar (Espai)' }}
     </button>
-    <button class="control-button save" (click)="saveGameResults()" *ngIf="!isGameRunning && score > 0">
+    <button class="control-button save" (click)="saveGameResults()" *ngIf="(isPaused || !isGameRunning) && score > 0">
       💾 Guardar Partida
     </button>
     <button class="control-button dashboard" (click)="goToDashboard()">

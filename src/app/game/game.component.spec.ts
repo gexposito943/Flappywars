@@ -64,7 +64,6 @@ describe('GameComponent', () => {
   });
 
   it('should initialize with correct values', () => {
-    // El juego no debería estar corriendo al inicio
     component.isGameRunning = false;
     fixture.detectChanges();
     expect(component.score).toBe(0);

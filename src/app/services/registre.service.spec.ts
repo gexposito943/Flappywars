@@ -201,23 +201,17 @@ describe('RegistreService', () => {
     req.flush(mockResponse);
   });
   it('should handle invalid JWT token', (done) => {
-    const mockResponse = { 
-      success: false,
-      token: null,  // El backend devuelve null para tokens inválidos
-      user: null
-    };
-    
-    service.validateUser('test@test.com', 'password123').subscribe({
-      next: (response) => {
-        expect(service.getToken()).toBeNull();
-        done();
+    service.validateUser('test@test.com', 'wrongpassword').subscribe({
+      next: () => {
+        done.fail('Should have failed with 401');
       },
       error: (error) => {
-        done.fail(error);
+        expect(service.getToken()).toBeNull();
+        done();
       }
     });
 
     const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
-    req.flush(mockResponse);
+    req.flush({ message: 'Invalid credentials' }, { status: 401, statusText: 'Unauthorized' });
   });
 });

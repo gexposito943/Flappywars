@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { GameService } from './game.service';
+import { GameService, GameResult } from './game.service';
 import { RegistreService } from './registre.service';
+
 
 describe('GameService', () => {
   let service: GameService;
@@ -38,10 +39,10 @@ describe('GameService', () => {
       expect(stats).toEqual(expectedStats);
     });
 
-    const req = httpMock.expectOne('http://localhost:3000/api/stats');
+    const req = httpMock.expectOne('http://localhost:3000/api/stats/user');
     expect(req.request.method).toBe('GET');
     expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
-    req.flush(expectedStats);
+    req.flush({ success: true, estadistiques: expectedStats });
   });
 
   it('should update user ship', () => {
@@ -59,10 +60,14 @@ describe('GameService', () => {
   });
 
   it('should save game results', () => {
-    const gameData = {
+    const gameData: GameResult = {
+      usuari_id: 1,
       puntuacio: 100,
-      temps_jugat: 60,
-      nau_id: 1
+      duracio_segons: 60,
+      nau_utilitzada: 1,
+      nivell_dificultat: 'facil',
+      obstacles_superats: 0,
+      completada: true
     };
     service.saveGameResults(gameData).subscribe();
     const req = httpMock.expectOne('http://localhost:3000/api/game/save');
@@ -121,7 +126,17 @@ describe('GameService', () => {
   });
 
   it('should handle error when saving game results', () => {
-    service.saveGameResults({ puntuacio: 0, temps_jugat: 0, nau_id: 1 }).subscribe({
+    const gameData: GameResult = {
+      usuari_id: 1,
+      puntuacio: 0,
+      duracio_segons: 0,
+      nau_utilitzada: 1,
+      nivell_dificultat: 'facil',
+      obstacles_superats: 0,
+      completada: true
+    };
+    
+    service.saveGameResults(gameData).subscribe({
       error: (error) => expect(error).toBeTruthy()
     });
     const req = httpMock.expectOne('http://localhost:3000/api/game/save');
@@ -140,13 +155,13 @@ describe('GameService', () => {
     service.getUserAchievements().subscribe({
       error: (error) => {
         expect(error.status).toBe(401);
-        expect(error.error.message).toBe('No autorizado');
+        expect(error.error.message).toBe('No autoritzat');
       }
     });
 
     const req = httpMock.expectOne('http://localhost:3000/api/achievements');
     req.flush(
-      { message: 'No autorizado' },
+      { message: 'No autoritzat' },
       { status: 401, statusText: 'Unauthorized' }
     );
   });

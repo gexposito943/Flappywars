@@ -1,6 +1,8 @@
 import { Component, ElementRef, ViewChild, OnInit, HostListener, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
+import { GameService, GameResult } from '../services/game.service';
+import { RegistreService } from '../services/registre.service';
 
 interface Obstacle {
   x: number;
@@ -56,6 +58,8 @@ export class GameComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private gameService: GameService,
+    private registreService: RegistreService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     const navigation = this.router.getCurrentNavigation();
@@ -93,8 +97,14 @@ export class GameComponent implements OnInit {
     if (event.key === 'Enter' && !this.isGameRunning) {
       this.startGame();
     }
-    if ((event.key === ' ' || event.key === 'ArrowUp') && this.isGameRunning) {
+    if (event.key === 'ArrowUp' && this.isGameRunning) {
       this.jump();
+    }
+    if (event.key === ' ') {
+      event.preventDefault(); 
+      if (this.isGameRunning) {
+        this.togglePause();
+      }
     }
   }
 
@@ -114,45 +124,48 @@ export class GameComponent implements OnInit {
 
   saveGameResults() {
     const gameTime = Math.floor((Date.now() - this.gameStartTime) / 1000);
-    this.gameResults = {
-      score: this.score,
-      time: gameTime,
-      shipId: this.selectedShipId,
-      date: new Date().toISOString()
-    };
     
-    try {
-      // Actualizar estadísticas del usuario
-      const userStats = {
-        millor_puntuacio: Math.max(this.userData.millor_puntuacio || 0, this.score),
-        total_partides: (this.userData.total_partides || 0) + 1,
-        temps_total_jugat: (this.userData.temps_total_jugat || 0) + gameTime
-      };
+    const gameResult: GameResult = {
+      usuari_id: this.userData.id,
+      puntuacio: this.score,
+      duracio_segons: gameTime,
+      nau_utilitzada: this.selectedShipId || 1,
+      nivell_dificultat: 'normal',
+      obstacles_superats: this.score,
+      completada: true
+    };
 
-      // Actualizar puntos totales
-      this.userData.puntosTotales = (this.userData.puntosTotales || 0) + this.score;
-      
-      // Guardar en localStorage
-      localStorage.setItem('userStats', JSON.stringify(userStats));
-      localStorage.setItem('userData', JSON.stringify(this.userData));
-      
-      console.log('Partida guardada exitosamente:', {
-        stats: userStats,
-        userData: this.userData
-      });
-
-      // Mostrar mensaje de éxito
-      this.gameMessage = `Partida guardada! Puntuació: ${this.score}`;
-      
-      // Actualizar el mensaje después de 2 segundos
-      setTimeout(() => {
-        this.gameMessage = 'Prem Enter per tornar a jugar';
-      }, 2000);
-
-    } catch (error) {
-      console.error('Error al guardar la partida:', error);
-      this.gameMessage = 'Error al guardar la partida';
-    }
+    this.gameService.saveGameResults(gameResult).subscribe({
+      next: (response) => {
+        console.log('Partida guardada:', response);
+        this.gameMessage = `Partida guardada! Puntuació: ${this.score}`;
+        
+        // Actualizar estadísticas locales
+        if (response.estadistiques) {
+          // Actualizar datos del usuario
+          this.userData.puntosTotales = (this.userData.puntosTotales || 0) + this.score;
+          this.registreService.setUserData(this.userData);
+          
+          // Forzar actualización de estadísticas en el dashboard
+          this.gameService.getUserStats().subscribe({
+            next: (stats) => {
+              console.log('Estadísticas actualizadas:', stats);
+            },
+            error: (error) => {
+              console.error('Error al obtener estadísticas actualizadas:', error);
+            }
+          });
+        }
+        
+        setTimeout(() => {
+          this.gameMessage = 'Prem Enter per tornar a jugar';
+        }, 2000);
+      },
+      error: (error) => {
+        console.error('Error al guardar la partida:', error);
+        this.gameMessage = 'Error al guardar la partida';
+      }
+    });
   }
 
   stopGame() {
@@ -216,7 +229,22 @@ export class GameComponent implements OnInit {
   }
 
   handleCollision() {
-    this.stopGame();
+    this.isGameRunning = false;
+    this.showMessage = true;
+    this.gameMessage = `Game Over - Puntuació: ${this.score}`;
+    if (this.gameLoop) {
+      clearInterval(this.gameLoop);
+      this.gameLoop = null;
+    }
+    // No llamamos a startGame() automáticamente
+  }
+
+  private checkBoundaries(): boolean {
+    if (this.playerY <= 0 || this.playerY >= this.canvasHeight - this.PLAYER_SIZE) {
+      this.handleCollision();
+      return true;
+    }
+    return false;
   }
 
   private createObstacle(): Obstacle {

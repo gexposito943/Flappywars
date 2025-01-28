@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { GameService } from '../services/game.service';
 import { RegistreService } from '../services/registre.service';
 import { ShipService } from '../services/ship.service';
+import { filter } from 'rxjs/operators';
 
 
 interface UserData {
@@ -101,31 +102,34 @@ export class DashboardComponent implements OnInit {
       this.userData = { ...this.userData, ...data };
     }
     
-    // Inicialmente ninguna nave seleccionada
     this.selectedShipId = null;
-    
     this.loadUserStats();
     
-    this.loading = false;
+    // Recargar estadísticas cuando volvemos al dashboard
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.loadUserStats();
+    });
   }
 
   loadUserStats() {
+    console.log('Cargando estadísticas...');
     this.gameService.getUserStats().subscribe({
       next: (stats) => {
-        console.log('Estadísticas cargadas:', stats);
-        this.userStats = {
-          millor_puntuacio: stats?.millor_puntuacio || 0,
-          total_partides: stats?.total_partides || 0,
-          temps_total_jugat: stats?.temps_total_jugat || 0
-        };
+        console.log('Estadísticas recibidas:', stats);
+        if (stats) {
+          this.userStats = {
+            millor_puntuacio: stats.millor_puntuacio || 0,
+            total_partides: stats.total_partides || 0,
+            temps_total_jugat: stats.temps_total_jugat || 0
+          };
+        }
+        this.statsError = false;
       },
       error: (error) => {
-        console.error('Error loading stats:', error);
-        this.userStats = {
-          millor_puntuacio: 0,
-          total_partides: 0,
-          temps_total_jugat: 0
-        };
+        console.error('Error al cargar estadísticas:', error);
+        this.statsError = true;
       }
     });
   }
@@ -138,7 +142,15 @@ export class DashboardComponent implements OnInit {
   formatTime(seconds: number): string {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    return `${hours}h ${minutes}m`;
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${remainingSeconds}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${remainingSeconds}s`;
+    } else {
+      return `${remainingSeconds}s`;
+    }
   }
 
   startGame() {

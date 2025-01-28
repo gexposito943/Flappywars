@@ -1,8 +1,9 @@
 import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { tap } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
+import { throwError } from 'rxjs';
 
 
 interface AuthResponse {
@@ -44,21 +45,25 @@ export class RegistreService {
     return this.http.post(`${this.apiUrl}/register`, body);
   }
 
-  validateUser(email: string, password: string): Observable<AuthResponse> {
-    console.log('Iniciando login:', email);
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
+  validateUser(username: string, password: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { 
+      email: username,
+      password: password 
+    }).pipe(
       tap(response => {
         if (response.success && response.token) {
-          // Guardar el token tal cual viene del backend
-          localStorage.setItem(this.tokenKey, response.token);
-          
-          if (response.user) {
-            console.log('Guardando datos de usuario');
-            localStorage.setItem(this.userDataKey, JSON.stringify(response.user));
-          }
+          this.setToken(response.token);
+          this.setUserData(response.user);
         } else {
-          console.error('Respuesta de login inválida:', response);
+          this.setToken(null);
+          this.setUserData(null);
         }
+      }),
+      catchError(error => {
+        console.error('Error en login:', error);
+        this.setToken(null);
+        this.setUserData(null);
+        return throwError(() => error);
       })
     );
   }
@@ -117,9 +122,13 @@ export class RegistreService {
     return isPlatformBrowser(this.platformId);
   }
 
-  setToken(token: string): void {
+  setToken(token: string | null): void {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.tokenKey, token);
+      if (token) {
+        localStorage.setItem(this.tokenKey, token);
+      } else {
+        localStorage.removeItem(this.tokenKey);
+      }
     }
     this.token = token;
   }
