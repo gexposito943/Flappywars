@@ -244,4 +244,8 @@ export class DashboardComponent implements OnInit {
       }
     });
   }
+
+  viewGlobalStats(): void {
+    this.router.navigate(['/statistics']);
+  }
 }
