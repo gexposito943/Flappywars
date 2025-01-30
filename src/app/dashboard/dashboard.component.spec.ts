@@ -59,7 +59,12 @@ describe('DashboardComponent', () => {
   ];
 
   beforeEach(async () => {
-    mockGameService = jasmine.createSpyObj('GameService', ['updateUserShip', 'getUserStats', 'getUserAchievements']);
+    mockGameService = jasmine.createSpyObj('GameService', [
+      'updateUserShip', 
+      'getUserStats', 
+      'getUserAchievements',
+      'hasSavedGame'
+    ]);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockRegistreService = jasmine.createSpyObj('RegistreService', ['logout', 'getUserData', 'setUserData']);
     mockShipService = jasmine.createSpyObj('ShipService', ['getShips']);
@@ -79,6 +84,7 @@ describe('DashboardComponent', () => {
     mockRegistreService.getUserData.and.returnValue(mockUserData);
     mockShipService.getShips.and.returnValue(of(mockShips));
     mockGameService.updateUserShip.and.returnValue(of({ success: true }));
+    mockGameService.hasSavedGame.and.returnValue(true);
 
     await TestBed.configureTestingModule({
       imports: [DashboardComponent, HttpClientTestingModule],
@@ -285,5 +291,17 @@ describe('DashboardComponent', () => {
       expect(pointsBadge).toBeTruthy();
       expect(pointsBadge.nativeElement.textContent.trim()).toBe('Punts: 1500');
     });
+    
   });
+
+  describe('Game Save Features', () => {
+    it('should have restore game button disabled when no saved game exists', () => {
+      mockGameService.hasSavedGame.and.returnValue(false);
+      fixture.detectChanges();
+      
+      const restoreButton = fixture.debugElement.query(By.css('.restore-button'));
+      expect(restoreButton.nativeElement.disabled).toBeTrue();
+    });
+  });
+
 });

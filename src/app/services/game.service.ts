@@ -172,4 +172,8 @@ export class GameService {
       })
     );
   }
+
+  hasSavedGame(): boolean {
+    return localStorage.getItem('savedGame') !== null;
+  }
 }
