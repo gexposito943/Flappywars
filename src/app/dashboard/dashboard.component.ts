@@ -56,7 +56,7 @@ export class DashboardComponent implements OnInit {
     username: 'Usuario',
     nivel: 1,
     puntosTotales: 0,
-    naveActual: 1  // X-Wing por defecto
+    naveActual: 1  // X-Wing per defecte
   };
   availableShips: Ship[] = [
     {
@@ -107,7 +107,7 @@ export class DashboardComponent implements OnInit {
     this.selectedShipId = null;
     this.loadUserStats();
     
-    // Recargar estadísticas cuando volvemos al dashboard
+    // Recarga estadistiques quan tornem al dashboard
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
@@ -164,7 +164,7 @@ export class DashboardComponent implements OnInit {
   startGame() {
     console.log('Iniciando juego con nave:', this.selectedShipId);
     if (this.selectedShipId) {
-      // Navegamos directamente al juego sin llamar a la API
+      // Navegamos directament al joc sense cridar a l'API
       this.router.navigate(['/game'], {
         state: { 
           shipId: this.selectedShipId,
@@ -172,7 +172,7 @@ export class DashboardComponent implements OnInit {
         }
       });
     } else {
-      console.log('No hay nave seleccionada');
+      console.log('No hi ha nau seleccionada');
     }
   }
 
@@ -180,15 +180,15 @@ export class DashboardComponent implements OnInit {
     const ship = this.availableShips.find(s => s.id === shipId);
     if (ship && this.isShipUnlocked(ship)) {
       this.selectedShipId = shipId;
-      console.log('Nave seleccionada:', shipId);
+      console.log('Nau seleccionada:', shipId);
       
-      // Actualizar el estado inmediatamente
+      // Actualitzar l'estat immediatament
       this.userData = {
         ...this.userData,
         naveActual: shipId
       };
       
-      // Guardar en el servicio
+      // Guardar en el servei
       this.registreService.setUserData(this.userData);
     }
   }
@@ -208,7 +208,7 @@ export class DashboardComponent implements OnInit {
   }
 
   loadShips() {
-    console.log('Naves disponibles:', this.availableShips);
+    console.log('Naus disponibles:', this.availableShips);
   }
 
   isShipUnlocked(ship: Ship): boolean {

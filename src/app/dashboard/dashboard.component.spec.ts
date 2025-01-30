@@ -250,4 +250,24 @@ describe('DashboardComponent', () => {
     expect(mockRegistreService.logout).toHaveBeenCalled();
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
   });
+
+  describe('Points System', () => {
+    it('should update total points when loading stats', () => {
+      const mockStats = {
+        millor_puntuacio: 1000,
+        total_partides: 50,
+        temps_total_jugat: 7200,
+        punts_totals: 2500
+      };
+      
+      mockGameService.getUserStats.and.returnValue(of(mockStats));
+      component.loadUserStats();
+      
+      expect(component.userData.puntosTotales).toBe(2500);
+      expect(mockRegistreService.setUserData).toHaveBeenCalledWith({
+        ...component.userData,
+        puntosTotales: 2500
+      });
+    });
+  });
 });

@@ -24,7 +24,7 @@
   bottom: 0;
   background: url('/assets/images/fonsdash.jpg') no-repeat center center fixed;
   background-size: cover;
-  filter: brightness(0.5); /* Hace la imagen más oscura */
+  filter: brightness(0.5); 
   z-index: -2;
 }
 
@@ -53,7 +53,7 @@ body {
   overflow-y: auto;
 }
 
-/* Top Bar con efecto de cristal espacial */
+
 .top-bar {
   background: rgba(13, 20, 37, 0.8);
   backdrop-filter: blur(10px);
