@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { GameService } from '../services/game.service';
 
 interface GlobalStats {
@@ -19,7 +20,10 @@ export class EstadistiquesComponent implements OnInit {
   loading: boolean = true;
   error: boolean = false;
 
-  constructor(private gameService: GameService) {}
+  constructor(
+    private gameService: GameService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadGlobalStats();
@@ -38,5 +42,9 @@ export class EstadistiquesComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  returnToDashboard(): void {
+    this.router.navigate(['/dashboard']);
   }
 }
