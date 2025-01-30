@@ -176,4 +176,15 @@ export class GameService {
   hasSavedGame(): boolean {
     return localStorage.getItem('savedGame') !== null;
   }
+
+  restoreGame(): Observable<any> {
+    const savedGame = localStorage.getItem('savedGame');
+    if (savedGame) {
+      return of({
+        success: true,
+        gameState: JSON.parse(savedGame)
+      });
+    }
+    return throwError(() => new Error('No hi ha partida guardada'));
+  }
 }

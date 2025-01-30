@@ -228,5 +228,20 @@ export class DashboardComponent implements OnInit {
   }
 
   restoreGame(): void {
+    this.gameService.restoreGame().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.router.navigate(['/game'], {
+            state: {
+              restored: true,
+              gameState: response.gameState
+            }
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error al resutaurar partida:', error);
+      }
+    });
   }
 }
