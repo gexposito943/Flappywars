@@ -212,8 +212,14 @@ export class DashboardComponent implements OnInit {
   }
 
   isShipUnlocked(ship: Ship): boolean {
+    
     const isUnlocked = this.userData.puntosTotales >= ship.required_points;
-    console.log(`Nau ${ship.id} desbloquejada:`, isUnlocked);
+    // Log per a depuració
+    console.log(`Verificant nau ${ship.nom}:`);
+    console.log(`- Punts necessaris: ${ship.required_points}`);
+    console.log(`- Punts usuari: ${this.userData.puntosTotales}`);
+    console.log(`- Desbloquejada: ${isUnlocked}`);
+    
     return isUnlocked;
   }
 }
