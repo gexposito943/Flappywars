@@ -13,6 +13,7 @@ interface UserStats {
   millor_puntuacio: number;
   total_partides: number;
   temps_total_jugat: number;
+  punts_totals: number;
 }
 
 describe('DashboardComponent', () => {
@@ -66,7 +67,8 @@ describe('DashboardComponent', () => {
     mockGameService.getUserStats.and.returnValue(of({
       millor_puntuacio: 1000,
       total_partides: 50,
-      temps_total_jugat: 7200
+      temps_total_jugat: 7200,
+      punts_totals: 2500
     }));
 
     mockGameService.getUserAchievements.and.returnValue(of([
@@ -137,7 +139,8 @@ describe('DashboardComponent', () => {
       const stats: UserStats = {
         millor_puntuacio: 1000,
         total_partides: 50,
-        temps_total_jugat: 7200
+        temps_total_jugat: 7200,
+        punts_totals: 2500
       };
       
       component.userStats = stats;
@@ -165,7 +168,8 @@ describe('DashboardComponent', () => {
     const mockStats = {
       millor_puntuacio: 1000,
       total_partides: 50,
-      temps_total_jugat: 7200 
+      temps_total_jugat: 7200,
+      punts_totals: 2500
     };
     
     mockGameService.getUserStats.and.returnValue(of(mockStats));
@@ -223,7 +227,8 @@ describe('DashboardComponent', () => {
     expect(component.userStats).toEqual({
       millor_puntuacio: 0,
       total_partides: 0,
-      temps_total_jugat: 0
+      temps_total_jugat: 0,
+      punts_totals: 0
     });
   });
 

@@ -33,6 +33,7 @@ interface UserStats {
   millor_puntuacio: number;
   total_partides: number;
   temps_total_jugat: number;
+  punts_totals: number;
 }
 
 @Component({
@@ -46,7 +47,8 @@ export class DashboardComponent implements OnInit {
   userStats: UserStats = {
     millor_puntuacio: 0,
     total_partides: 0,
-    temps_total_jugat: 0
+    temps_total_jugat: 0,
+    punts_totals: 0
   };
   statsError: boolean = false;
   selectedShipId: number | null = null;
@@ -122,8 +124,14 @@ export class DashboardComponent implements OnInit {
           this.userStats = {
             millor_puntuacio: stats.millor_puntuacio || 0,
             total_partides: stats.total_partides || 0,
-            temps_total_jugat: stats.temps_total_jugat || 0
+            temps_total_jugat: stats.temps_total_jugat || 0,
+            punts_totals: stats.punts_totals || 0
           };
+          this.userData = {
+            ...this.userData,
+            puntosTotales: stats.punts_totals || 0
+          };
+          this.registreService.setUserData(this.userData);
         }
         this.statsError = false;
       },

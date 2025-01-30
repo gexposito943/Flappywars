@@ -128,7 +128,7 @@ export const loginUser = async (req, res) => {
             { expiresIn: '24h' }
         );
 
-        // Enviar respuesta exitosa
+        
         res.json({
             success: true,
             message: 'Login correcte',

@@ -32,14 +32,15 @@ describe('GameService', () => {
     const expectedStats = {
       millor_puntuacio: 1000,
       total_partides: 50,
-      temps_total_jugat: 7200
+      temps_total_jugat: 7200,
+      punts_totals: 2500
     };
 
     service.getUserStats().subscribe(stats => {
       expect(stats).toEqual(expectedStats);
     });
 
-    const req = httpMock.expectOne('http://localhost:3000/api/stats/user');
+    const req = httpMock.expectOne('http://localhost:3000/api/v1/stats/user');
     expect(req.request.method).toBe('GET');
     expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
     req.flush({ success: true, estadistiques: expectedStats });

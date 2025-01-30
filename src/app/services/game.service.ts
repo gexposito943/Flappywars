@@ -9,6 +9,7 @@ export interface UserStats {
   millor_puntuacio: number;
   total_partides: number;
   temps_total_jugat: number;
+  punts_totals: number;
 }
 
 export interface Achievement {
@@ -76,18 +77,26 @@ export class GameService {
     };
   }
 
-  getUserStats(): Observable<any> {
+  getUserStats(): Observable<UserStats> {
     return this.http.get<any>(
       `${this.apiUrl}/stats/user`,
       { headers: this.getHeaders() }
     ).pipe(
       map(response => response.estadistiques),
+      tap(stats => {
+        const userData = this.registreService.getUserData();
+        if (userData && stats.punts_totals !== undefined) {
+          userData.puntosTotales = stats.punts_totals;
+          this.registreService.setUserData(userData);
+        }
+      }),
       catchError(error => {
         console.error('Error al obtener estadísticas:', error);
         return of({
           millor_puntuacio: 0,
           total_partides: 0,
-          temps_total_jugat: 0
+          temps_total_jugat: 0,
+          punts_totals: 0
         });
       })
     );
@@ -134,6 +143,15 @@ export class GameService {
       },
       { headers: this.getHeaders() }
     ).pipe(
+      tap(response => {
+        if (response.success && response.estadistiques) {
+          const userData = this.registreService.getUserData();
+          if (userData) {
+            userData.puntosTotales = response.estadistiques.punts_totals;
+            this.registreService.setUserData(userData);
+          }
+        }
+      }),
       map(response => response.estadistiques),
       catchError(error => {
         console.error('Error al guardar resultados:', error);
