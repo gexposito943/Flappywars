@@ -302,6 +302,15 @@ describe('DashboardComponent', () => {
       const restoreButton = fixture.debugElement.query(By.css('.restore-button'));
       expect(restoreButton.nativeElement.disabled).toBeTrue();
     });
+
+    it('should have restore game button enabled when saved game exists', () => {
+      mockGameService.hasSavedGame.and.returnValue(true);
+      fixture.detectChanges();
+      
+      const restoreButton = fixture.debugElement.query(By.css('.restore-button'));
+      expect(restoreButton.nativeElement.disabled).toBeFalse();
+      expect(restoreButton.nativeElement.textContent.trim()).toBe('Restaurar Partida');
+    });
   });
 
 });
