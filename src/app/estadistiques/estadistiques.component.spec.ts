@@ -63,4 +63,12 @@ describe('EstadistiquesComponent', () => {
     returnButton.nativeElement.click();
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
   });
+
+  it('should show loading state', () => {
+    component.loading = true;
+    fixture.detectChanges();
+    const loadingElement = fixture.debugElement.query(By.css('.loading-error'));
+    expect(loadingElement).toBeTruthy();
+    expect(loadingElement.nativeElement.textContent).toContain('Carregant estadístiques');
+  });
 });
