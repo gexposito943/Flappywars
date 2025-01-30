@@ -269,5 +269,13 @@ describe('DashboardComponent', () => {
         puntosTotales: 2500
       });
     });
+
+    it('should unlock ships based on total points', () => {
+      component.userData.puntosTotales = 1500;
+      
+      expect(component.isShipUnlocked(component.availableShips[0])).toBeTrue();
+      expect(component.isShipUnlocked(component.availableShips[1])).toBeTrue();
+      expect(component.isShipUnlocked(component.availableShips[2])).toBeFalse();
+    });
   });
 });
