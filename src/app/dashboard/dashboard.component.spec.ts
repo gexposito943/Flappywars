@@ -63,7 +63,8 @@ describe('DashboardComponent', () => {
       'updateUserShip', 
       'getUserStats', 
       'getUserAchievements',
-      'hasSavedGame'
+      'hasSavedGame',
+      'restoreGame'
     ]);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockRegistreService = jasmine.createSpyObj('RegistreService', ['logout', 'getUserData', 'setUserData']);
@@ -310,6 +311,33 @@ describe('DashboardComponent', () => {
       const restoreButton = fixture.debugElement.query(By.css('.restore-button'));
       expect(restoreButton.nativeElement.disabled).toBeFalse();
       expect(restoreButton.nativeElement.textContent.trim()).toBe('Restaurar Partida');
+    });
+
+    it('should restore game when restore button is clicked', () => {
+      mockGameService.hasSavedGame.and.returnValue(true);
+      mockGameService.restoreGame.and.returnValue(of({
+        success: true,
+        gameState: {
+          puntuacio: 1000,
+          nau_id: 1
+        }
+      }));
+      
+      fixture.detectChanges();
+      
+      const restoreButton = fixture.debugElement.query(By.css('.restore-button'));
+      restoreButton.nativeElement.click();
+
+      expect(mockGameService.restoreGame).toHaveBeenCalled();
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/game'], {
+        state: {
+          restored: true,
+          gameState: {
+            puntuacio: 1000,
+            nau_id: 1
+          }
+        }
+      });
     });
   });
 
