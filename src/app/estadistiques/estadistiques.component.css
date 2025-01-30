@@ -1,0 +1,109 @@
+:host {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/assets/images/fonsdash.jpg') no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.estadistiques-container {
+  width: 800px;
+  height: 80vh;
+  background: rgba(13, 20, 33, 0.8);
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  position: relative;
+}
+
+h1 {
+  text-align: center;
+  color: #ffffff;
+  margin: 0 0 20px 0;
+  font-size: 2.5em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.stats-table {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(80vh - 100px); /* Altura fija restando el espacio del título */
+  overflow: hidden;
+}
+
+.stats-header {
+  display: grid;
+  grid-template-columns: 100px 1fr 150px;
+  background: rgba(44, 62, 80, 0.9);
+  padding: 15px;
+  font-weight: bold;
+  border-bottom: 2px solid #FFD700;
+}
+
+.stats-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 150px;
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.stats-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.header-cell {
+  color: #FFD700;
+  font-size: 1.1em;
+}
+
+.header-cell, .stats-cell {
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+}
+
+.loading-error, .no-stats {
+  text-align: center;
+  padding: 20px;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+}
+
+/* Estilizar la barra de scroll */
+.stats-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.stats-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.stats-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}

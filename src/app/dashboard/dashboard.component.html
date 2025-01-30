@@ -7,7 +7,20 @@
                 <span class="stat-badge">Punts: {{ userData.puntosTotales || 0 }}</span>
             </div>
         </div>
-        <button class="logout-button" (click)="logout()">Sortir</button>
+        <div class="top-buttons">
+            <button 
+                class="restore-button" 
+                [disabled]="!hasSavedGame()"
+                (click)="restoreGame()">
+                Restaurar Partida
+            </button>
+            <button 
+                class="stats-button"
+                (click)="viewGlobalStats()">
+                Veure Estadístiques
+            </button>
+            <button class="logout-button" (click)="logout()">Sortir</button>
+        </div>
     </div>
 
     <div class="stats-section">
@@ -58,19 +71,5 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="game-controls">
-        <button 
-            class="restore-button" 
-            [disabled]="!hasSavedGame()"
-            (click)="restoreGame()">
-            Restaurar Partida
-        </button>
-        <button 
-            class="stats-button"
-            (click)="viewGlobalStats()">
-            Veure Estadístiques
-        </button>
     </div>
 </div>

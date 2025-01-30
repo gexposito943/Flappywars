@@ -55,68 +55,83 @@ body {
 
 
 .top-bar {
-  background: rgba(13, 20, 37, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(0, 0, 255, 0.2);
-  padding: 1.5rem;
-  border-radius: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 20px;
+  background: rgba(13, 20, 33, 0.8);
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .profile h1 {
-  color: #fff;
-  font-size: 1.8rem;
-  text-shadow: 0 0 10px rgba(0, 195, 255, 0.5);
+  color: white;
+  font-size: 2em;
   margin: 0;
-  margin-bottom: 0.8rem;
 }
 
-/* Badges con estilo futurista */
 .user-stats {
   display: flex;
-  gap: 1.5rem;
+  gap: 10px;
 }
 
 .stat-badge {
-  background: linear-gradient(145deg, rgba(255, 215, 0, 0.2), rgba(255, 180, 0, 0.1));
-  border: 1px solid rgba(255, 215, 0, 0.3);
-  padding: 0.7rem 1.5rem;
+  background: rgba(41, 41, 27, 0.8);
+  color: #FFD700;
+  padding: 8px 16px;
   border-radius: 20px;
-  font-size: 1rem;
-  color: #fff;
-  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
-  transition: all 0.3s ease;
+  border: 1px solid #4a4a3a;
 }
 
-.stat-badge:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
-  border-color: rgba(255, 255, 255, 0.6);
+.top-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-/* Botón de salida con efecto de alerta */
-.logout-button {
-  background: linear-gradient(45deg, #ff4444, #ff0000);
+.restore-button,
+.stats-button {
+  background: #2c3e50;
   color: white;
-  border: none;
-  padding: 0.8rem 2rem;
-  border-radius: 8px;
+  border: 1px solid #34495e;
+  padding: 8px 16px;
+  border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
   transition: all 0.3s ease;
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+}
+
+.restore-button:hover:not(:disabled),
+.stats-button:hover {
+  background: #34495e;
+  transform: translateY(-2px);
+}
+
+.restore-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.logout-button {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
 .logout-button:hover {
-  background: linear-gradient(45deg, #ff0000, #cc0000);
+  background: #c0392b;
   transform: translateY(-2px);
-  box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
 }
 
 /* Sección de estadísticas con efecto holográfico */
