@@ -341,4 +341,23 @@ describe('DashboardComponent', () => {
     });
   });
 
+  describe('Global Statistics', () => {
+    it('should have a button to view global statistics', () => {
+      fixture.detectChanges();
+      
+      const statsButton = fixture.debugElement.query(By.css('.stats-button'));
+      expect(statsButton).toBeTruthy();
+      expect(statsButton.nativeElement.textContent.trim()).toBe('Veure Estadístiques');
+    });
+
+    it('should navigate to statistics page when button is clicked', () => {
+      fixture.detectChanges();
+      
+      const statsButton = fixture.debugElement.query(By.css('.stats-button'));
+      statsButton.nativeElement.click();
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/statistics']);
+    });
+  });
+
 });
