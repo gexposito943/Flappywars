@@ -1,10 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
+import { By } from '@angular/platform-browser';
 import { EstadistiquesComponent } from './estadistiques.component';
 import { GameService } from '../services/game.service';
 
-describe('StatisticsComponent', () => {
+describe('EstadistiquesComponent', () => {
   let component: EstadistiquesComponent;
   let fixture: ComponentFixture<EstadistiquesComponent>;
   let mockGameService: jasmine.SpyObj<GameService>;

@@ -39,6 +39,11 @@ export interface GameResult {
   completada: boolean;
 }
 
+interface GlobalStats {
+  username: string;
+  punts_totals: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -186,5 +191,17 @@ export class GameService {
       });
     }
     return throwError(() => new Error('No hi ha partida guardada'));
+  }
+
+  getGlobalStats(): Observable<GlobalStats[]> {
+    return this.http.get<GlobalStats[]>(
+      `${this.apiUrl}/stats/global`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(error => {
+        console.error('Error obteniendo estadísticas globales:', error);
+        return of([]);
+      })
+    );
   }
 }
