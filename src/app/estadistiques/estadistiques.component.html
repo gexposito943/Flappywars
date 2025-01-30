@@ -11,13 +11,19 @@
       <div class="header-cell">Posició</div>
       <div class="header-cell">Jugador</div>
       <div class="header-cell">Punts Totals</div>
+      <div class="header-cell">Millor Puntuació</div>
+      <div class="header-cell">Total Partides</div>
+      <div class="header-cell">Temps Total</div>
     </div>
 
     <div class="stats-content">
       <div class="stats-row" *ngFor="let stat of globalStats; let i = index">
         <div class="stats-cell">{{ i + 1 }}</div>
         <div class="stats-cell">{{ stat.username }}</div>
-        <div class="stats-cell">{{ stat.punts_totals }}</div>
+        <div class="stats-cell">{{ stat.punts_totals | number }}</div>
+        <div class="stats-cell">{{ stat.millor_puntuacio | number }}</div>
+        <div class="stats-cell">{{ stat.total_partides }}</div>
+        <div class="stats-cell">{{ formatTime(stat.temps_total_jugat) }}</div>
       </div>
 
       <div class="no-stats" *ngIf="globalStats.length === 0">

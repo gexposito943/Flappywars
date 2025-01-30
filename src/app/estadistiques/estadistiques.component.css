@@ -45,7 +45,7 @@ h1 {
 
 .stats-header {
   display: grid;
-  grid-template-columns: 100px 1fr 150px;
+  grid-template-columns: 80px 1fr 120px 120px 120px 120px;
   background: rgba(44, 62, 80, 0.9);
   padding: 15px;
   font-weight: bold;
@@ -59,10 +59,10 @@ h1 {
 
 .stats-row {
   display: grid;
-  grid-template-columns: 100px 1fr 150px;
+  grid-template-columns: 80px 1fr 120px 120px 120px 120px;
   padding: 12px 15px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .stats-row:hover {
@@ -136,4 +136,23 @@ h1 {
 .return-button:active {
   transform: translateX(-50%) translateY(0);
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.stats-cell {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+
+/* Alineación específica para números */
+.stats-cell:nth-child(3),
+.stats-cell:nth-child(4),
+.stats-cell:nth-child(5),
+.stats-cell:nth-child(6) {
+  justify-content: flex-end;
+}
+
+/* Alineación para posición */
+.stats-cell:first-child {
+  justify-content: center;
 }

@@ -42,6 +42,9 @@ export interface GameResult {
 interface GlobalStats {
   username: string;
   punts_totals: number;
+  millor_puntuacio: number;
+  total_partides: number;
+  temps_total_jugat: number;
 }
 
 @Injectable({
@@ -198,6 +201,7 @@ export class GameService {
       `${this.apiUrl}/stats/global`,
       { headers: this.getHeaders() }
     ).pipe(
+      map(stats => stats.sort((a, b) => b.punts_totals - a.punts_totals)),
       catchError(error => {
         console.error('Error obteniendo estadísticas globales:', error);
         return of([]);

@@ -4,7 +4,8 @@ import { registerUsers, loginUser } from "../controllers/loginController.js";
 import { authenticateToken } from "../middlewares/auth.js";
 import { 
   getUserStats, 
-  updateStats 
+  updateStats,
+  getGlobalStats
 } from "../controllers/statsController.js";
 import { 
   saveGame, 
@@ -33,6 +34,7 @@ router.use(authenticateToken);
 // Rutas de estadísticas
 router.get("/stats/user", getUserStats);
 router.post("/stats/update", updateStats);
+router.get("/stats/global", getGlobalStats);
 
 // Rutas de naves
 router.get("/ships", getShips);

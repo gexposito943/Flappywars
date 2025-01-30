@@ -6,6 +6,9 @@ import { GameService } from '../services/game.service';
 interface GlobalStats {
   username: string;
   punts_totals: number;
+  millor_puntuacio: number;
+  total_partides: number;
+  temps_total_jugat: number;
 }
 
 @Component({
@@ -29,15 +32,28 @@ export class EstadistiquesComponent implements OnInit {
     this.loadGlobalStats();
   }
 
+  formatTime(seconds: number): string {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${remainingSeconds}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${remainingSeconds}s`;
+    }
+    return `${remainingSeconds}s`;
+  }
+
   loadGlobalStats(): void {
     this.loading = true;
     this.gameService.getGlobalStats().subscribe({
       next: (stats) => {
-        this.globalStats = stats.sort((a, b) => b.punts_totals - a.punts_totals);
+        this.globalStats = stats;
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error el carregar estadístiques', error);
+        console.error('Error carregant estadístiques:', error);
         this.error = true;
         this.loading = false;
       }

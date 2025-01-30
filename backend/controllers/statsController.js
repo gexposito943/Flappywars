@@ -1,4 +1,4 @@
-import { pool as db } from "../database.js";
+import { pool } from '../database.js';
 
 /**
  * Obté les estadístiques d'un usuari
@@ -10,8 +10,8 @@ import { pool as db } from "../database.js";
 export const getUserStats = async (req, res) => {
   try {
     const userId = req.user.userId;
-    // Obtener estadísticas y puntos totales en una sola consulta
-    const [stats] = await db.query(
+    // Obtenir estadístiques i punts totals en una sola consulta
+    const [stats] = await pool.query(
       `SELECT e.*, u.punts_totals 
        FROM estadistiques_usuari e 
        LEFT JOIN usuaris u ON e.usuari_id = u.id 
@@ -20,7 +20,7 @@ export const getUserStats = async (req, res) => {
     );
 
     if (stats.length === 0) {
-      await db.query(
+      await pool.query(
         'INSERT INTO estadistiques_usuari (usuari_id) VALUES (?)',
         [userId]
       );
@@ -74,11 +74,11 @@ export const updateStats = async (req, res) => {
     }
 
     // Iniciar transacción
-    await db.query('START TRANSACTION');
+    await pool.query('START TRANSACTION');
 
     try {
       // Actualizar estadísticas
-      await db.query(`
+      await pool.query(`
         UPDATE estadistiques_usuari 
         SET 
           millor_puntuacio = GREATEST(millor_puntuacio, ?),
@@ -88,14 +88,14 @@ export const updateStats = async (req, res) => {
       `, [puntuacio, temps_jugat, userId]);
 
       // Actualizar puntos totales del usuario
-      await db.query(`
+      await pool.query(`
         UPDATE usuaris 
         SET punts_totals = punts_totals + ? 
         WHERE id = ?
       `, [puntuacio, userId]);
 
       // Obtener estadísticas actualizadas
-      const [updatedStats] = await db.query(
+      const [updatedStats] = await pool.query(
         `SELECT e.*, u.punts_totals 
          FROM estadistiques_usuari e 
          JOIN usuaris u ON e.usuari_id = u.id 
@@ -104,7 +104,7 @@ export const updateStats = async (req, res) => {
       );
 
       // Confirmar transacción
-      await db.query('COMMIT');
+      await pool.query('COMMIT');
 
       res.json({
         success: true,
@@ -118,7 +118,7 @@ export const updateStats = async (req, res) => {
       });
     } catch (error) {
       // Revertir transacción si hay error
-      await db.query('ROLLBACK');
+      await pool.query('ROLLBACK');
       throw error;
     }
   } catch (error) {
@@ -129,5 +129,38 @@ export const updateStats = async (req, res) => {
       error: error.message 
     });
   }
+};
+
+export const getGlobalStats = async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                u.nom_usuari as username,
+                u.punts_totals,
+                e.millor_puntuacio,
+                e.total_partides,
+                e.temps_total_jugat
+            FROM usuaris u
+            LEFT JOIN estadistiques_usuari e ON u.id = e.usuari_id
+            WHERE u.estat = 'actiu'
+            ORDER BY u.punts_totals DESC
+        `;
+
+        const [stats] = await pool.query(query);
+        
+        res.json(stats);
+    } catch (error) {
+        console.error('Error al obtener estadísticas globales:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al obtener estadísticas globales' 
+        });
+    }
+};
+
+module.exports = {
+    getUserStats,
+    updateStats,
+    getGlobalStats
 };
 

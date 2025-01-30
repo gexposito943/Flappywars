@@ -13,9 +13,27 @@ describe('EstadistiquesComponent', () => {
   let mockRouter: jasmine.SpyObj<Router>;
 
   const mockGlobalStats = [
-    { username: 'Player1', punts_totals: 2500 },
-    { username: 'Player2', punts_totals: 1800 },
-    { username: 'Player3', punts_totals: 3200 }
+    { 
+      username: 'Player1', 
+      punts_totals: 2500,
+      millor_puntuacio: 500,
+      total_partides: 10,
+      temps_total_jugat: 3600
+    },
+    { 
+      username: 'Player2', 
+      punts_totals: 1800,
+      millor_puntuacio: 400,
+      total_partides: 8,
+      temps_total_jugat: 2400
+    },
+    { 
+      username: 'Player3', 
+      punts_totals: 3200,
+      millor_puntuacio: 600,
+      total_partides: 15,
+      temps_total_jugat: 4800
+    }
   ];
 
   beforeEach(async () => {
@@ -88,5 +106,29 @@ describe('EstadistiquesComponent', () => {
     const noStatsElement = fixture.debugElement.query(By.css('.no-stats'));
     expect(noStatsElement).toBeTruthy();
     expect(noStatsElement.nativeElement.textContent).toContain('No hi ha estadístiques disponibles');
+  });
+
+  it('should display all player statistics fields correctly', () => {
+    const firstRow = fixture.debugElement.queryAll(By.css('.stats-row'))[0];
+    expect(firstRow.nativeElement.textContent).toContain('Player3');
+    expect(firstRow.nativeElement.textContent).toContain('3200');
+    expect(firstRow.nativeElement.textContent).toContain('600');
+    expect(firstRow.nativeElement.textContent).toContain('15');
+    expect(firstRow.nativeElement.textContent).toContain('1h 20m');
+  });
+
+  it('should format time correctly', () => {
+    expect(component.formatTime(3665)).toBe('1h 1m 5s');
+    expect(component.formatTime(65)).toBe('1m 5s');
+    expect(component.formatTime(30)).toBe('30s');
+  });
+
+  it('should sort players by total points', () => {
+    const rows = fixture.debugElement.queryAll(By.css('.stats-row'));
+    const firstPlayerPoints = rows[0].nativeElement.textContent;
+    const lastPlayerPoints = rows[2].nativeElement.textContent;
+    
+    expect(firstPlayerPoints).toContain('3200');
+    expect(lastPlayerPoints).toContain('1800');
   });
 });
