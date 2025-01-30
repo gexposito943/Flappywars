@@ -4,11 +4,13 @@ import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { EstadistiquesComponent } from './estadistiques.component';
 import { GameService } from '../services/game.service';
+import { Router } from '@angular/router';
 
 describe('EstadistiquesComponent', () => {
   let component: EstadistiquesComponent;
   let fixture: ComponentFixture<EstadistiquesComponent>;
   let mockGameService: jasmine.SpyObj<GameService>;
+  let mockRouter: jasmine.SpyObj<Router>;
 
   const mockGlobalStats = [
     { username: 'Player1', punts_totals: 2500 },
@@ -18,12 +20,14 @@ describe('EstadistiquesComponent', () => {
 
   beforeEach(async () => {
     mockGameService = jasmine.createSpyObj('GameService', ['getGlobalStats']);
+    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockGameService.getGlobalStats.and.returnValue(of(mockGlobalStats));
 
     await TestBed.configureTestingModule({
       imports: [EstadistiquesComponent, HttpClientTestingModule],
       providers: [
-        { provide: GameService, useValue: mockGameService }
+        { provide: GameService, useValue: mockGameService },
+        { provide: Router, useValue: mockRouter }
       ]
     }).compileComponents();
 
@@ -46,5 +50,11 @@ describe('EstadistiquesComponent', () => {
     expect(rows.length).toBe(3);
     expect(rows[0].nativeElement.textContent).toContain('Player3');
     expect(rows[0].nativeElement.textContent).toContain('3200');
+  });
+
+  it('should have a return button', () => {
+    const returnButton = fixture.debugElement.query(By.css('.return-button'));
+    expect(returnButton).toBeTruthy();
+    expect(returnButton.nativeElement.textContent.trim()).toBe('Tornar al Dashboard');
   });
 });
