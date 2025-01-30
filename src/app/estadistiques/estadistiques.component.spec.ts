@@ -71,4 +71,22 @@ describe('EstadistiquesComponent', () => {
     expect(loadingElement).toBeTruthy();
     expect(loadingElement.nativeElement.textContent).toContain('Carregant estadístiques');
   });
+
+  it('should show error state', () => {
+    component.error = true;
+    fixture.detectChanges();
+    
+    const errorElement = fixture.debugElement.query(By.css('.loading-error'));
+    expect(errorElement).toBeTruthy();
+    expect(errorElement.nativeElement.textContent).toContain('Error carregant les estadístiques');
+  });
+
+  it('should show message when no statistics are available', () => {
+    component.globalStats = [];
+    fixture.detectChanges();
+    
+    const noStatsElement = fixture.debugElement.query(By.css('.no-stats'));
+    expect(noStatsElement).toBeTruthy();
+    expect(noStatsElement.nativeElement.textContent).toContain('No hi ha estadístiques disponibles');
+  });
 });
