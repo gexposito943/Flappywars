@@ -222,4 +222,11 @@ export class DashboardComponent implements OnInit {
     
     return isUnlocked;
   }
+
+  hasSavedGame(): boolean {
+    return this.gameService.hasSavedGame();
+  }
+
+  restoreGame(): void {
+  }
 }
