@@ -277,5 +277,13 @@ describe('DashboardComponent', () => {
       expect(component.isShipUnlocked(component.availableShips[1])).toBeTrue();
       expect(component.isShipUnlocked(component.availableShips[2])).toBeFalse();
     });
+
+    it('should display total points in badge', () => {
+      component.userData.puntosTotales = 1500;
+      fixture.detectChanges();
+      const pointsBadge = fixture.debugElement.query(By.css('.stat-badge:nth-child(2)'));
+      expect(pointsBadge).toBeTruthy();
+      expect(pointsBadge.nativeElement.textContent.trim()).toBe('Punts: 1500');
+    });
   });
 });
