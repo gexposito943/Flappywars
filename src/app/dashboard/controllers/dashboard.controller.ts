@@ -4,6 +4,7 @@ import { BaseController, Action } from '../core/base.controller';
 import { DashboardModel } from '../models/dashboard.model';
 import { RegistreService } from '../../services/registre.service';
 import { GameService } from '../../services/game.service';
+import { ShipService } from '../../services/ship.service';
 
 export enum DashboardActionTypes {
     SELECT_SHIP = '[Dashboard] Select Ship',
@@ -21,7 +22,8 @@ export class DashboardController extends BaseController<DashboardModel> {
     constructor(
         private router: Router,
         private registreService: RegistreService,
-        private gameService: GameService
+        private gameService: GameService,
+        private shipService: ShipService
     ) {
         super(new DashboardModel());
     }
@@ -33,6 +35,7 @@ export class DashboardController extends BaseController<DashboardModel> {
         }
         this.loadUserStats();
         this.checkSavedGame();
+        this.loadShips();
     }
 
     dispatch(action: Action): void {
@@ -134,6 +137,30 @@ export class DashboardController extends BaseController<DashboardModel> {
 
     private handleViewGlobalStats(): void {
         this.router.navigate(['/statistics']);
+    }
+
+    private loadShips(): void {
+        this.model.setLoading(true);
+        this.shipService.getShips().subscribe({
+            next: (ships) => {
+                this.model.setAvailableShips(ships);
+                this.model.setLoading(false);
+            },
+            error: (error) => {
+                this.handleError(error);
+                // Cargar naves por defecto en caso de error
+                this.model.setAvailableShips([
+                    {
+                        id: 1,
+                        nom: 'Nau de Combat',
+                        velocitat: 100,
+                        imatge_url: 'x-wing.png',
+                        descripcio: 'Nau de combat versàtil',
+                        required_points: 0
+                    }
+                ]);
+            }
+        });
     }
 
     protected override handleError(error: Error): void {

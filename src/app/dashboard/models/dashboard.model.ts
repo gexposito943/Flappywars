@@ -197,4 +197,17 @@ export class DashboardModel extends BaseModel {
             punts_totals: 0
         };
     }
+
+    setAvailableShips(ships: Ship[]): void {
+        const shipsWithCorrectPaths = ships.map(ship => ({
+            ...ship,
+            imatge_url: `assets/images/naus/${ship.imatge_url.split('/').pop()}`
+        }));
+        
+        this.setData({ availableShips: shipsWithCorrectPaths });
+    }
+
+    getShipDescription(shipId: number): string | undefined {
+        return this.availableShips.find(ship => ship.id === shipId)?.descripcio;
+    }
 } 

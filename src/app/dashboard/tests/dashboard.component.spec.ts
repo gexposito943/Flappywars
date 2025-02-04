@@ -8,6 +8,7 @@ import { DashboardModel } from '../models/dashboard.model';
 import { RegistreService } from '../../services/registre.service';
 import { GameService } from '../../services/game.service';
 import { UserStats, UserData } from '../models/interfaces';
+import { ShipService } from '../../services/ship.service';
 
 describe('DashboardComponent', () => {
     let component: DashboardComponent;
@@ -17,22 +18,25 @@ describe('DashboardComponent', () => {
     let mockRouter: jasmine.SpyObj<Router>;
     let mockRegistreService: jasmine.SpyObj<RegistreService>;
     let mockGameService: jasmine.SpyObj<GameService>;
+    let mockShipService: jasmine.SpyObj<ShipService>;
 
     beforeEach(async () => {
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
         mockRegistreService = jasmine.createSpyObj('RegistreService', ['setUserData', 'getUserData', 'logout']);
         mockGameService = jasmine.createSpyObj('GameService', ['getUserStats']);
+        mockShipService = jasmine.createSpyObj('ShipService', ['getShips']);
 
         await TestBed.configureTestingModule({
             imports: [DashboardComponent],
             providers: [
                 {
                     provide: DashboardController,
-                    useFactory: () => new DashboardController(mockRouter, mockRegistreService, mockGameService)
+                    useFactory: () => new DashboardController(mockRouter, mockRegistreService, mockGameService, mockShipService)
                 },
                 { provide: Router, useValue: mockRouter },
                 { provide: RegistreService, useValue: mockRegistreService },
-                { provide: GameService, useValue: mockGameService }
+                { provide: GameService, useValue: mockGameService },
+                { provide: ShipService, useValue: mockShipService }
             ]
         }).compileComponents();
 
@@ -112,13 +116,9 @@ describe('DashboardComponent', () => {
                 puntosTotales: 1000,
                 naveActual: 1
             };
-            
-            // Act
             model.setData({ userData: mockUserData });
             fixture.detectChanges();
             await fixture.whenStable();
-            
-            // Assert
             const levelElement = fixture.debugElement.query(By.css('.stat-badge'));
             expect(levelElement).toBeTruthy();
             expect(levelElement.nativeElement.textContent).toContain('Nivell: 6');
@@ -127,14 +127,9 @@ describe('DashboardComponent', () => {
 
     describe('User Actions', () => {
         it('should handle logout correctly', fakeAsync(() => {
-            // Arrange
             fixture.detectChanges();
-            
-            // Act
             component.onLogout();
             tick();
-            
-            // Assert
             expect(mockRegistreService.logout).toHaveBeenCalled();
             expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
         }));
