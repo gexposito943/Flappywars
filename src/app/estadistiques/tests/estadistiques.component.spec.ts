@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { EstadistiquesController } from '../controllers/estadistiques.controller';
 import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
+import { GlobalStats } from '../models/estadistiques.model';
 
 describe('EstadistiquesComponent', () => {
     let component: EstadistiquesComponent;
@@ -14,7 +15,7 @@ describe('EstadistiquesComponent', () => {
     let mockRouter: jasmine.SpyObj<Router>;
     let controller: EstadistiquesController;
 
-    const mockGlobalStats = [
+    const mockGlobalStats: GlobalStats[] = [
         { 
             username: 'Player1', 
             punts_totals: 2500,
@@ -78,5 +79,44 @@ describe('EstadistiquesComponent', () => {
         const returnButton = fixture.debugElement.query(By.css('.return-button'));
         returnButton.nativeElement.click();
         expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
+    });
+
+    it('should show loading state', () => {
+        controller.getModel().startLoading();
+        fixture.detectChanges();
+        const loadingElement = fixture.debugElement.query(By.css('.loading-error'));
+        expect(loadingElement).toBeTruthy();
+        expect(loadingElement.nativeElement.textContent).toContain('Carregant estadístiques');
+    });
+
+    it('should show error state', () => {
+        controller.getModel().handleError();
+        fixture.detectChanges();
+        const errorElement = fixture.debugElement.query(By.css('.loading-error'));
+        expect(errorElement).toBeTruthy();
+        expect(errorElement.nativeElement.textContent).toContain('Error carregant les estadístiques');
+    });
+
+    it('should show message when no statistics are available', () => {
+        controller.getModel().setGlobalStats([]);
+        fixture.detectChanges();
+        const noStatsElement = fixture.debugElement.query(By.css('.no-stats'));
+        expect(noStatsElement).toBeTruthy();
+        expect(noStatsElement.nativeElement.textContent).toContain('No hi ha estadístiques disponibles');
+    });
+
+    it('should display all player statistics fields correctly', () => {
+        const firstRow = fixture.debugElement.queryAll(By.css('.stats-row'))[0];
+        expect(firstRow.nativeElement.textContent).toContain('Player2');
+        expect(firstRow.nativeElement.textContent).toContain('3200');
+        expect(firstRow.nativeElement.textContent).toContain('600');
+        expect(firstRow.nativeElement.textContent).toContain('15');
+        expect(firstRow.nativeElement.textContent).toContain('1h 20m');
+    });
+
+    it('should format time correctly', () => {
+        expect(controller.formatTime(3665)).toBe('1h 1m 5s');
+        expect(controller.formatTime(65)).toBe('1m 5s');
+        expect(controller.formatTime(30)).toBe('30s');
     });
 }); 
