@@ -6,7 +6,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { throwError } from 'rxjs';
 
 const API_ROUTES = {
-    LOGIN: '/login',
+    LOGIN: '/auth/login',
     REGISTER: '/register',
     SHIPS: '/ships',
     ACHIEVEMENTS: '/user/achievements',
@@ -53,25 +53,19 @@ export class RegistreService {
   }
 
   validateUser(username: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { 
+    return this.http.post<AuthResponse>(`${this.apiUrl}${API_ROUTES.LOGIN}`, { 
       email: username,
       password: password 
     }).pipe(
       tap(response => {
         if (response.success && response.token) {
           this.setToken(response.token);
-          const userData = {
-            username: response.user.username,
-            nivel: response.user.nivel,
-            puntosTotales: response.user.puntosTotales,
-            naveActual: response.user.naveActual
-          };
-          this.setUserData(userData);
-          console.log('Usuario guardado:', userData);
+          if (response.user) {
+            this.setUserData(response.user);
+          }
         }
       }),
       catchError(error => {
-        console.error('Error en login:', error);
         this.setToken(null);
         this.setUserData(null);
         return throwError(() => error);

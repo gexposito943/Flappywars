@@ -28,7 +28,7 @@ export class FormulariComponent implements AfterViewInit, OnInit {
   password: string = '';
 
   constructor(
-    private controller: FormulariController,
+    public controller: FormulariController,
     private fb: FormBuilder
   ) {
     this.registerForm = this.fb.group({

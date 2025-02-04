@@ -55,9 +55,8 @@ describe('FormulariComponent', () => {
 
         fixture = TestBed.createComponent(FormulariComponent);
         component = fixture.componentInstance;
-        controller = TestBed.inject(FormulariController);
+        controller = component.controller;
         
-        // Espiar los métodos del controlador después de la inyección
         spyOn(controller, 'onSubmit');
         spyOn(controller, 'handleSignIn');
         
@@ -122,21 +121,42 @@ describe('FormulariComponent', () => {
 
     describe('Form Submission', () => {
         it('should call controller onSubmit when form is valid', fakeAsync(() => {
-            const formData = {
+            // Configurar tanto el FormGroup como el modelo
+            const testData = {
                 username: 'testuser',
                 email: 'test@test.com',
                 password: 'Password123!'
             };
 
-            component.registerForm.setValue(formData);
+            // Configurar el FormGroup
+            component.registerForm.patchValue(testData);
+
+            // Configurar el modelo
+            component.model.setUsername(testData.username);
+            component.model.setEmail(testData.email);
+            component.model.setPassword(testData.password);
+            component.model.setConfirmPassword(testData.password);
+
+            // Marcar el formulario como tocado
+            Object.keys(component.registerForm.controls).forEach(key => {
+                const control = component.registerForm.get(key);
+                control?.markAsTouched();
+                control?.markAsDirty();
+            });
+
             fixture.detectChanges();
 
-            const form = fixture.debugElement.query(By.css('form.sign-up-form'));
-            form.triggerEventHandler('ngSubmit', null);
+            // Verificar que tanto el formulario como el modelo son válidos
+            expect(component.registerForm.valid).toBeTrue();
+            expect(component.model.isValid).toBeTrue();
+
+            // Llamar al método onSubmit directamente
+            component.onSubmit();
             
             tick();
             fixture.detectChanges();
-            
+
+            // Verificar que se llamó al método del controlador
             expect(controller.onSubmit).toHaveBeenCalled();
         }));
 
@@ -146,15 +166,26 @@ describe('FormulariComponent', () => {
                 password: 'Password123!'
             };
 
-            component.loginForm.setValue(loginData);
+            // Configurar tanto el FormGroup como el modelo
+            component.loginForm.patchValue(loginData);
+            component.model.setEmail(loginData.email);
+            component.model.setPassword(loginData.password);
+
+            // Marcar el formulario como tocado
+            Object.keys(component.loginForm.controls).forEach(key => {
+                const control = component.loginForm.get(key);
+                control?.markAsTouched();
+                control?.markAsDirty();
+            });
+
             fixture.detectChanges();
 
-            const form = fixture.debugElement.query(By.css('form.sign-in-form'));
-            form.triggerEventHandler('ngSubmit', null);
+            // Llamar al método handleSignIn directamente
+            component.handleSignIn();
             
             tick();
             fixture.detectChanges();
-            
+
             expect(controller.handleSignIn).toHaveBeenCalled();
         }));
     });

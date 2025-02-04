@@ -27,6 +27,13 @@ interface LoginResponse {
 describe('RegistreService', () => {
   let service: RegistreService;
   let httpMock: HttpTestingController;
+  const API_URL = 'http://localhost:3000/api/v1';
+  const API_ROUTES = {
+    LOGIN: '/auth/login',
+    REGISTER: '/register',
+    CHECK_EMAIL: '/check-email',
+    CHECK_USERNAME: '/check-username'
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -64,10 +71,12 @@ describe('RegistreService', () => {
         nombreNave: 'Nau de Combat'
       }
     };
+
     service.validateUser('usuariTest', 'contra1234').subscribe((response) => {
       expect(response.token).toBeDefined();
     });
-    const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
+
+    const req = httpMock.expectOne(`${API_URL}${API_ROUTES.LOGIN}`);
     expect(req.request.method).toBe('POST');
     req.flush(mockResponse);
   });
@@ -111,7 +120,7 @@ describe('RegistreService', () => {
       expect(service.getToken()).toBe(mockToken);
     });
   
-    const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
+    const req = httpMock.expectOne(`${API_URL}${API_ROUTES.LOGIN}`);
     req.flush(mockResponse);
   });
   it('should clear user data on logout', () => {
@@ -128,7 +137,7 @@ describe('RegistreService', () => {
   });
   it('should correctly report authentication status', (done) => {
     localStorage.clear();
-    service.logout(); // Asegurarse de que no hay sesión activa
+    service.logout();
     
     const mockResponse: AuthResponse = { 
       success: true,
@@ -145,16 +154,14 @@ describe('RegistreService', () => {
     
     expect(service.isLoggedIn()).toBeFalse();
     
-    service.validateUser('test@test.com', 'password').subscribe((response: AuthResponse) => {
-      service.setToken(mockResponse.token);
+    service.validateUser('test@test.com', 'password').subscribe(() => {
       expect(service.isLoggedIn()).toBeTrue();
-      
       service.logout();
       expect(service.isLoggedIn()).toBeFalse();
       done();
     });
 
-    const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
+    const req = httpMock.expectOne(`${API_URL}${API_ROUTES.LOGIN}`);
     req.flush(mockResponse);
   });
   it('should check if email exists', () => {
@@ -184,26 +191,52 @@ describe('RegistreService', () => {
     const persistedData = newServiceInstance.getUserData();
     expect(persistedData).toEqual(mockUserData);
   });
-  it('should handle successful login with valid JWT', (done) => {
+  it('should handle successful login', (done) => {
+    const loginData = { username: 'test', password: 'test' };
     const mockResponse: AuthResponse = {
-        success: true,
-        token: 'mock-jwt-token',
-        user: {
-            id: 1,
-            username: 'testuser',
-            nivel: 1,
-            puntosTotales: 0,
-            naveActual: 1,
-            nombreNave: 'Nave básica'
-        }
+      success: true,
+      token: 'test-token',
+      user: {
+        id: 1,
+        username: 'test',
+        nivel: 1,
+        puntosTotales: 0,
+        naveActual: 1,
+        nombreNave: 'Nave básica'
+      }
     };
     
-    httpMock.expectOne('/api/login').flush(mockResponse);
+    service.validateUser(loginData.username, loginData.password).subscribe(() => {
+      expect(service.getToken()).toBe('test-token');
+      done();
+    });
+
+    const req = httpMock.expectOne(`${API_URL}${API_ROUTES.LOGIN}`);
+    expect(req.request.method).toBe('POST');
+    req.flush(mockResponse);
+  });
+  it('should handle successful login with valid JWT', (done) => {
+    const mockResponse: AuthResponse = {
+      success: true,
+      token: 'mock-jwt-token',
+      user: {
+        id: 1,
+        username: 'testuser',
+        nivel: 1,
+        puntosTotales: 0,
+        naveActual: 1,
+        nombreNave: 'Nave básica'
+      }
+    };
     
     service.validateUser('test@test.com', 'password').subscribe((response: AuthResponse) => {
-        expect(response).toEqual(mockResponse);
-        done();
+      expect(response).toEqual(mockResponse);
+      done();
     });
+
+    const req = httpMock.expectOne(`${API_URL}${API_ROUTES.LOGIN}`);
+    expect(req.request.method).toBe('POST');
+    req.flush(mockResponse);
   });
   it('should handle invalid JWT token', (done) => {
     service.validateUser('test@test.com', 'wrongpassword').subscribe({
@@ -216,18 +249,7 @@ describe('RegistreService', () => {
       }
     });
 
-    const req = httpMock.expectOne('http://localhost:3000/api/v1/login');
+    const req = httpMock.expectOne(`${API_URL}${API_ROUTES.LOGIN}`);
     req.flush({ message: 'Invalid credentials' }, { status: 401, statusText: 'Unauthorized' });
-  });
-  it('should handle successful login', (done) => {
-    const loginData = { username: 'test', password: 'test' };
-    
-    service.validateUser(loginData.username, loginData.password).subscribe(() => {
-        expect(true).toBeTruthy();
-        done();
-    });
-
-    const req = httpMock.expectOne(`${service['apiUrl']}/auth/login`);
-    req.flush({ token: 'test-token' });
   });
 });

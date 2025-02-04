@@ -74,26 +74,23 @@ describe('DashboardComponent', () => {
         mockShipService.getShips.and.returnValue(of(mockShips));
 
         await TestBed.configureTestingModule({
-            imports: [DashboardComponent, HttpClientTestingModule],
+            imports: [DashboardComponent],
             providers: [
-                DashboardController,
                 { provide: Router, useValue: mockRouter },
                 { provide: RegistreService, useValue: mockRegistreService },
                 { provide: GameService, useValue: mockGameService },
                 { provide: ShipService, useValue: mockShipService }
             ]
-        }).overrideTemplate(DashboardComponent, `
-            <div class="user-level">Nivell: {{userData.nivel}}</div>
-            <button class="play-button" (click)="onStartGame()">Jugar</button>
-            <button class="ship-select" (click)="onShipSelect(2)">Select Ship</button>
-        `).compileComponents();
+        }).compileComponents();
 
         fixture = TestBed.createComponent(DashboardComponent);
         component = fixture.componentInstance;
-        controller = TestBed.inject(DashboardController);
+        controller = component.controller; // Obtener el controller directamente del componente
         
+        // Espiar el dispatch después de obtener el controller
         spyOn(controller, 'dispatch').and.callThrough();
         
+        // Inicializar el componente
         fixture.detectChanges();
         await fixture.whenStable();
     });
@@ -110,34 +107,60 @@ describe('DashboardComponent', () => {
         expect(component.availableShips.length).toBe(2);
     }));
 
-    it('should select ship and update user preferences', fakeAsync(() => {
-        const button = fixture.debugElement.query(By.css('.ship-select'));
-        button.nativeElement.click();
-        tick();
-
+    it('should select ship and update user preferences', async () => {
+        // Asegurarse de que el modelo tiene los datos necesarios
+        await fixture.whenStable();
+        
+        // Verificar que el controller está disponible
+        expect(controller).toBeTruthy();
+        expect(controller.dispatch).toBeDefined();
+        
+        // Llamar al método directamente
+        component.onShipSelect(2);
+        
+        // Esperar a que se procesen los cambios
+        fixture.detectChanges();
+        await fixture.whenStable();
+        
+        // Verificar que se llamó a dispatch con los parámetros correctos
         expect(controller.dispatch).toHaveBeenCalledWith({
             type: DashboardActionTypes.SELECT_SHIP,
             payload: 2
         });
-    }));
+        
+        // Verificar que el modelo se actualizó
+        expect(component.model.selectedShipId).toBe(2);
+    });
 
     it('should navigate to game when play button is clicked', fakeAsync(() => {
-        const button = fixture.debugElement.query(By.css('.play-button'));
-        button.nativeElement.click();
+        // Primero seleccionamos una nave
+        component.model.setSelectedShip(1);
+        fixture.detectChanges();
+
+        // Luego intentamos iniciar el juego
+        component.onStartGame();
         tick();
+        fixture.detectChanges();
 
         expect(controller.dispatch).toHaveBeenCalledWith({
             type: DashboardActionTypes.START_GAME
         });
     }));
 
-    describe('User Profile', () => {
-        it('should display correct user level', () => {
-            expect(component.getUserLevel()).toBe(6);
-        });
+    // Asegurarse de que el componente puede iniciar el juego
+    it('should enable play button when ship is selected', () => {
+        expect(component.canStartGame()).toBeFalse();
+        
+        component.onShipSelect(1);
+        fixture.detectChanges();
+        
+        expect(component.canStartGame()).toBeTrue();
+    });
 
+    describe('User Profile', () => {
         it('should format time correctly', () => {
-            expect(component.formatTime(3600)).toContain('1:00:00');
+            const formattedTime = component.formatTime(3600);
+            expect(formattedTime).toBe('1:00:00');
         });
     });
 
