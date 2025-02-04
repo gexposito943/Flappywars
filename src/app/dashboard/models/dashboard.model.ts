@@ -87,19 +87,8 @@ export class DashboardModel extends BaseModel {
         });
     }
 
-    setSelectedShip(shipId: number): boolean {
-        const ship = this.availableShips.find(s => s.id === shipId);
-        if (ship && this.isShipUnlocked(ship)) {
-            this.setData({
-                selectedShipId: shipId,
-                userData: {
-                    ...this._data.userData,
-                    naveActual: shipId
-                }
-            });
-            return true;
-        }
-        return false;
+    setSelectedShip(shipId: number | null): void {
+        this.setData({ selectedShipId: shipId });
     }
 
     setLoading(loading: boolean): void {
@@ -209,5 +198,13 @@ export class DashboardModel extends BaseModel {
 
     getShipDescription(shipId: number): string | undefined {
         return this.availableShips.find(ship => ship.id === shipId)?.descripcio;
+    }
+
+    canPlay(): boolean {
+        return this.selectedShipId !== null;
+    }
+
+    getPlayButtonText(): string {
+        return this.canPlay() ? 'Jugar' : 'Selecciona una nau';
     }
 } 

@@ -86,4 +86,16 @@ export class DashboardComponent implements OnInit {
     get totalPoints(): number {
         return this.model.totalPoints;
     }
+
+    get canPlay(): boolean {
+        return this.model.canPlay();
+    }
+
+    get playButtonText(): string {
+        return this.model.getPlayButtonText();
+    }
+
+    get selectedShipId(): number | null {
+        return this.model.selectedShipId;
+    }
 }

@@ -79,9 +79,8 @@ export class DashboardController extends BaseController<DashboardModel> {
     }
 
     private handleSelectShip(shipId: number): void {
-        if (this.model.setSelectedShip(shipId)) {
-            this.registreService.setUserData(this.model.userData);
-        }
+        this.model.setSelectedShip(shipId);
+        this.registreService.setUserData(this.model.userData);
     }
 
     private handleStartGame(): void {
