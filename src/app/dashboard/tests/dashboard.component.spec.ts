@@ -2,23 +2,27 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DashboardComponent } from '../dashboard.component';
 import { DashboardController } from '../controllers/dashboard.controller';
 import { RegistreService } from '../../services/registre.service';
+import { Router } from '@angular/router';
+import { fakeAsync, tick } from '@angular/core/testing';
 
 describe('DashboardComponent', () => {
     let component: DashboardComponent;
     let fixture: ComponentFixture<DashboardComponent>;
     let controller: DashboardController;
     let mockRegistreService: jasmine.SpyObj<RegistreService>;
+    let mockRouter: jasmine.SpyObj<Router>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [DashboardComponent],
-            providers: [DashboardController, { provide: RegistreService, useValue: jasmine.createSpyObj('RegistreService', ['setUserData'])}]
+            providers: [DashboardController, { provide: RegistreService, useValue: jasmine.createSpyObj('RegistreService', ['setUserData'])}, { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate'])}]
         }).compileComponents();
 
         fixture = TestBed.createComponent(DashboardComponent);
         component = fixture.componentInstance;
         controller = TestBed.inject(DashboardController);
         mockRegistreService = TestBed.inject(RegistreService) as jasmine.SpyObj<RegistreService>;
+        mockRouter = TestBed.inject(Router) as jasmine.SpyObj<Router>;
         fixture.detectChanges();
     });
 
@@ -71,4 +75,23 @@ describe('DashboardComponent', () => {
         expect(statsElements[2].textContent.toUpperCase()).toContain('TEMPS TOTAL JUGAT');
         expect(component.model.formatTime(7200)).toBe('2h 0m 0s');
     });
+
+    it('should navigate to game when play button is clicked', fakeAsync(() => {
+        // Arrange
+        const shipId = 1;
+        component.model.setSelectedShip(shipId);
+        fixture.detectChanges();
+
+        // Act
+        component.controller.startGame();
+        tick();
+
+        // Assert
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/game'], {
+            state: { 
+                shipId: shipId,
+                userData: component.model.userData
+            }
+        });
+    }));
 }); 
