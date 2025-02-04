@@ -2,6 +2,14 @@
     <div class="top-bar">
         <div class="profile">
             <h1>Benvingut, {{ userData.username || 'Usuario' }}!</h1>
+            <div class="user-profile">
+                <div class="stat-badge">
+                    Nivell: {{ getUserLevel() }}
+                </div>
+                <div class="username">
+                    {{ getUsername() }}
+                </div>
+            </div>
             <div class="user-stats">
                 <span class="stat-badge">Nivell: {{ userData.nivel || 0 }}</span>
                 <span class="stat-badge">Punts: {{ userData.puntosTotales || 0 }}</span>

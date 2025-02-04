@@ -1,105 +1,104 @@
-export interface UserStats {
-    millor_puntuacio: number;
-    total_partides: number;
-    temps_total_jugat: number;
-    punts_totals: number;
-}
+import { BaseModel } from './base.model';
+import { DashboardState, UserStats, UserData, Ship } from './interfaces';
 
-export interface UserData {
-    username: string;
-    nivel: number;
-    puntosTotales: number;
-    naveActual?: number;
-}
-
-export interface Ship {
-    id: number;
-    nom: string;
-    velocitat: number;
-    imatge_url: string;
-    descripcio: string;
-    required_points: number;
-}
-
-export class DashboardModel {
-    private _userStats: UserStats;
-    private _userData: UserData;
-    private _selectedShipId: number | null = null;
-    private _availableShips: Ship[] = [
-        {
-            id: 1,
-            nom: 'Nau de Combat',
-            velocitat: 100,
-            imatge_url: 'assets/images/naus/x-wing.png',
-            descripcio: 'Nau de combat versàtil',
-            required_points: 0
-        },
-        {
-            id: 2,
-            nom: 'Nau Imperial',
-            velocitat: 120,
-            imatge_url: 'assets/images/naus/tie-fighter.png',
-            descripcio: 'Nau ràpida de l\'Imperi',
-            required_points: 1000
-        },
-        {
-            id: 3,
-            nom: 'Nau Llegendària',
-            velocitat: 150,
-            imatge_url: 'assets/images/naus/millenium-falcon.png',
-            descripcio: 'Nau llegendària',
-            required_points: 2500
-        }
-    ];
+export class DashboardModel extends BaseModel {
+    private _data: DashboardState;
 
     constructor() {
-        this._userStats = {
-            millor_puntuacio: 0,
-            total_partides: 0,
-            temps_total_jugat: 0,
-            punts_totals: 0
-        };
-        this._userData = {
-            username: 'Usuario',
-            nivel: 1,
-            puntosTotales: 0,
-            naveActual: 1
+        super();
+        this._data = {
+            userStats: {
+                millor_puntuacio: 0,
+                total_partides: 0,
+                temps_total_jugat: 0,
+                punts_totals: 0
+            },
+            userData: {
+                username: 'Usuario',
+                nivel: 1,
+                puntosTotales: 0,
+                naveActual: 1
+            },
+            selectedShipId: null,
+            availableShips: [],
+            loading: false,
+            error: null
         };
     }
 
+    getData(): DashboardState {
+        return this._data;
+    }
+
+    setData(data: Partial<DashboardState>): void {
+        this._data = { ...this._data, ...data };
+    }
+
+    // Getters
     get userStats(): UserStats {
-        return this._userStats;
+        return this._data.userStats;
     }
 
     get userData(): UserData {
-        return this._userData;
+        return this._data.userData;
     }
 
     get selectedShipId(): number | null {
-        return this._selectedShipId;
+        return this._data.selectedShipId;
     }
 
     get availableShips(): Ship[] {
-        return this._availableShips;
+        return this._data.availableShips;
     }
 
-    setSelectedShip(shipId: number): void {
-        const ship = this._availableShips.find(s => s.id === shipId);
+    get isLoading(): boolean {
+        return this._data.loading;
+    }
+
+    get userLevel(): number {
+        return this._data.userData.nivel;
+    }
+
+    get username(): string {
+        return this._data.userData.username;
+    }
+
+    // Setters
+    setUserStats(stats: UserStats): void {
+        this.setData({
+            userStats: stats,
+            userData: {
+                ...this._data.userData,
+                puntosTotales: stats.punts_totals
+            }
+        });
+    }
+
+    setSelectedShip(shipId: number): boolean {
+        const ship = this.availableShips.find(s => s.id === shipId);
         if (ship && this.isShipUnlocked(ship)) {
-            this._selectedShipId = shipId;
-            this._userData = {
-                ...this._userData,
-                naveActual: shipId
-            };
+            this.setData({
+                selectedShipId: shipId,
+                userData: {
+                    ...this._data.userData,
+                    naveActual: shipId
+                }
+            });
+            return true;
         }
+        return false;
+    }
+
+    setLoading(loading: boolean): void {
+        this.setData({ loading });
+    }
+
+    setError(error: string | null): void {
+        this.setData({ error });
     }
 
     isShipUnlocked(ship: Ship): boolean {
-        return this._userData.puntosTotales >= ship.required_points;
-    }
-
-    setUserData(data: UserData): void {
-        this._userData = { ...this._userData, ...data };
+        return this.userData.puntosTotales >= ship.required_points;
     }
 
     formatTime(seconds: number): string {
@@ -111,17 +110,24 @@ export class DashboardModel {
             return `${hours}h ${minutes}m ${remainingSeconds}s`;
         } else if (minutes > 0) {
             return `${minutes}m ${remainingSeconds}s`;
-        } else {
-            return `${remainingSeconds}s`;
         }
+        return `${remainingSeconds}s`;
     }
 
-    loadUserStats(stats: UserStats): void {
-        this._userStats = {
-            millor_puntuacio: stats.millor_puntuacio || 0,
-            total_partides: stats.total_partides || 0,
-            temps_total_jugat: stats.temps_total_jugat || 0,
-            punts_totals: stats.punts_totals || 0
-        };
+    validate(): boolean {
+        return (
+            this._data.userStats !== null &&
+            this._data.userData !== null &&
+            Array.isArray(this._data.availableShips)
+        );
+    }
+
+    updateUserLevel(level: number): void {
+        this.setData({
+            userData: {
+                ...this._data.userData,
+                nivel: level
+            }
+        });
     }
 } 
