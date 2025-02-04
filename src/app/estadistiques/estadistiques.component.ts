@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { GameService } from '../services/game.service';
+import { EstadistiquesController } from './controllers/estadistiques.controller';
+import { EstadistiquesModel } from './models/estadistiques.model';
 
 interface GlobalStats {
   username: string;
@@ -15,6 +17,7 @@ interface GlobalStats {
   selector: 'app-estadistiques',
   standalone: true,
   imports: [CommonModule],
+  providers: [EstadistiquesController],
   templateUrl: './estadistiques.component.html',
   styleUrls: ['./estadistiques.component.css']
 })
@@ -25,11 +28,16 @@ export class EstadistiquesComponent implements OnInit {
 
   constructor(
     private gameService: GameService,
-    private router: Router
+    private router: Router,
+    private controller: EstadistiquesController
   ) {}
 
+  get model(): EstadistiquesModel {
+    return this.controller.getModel();
+  }
+
   ngOnInit(): void {
-    this.loadGlobalStats();
+    this.controller.loadGlobalStats();
   }
 
   formatTime(seconds: number): string {

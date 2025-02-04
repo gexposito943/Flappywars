@@ -5,6 +5,7 @@ import { GameService } from '../../services/game.service';
 import { Router } from '@angular/router';
 import { EstadistiquesController } from '../controllers/estadistiques.controller';
 import { of } from 'rxjs';
+import { By } from '@angular/platform-browser';
 
 describe('EstadistiquesComponent', () => {
     let component: EstadistiquesComponent;
@@ -20,6 +21,13 @@ describe('EstadistiquesComponent', () => {
             millor_puntuacio: 500,
             total_partides: 10,
             temps_total_jugat: 3600
+        },
+        { 
+            username: 'Player2', 
+            punts_totals: 3200,
+            millor_puntuacio: 600,
+            total_partides: 15,
+            temps_total_jugat: 4800
         }
     ];
 
@@ -51,5 +59,12 @@ describe('EstadistiquesComponent', () => {
     it('should load global statistics on init', () => {
         expect(mockGameService.getGlobalStats).toHaveBeenCalled();
         expect(controller.getModel().globalStats).toEqual(mockGlobalStats);
+    });
+
+    it('should display player statistics in order', () => {
+        const rows = fixture.debugElement.queryAll(By.css('.stats-row'));
+        expect(rows.length).toBe(2);
+        expect(rows[0].nativeElement.textContent).toContain('Player2');
+        expect(rows[0].nativeElement.textContent).toContain('3200');
     });
 }); 
