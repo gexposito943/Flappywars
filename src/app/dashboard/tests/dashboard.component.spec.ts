@@ -124,4 +124,19 @@ describe('DashboardComponent', () => {
             expect(levelElement.nativeElement.textContent).toContain('Nivell: 6');
         });
     });
+
+    describe('User Actions', () => {
+        it('should handle logout correctly', fakeAsync(() => {
+            // Arrange
+            fixture.detectChanges();
+            
+            // Act
+            component.onLogout();
+            tick();
+            
+            // Assert
+            expect(mockRegistreService.logout).toHaveBeenCalled();
+            expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+        }));
+    });
 });

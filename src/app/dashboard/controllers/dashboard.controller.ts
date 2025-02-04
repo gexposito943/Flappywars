@@ -80,6 +80,7 @@ export class DashboardController extends BaseController<DashboardModel> {
     }
 
     private handleLogout(): void {
+        this.model.clearSession();
         this.registreService.logout();
         this.router.navigate(['/']);
     }

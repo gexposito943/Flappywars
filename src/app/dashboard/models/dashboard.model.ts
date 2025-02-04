@@ -130,4 +130,16 @@ export class DashboardModel extends BaseModel {
             }
         });
     }
+
+    clearSession(): void {
+        this.setData({
+            userData: {
+                username: '',
+                nivel: 1,
+                puntosTotales: 0,
+                naveActual: undefined
+            },
+            selectedShipId: null
+        });
+    }
 } 

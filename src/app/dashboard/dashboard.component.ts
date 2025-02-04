@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardController, DashboardActionTypes } from './controllers/dashboard.controller';
 import { DashboardModel } from './models/dashboard.model';
+import { UserStats } from './models/interfaces';
 
 @Component({
     selector: 'app-dashboard',
@@ -39,6 +40,10 @@ export class DashboardComponent implements OnInit {
         this.controller.dispatch({
             type: DashboardActionTypes.LOGOUT
         });
+    }
+
+    get userStats(): UserStats {
+        return this.model.userStats;
     }
 
     formatTime(seconds: number): string {
