@@ -5,7 +5,8 @@ import { GameService } from '../services/game.service';
 import { RegistreService } from '../services/registre.service';
 import { ShipService } from '../services/ship.service';
 import { filter } from 'rxjs/operators';
-
+import { DashboardController } from './controllers/dashboard.controller';
+import { DashboardModel } from './models/dashboard.model';
 
 interface UserData {
   username: string;
@@ -41,9 +42,11 @@ interface UserStats {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule],
+  providers: [DashboardController]
 })
 export class DashboardComponent implements OnInit {
+  model: DashboardModel;
   userStats: UserStats = {
     millor_puntuacio: 0,
     total_partides: 0,
@@ -93,8 +96,11 @@ export class DashboardComponent implements OnInit {
     private router: Router,
     private gameService: GameService,
     private registreService: RegistreService,
-    private shipService: ShipService
-  ) {}
+    private shipService: ShipService,
+    private controller: DashboardController
+  ) {
+    this.model = controller.getModel();
+  }
 
   ngOnInit() {
     this.loading = true;

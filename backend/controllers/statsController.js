@@ -7,7 +7,7 @@ import { pool } from '../database.js';
  * @param {Response} res - Objecte de resposta
  * @description Retorna les estadístiques acumulades de l'usuari (puntuació, partides, temps)
  */
-export const getUserStats = async (req, res) => {
+const getUserStats = async (req, res) => {
   try {
     const userId = req.user.userId;
     // Obtenir estadístiques i punts totals en una sola consulta
@@ -61,7 +61,7 @@ export const getUserStats = async (req, res) => {
  * @param {Response} res - Objecte de resposta
  * @description Actualitza les estadístiques acumulades després de cada partida
  */
-export const updateStats = async (req, res) => {
+const updateStats = async (req, res) => {
   try {
     const userId = req.user.userId;
     const { puntuacio, temps_jugat } = req.body;
@@ -131,7 +131,7 @@ export const updateStats = async (req, res) => {
   }
 };
 
-export const getGlobalStats = async (req, res) => {
+const getGlobalStats = async (req, res) => {
     try {
         const query = `
             SELECT 
@@ -158,7 +158,7 @@ export const getGlobalStats = async (req, res) => {
     }
 };
 
-module.exports = {
+export {
     getUserStats,
     updateStats,
     getGlobalStats
