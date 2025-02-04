@@ -17,4 +17,19 @@ export class EstadistiquesController {
     getModel(): EstadistiquesModel {
         return this.model;
     }
+
+    loadGlobalStats(): void {
+        this.model.loading = true;
+        this.gameService.getGlobalStats().subscribe({
+            next: (stats) => {
+                this.model.globalStats = stats;
+                this.model.loading = false;
+            },
+            error: (error) => {
+                console.error('Error carregant estadístiques:', error);
+                this.model.error = true;
+                this.model.loading = false;
+            }
+        });
+    }
 } 
