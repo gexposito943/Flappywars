@@ -1,5 +1,5 @@
 /**
- * Tests per al model del joc
+ * Tests per al model del joc dades i calculs
  */
 import { GameModel } from '../models/game.model';
 

@@ -145,7 +145,7 @@ export class GameController extends BaseController<GameModel> {
     /**
      * Guarda els resultats de la partida
      */
-    private saveGameResults(): void {
+    public saveGameResults(): void {
         const gameTime = Math.floor((Date.now() - this.gameStartTime) / 1000);
         
         const gameResult: GameResult = {

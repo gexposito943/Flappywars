@@ -1,8 +1,14 @@
+/**
+ * Component principal del joc
+ * Gestiona la interfície d'usuari i delega la lògica al controlador
+ */
 import { Component, ElementRef, ViewChild, OnInit, HostListener, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { GameService, GameResult } from '../services/game.service';
 import { RegistreService } from '../services/registre.service';
+import { GameController } from './controllers/game.controller';
+import { GameModel } from './models/game.model';
 
 interface Obstacle {
   x: number;
@@ -15,333 +21,131 @@ interface Obstacle {
   selector: 'app-game',
   standalone: true,
   imports: [CommonModule],
+  providers: [GameController],
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.css']
 })
 export class GameComponent implements OnInit {
   @ViewChild('gameCanvas', { static: true }) gameCanvas!: ElementRef<HTMLCanvasElement>;
   
-  score: number = 0;
-  isGameRunning: boolean = false;
-  isPaused: boolean = false;
-  canvasWidth: number = 1440;
-  canvasHeight: number = 900;
   private ctx!: CanvasRenderingContext2D;
-  private gameLoop: any = null;
-
-  playerY: number = 0;
-  playerVelocity: number = 0;
-  private readonly GRAVITY: number = 0.3;
-  private readonly JUMP_FORCE: number = -8;
-  private readonly OBSTACLE_SPEED: number = 3;
-  private readonly PLAYER_SIZE: number = 120;
-  private readonly PLAYER_X: number = 150;
-  private readonly OBSTACLE_GAP: number = 400;
-  private readonly OBSTACLE_WIDTH: number = 80;
-  private readonly GAP_SIZE: number = 300;
-  
-
-  obstacles: Obstacle[] = [];
-
-  gameMessage: string = 'Prem Enter per començar';
-  showMessage: boolean = true;
-
-  selectedShipId: number | null = null;
-  userData: any = null;
-
-  private playerImage: any;
-  private gameResults: any = {
-    score: 0,
-    time: 0
-  };
-  private gameStartTime: number = 0;
 
   constructor(
     private router: Router,
     private gameService: GameService,
     private registreService: RegistreService,
+    private controller: GameController,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {
-    const navigation = this.router.getCurrentNavigation();
-    if (navigation?.extras?.state) {
-      this.selectedShipId = (navigation.extras.state as any).shipId;
-      this.userData = (navigation.extras.state as any).userData;
-      console.log('Nave recibida en el juego:', this.selectedShipId);
-      console.log('Datos de usuario recibidos:', this.userData);
-    }
-
-    // Inicializar la imagen solo en el navegador
-    if (isPlatformBrowser(this.platformId)) {
-      this.playerImage = new Image();
-      this.playerImage.src = 'assets/images/naus/x-wing.png';
-    }
-  }
+  ) {}
 
   ngOnInit() {
-    if (!this.selectedShipId || !this.userData) {
-      console.error('No se recibieron los datos necesarios');
-      this.router.navigate(['/dashboard']);
-      return;
+    if (isPlatformBrowser(this.platformId)) {
+      this.initializeCanvas();
+      this.startGameLoop();
     }
-
-    this.initializeCanvas();
-    this.startGame();
   }
 
   private initializeCanvas() {
     this.ctx = this.gameCanvas.nativeElement.getContext('2d')!;
   }
 
+  private startGameLoop() {
+    if (isPlatformBrowser(this.platformId)) {
+      requestAnimationFrame(() => this.drawGame());
+    }
+  }
+
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    if (event.key === 'Enter' && !this.isGameRunning) {
+    if (event.key === 'Enter' && !this.model.isGameRunning) {
       this.startGame();
     }
-    if (event.key === 'ArrowUp' && this.isGameRunning) {
-      this.jump();
+    if (event.key === 'ArrowUp' && this.model.isGameRunning) {
+      this.controller.jump();
     }
     if (event.key === ' ') {
-      event.preventDefault(); 
-      if (this.isGameRunning) {
+      event.preventDefault();
+      if (this.model.isGameRunning) {
         this.togglePause();
       }
     }
   }
 
-  startGame() {
-    if (this.isGameRunning) return;
-    
-    console.log('Iniciando juego con nave:', this.selectedShipId);
-    this.isGameRunning = true;
-    this.showMessage = false;
-    this.score = 0;
-    this.playerY = this.canvasHeight / 2;
-    this.playerVelocity = 0;
-    this.obstacles = [this.createObstacle()];
-    this.gameStartTime = Date.now();
-    this.gameLoop = setInterval(() => this.updateGame(), 1000 / 60);
+  startGame(): void {
+    this.controller.startGame();
   }
 
-  saveGameResults() {
-    const gameTime = Math.floor((Date.now() - this.gameStartTime) / 1000);
-    
-    const gameResult: GameResult = {
-      usuari_id: this.userData.id,
-      puntuacio: this.score,
-      duracio_segons: gameTime,
-      nau_utilitzada: this.selectedShipId || 1,
-      nivell_dificultat: 'normal',
-      obstacles_superats: this.score,
-      completada: true
-    };
-
-    this.gameService.saveGameResults(gameResult).subscribe({
-      next: (response) => {
-        console.log('Partida guardada:', response);
-        this.gameMessage = `Partida guardada! Puntuació: ${this.score}`;
-        
-        // Actualizar estadísticas locales
-        if (response.estadistiques) {
-          // Actualizar datos del usuario
-          this.userData.puntosTotales = (this.userData.puntosTotales || 0) + this.score;
-          this.registreService.setUserData(this.userData);
-          
-          // Forzar actualización de estadísticas en el dashboard
-          this.gameService.getUserStats().subscribe({
-            next: (stats) => {
-              console.log('Estadísticas actualizadas:', stats);
-            },
-            error: (error) => {
-              console.error('Error al obtener estadísticas actualizadas:', error);
-            }
-          });
-        }
-        
-        setTimeout(() => {
-          this.gameMessage = 'Prem Enter per tornar a jugar';
-        }, 2000);
-      },
-      error: (error) => {
-        console.error('Error al guardar la partida:', error);
-        this.gameMessage = 'Error al guardar la partida';
-      }
-    });
+  stopGame(): void {
+    this.controller.stopGame();
   }
 
-  stopGame() {
-    this.isGameRunning = false;
-    this.showMessage = true;
-    this.gameMessage = `Game Over - Puntuació: ${this.score}`;
-    if (this.gameLoop) {
-      clearInterval(this.gameLoop);
-      this.gameLoop = null;
-    }
-    this.saveGameResults();
+  togglePause(): void {
+    this.controller.togglePause();
   }
 
-  togglePause() {
-    this.isPaused = !this.isPaused;
-    if (this.isPaused) {
-      clearInterval(this.gameLoop);
-    } else {
-      this.gameLoop = setInterval(() => this.updateGame(), 1000 / 60);
-    }
+  goToDashboard(): void {
+    this.controller.goToDashboard();
   }
 
-  applyGravity() {
-    this.playerVelocity += this.GRAVITY;
-    this.playerY += this.playerVelocity;
+  get model(): GameModel {
+    return this.controller.getModel();
   }
 
-  jump() {
-    if (!this.isGameRunning) return;
-    this.playerVelocity = this.JUMP_FORCE;
-    this.playerY += this.playerVelocity;
-  }
-
-  moveObstacles() {
-    this.obstacles = this.obstacles.map(obstacle => ({
-      ...obstacle,
-      x: obstacle.x - this.OBSTACLE_SPEED
-    }));
-  }
-
-  checkCollision(): boolean {
-    return this.obstacles.some(obstacle => {
-      const inXRange = this.PLAYER_X < obstacle.x + 50 && 
-                      this.PLAYER_X + (this.PLAYER_SIZE * 0.8) > obstacle.x;
-      
-      const hitTop = this.playerY + (this.PLAYER_SIZE * 0.2) < obstacle.topHeight;
-      const hitBottom = this.playerY + (this.PLAYER_SIZE * 0.8) > this.canvasHeight - obstacle.bottomHeight;
-      
-      return inXRange && (hitTop || hitBottom);
-    });
-  }
-
-  updateScore() {
-    const passedObstacle = this.obstacles.find(obstacle => 
-      obstacle.x + 50 < this.PLAYER_X && !obstacle.passed
-    );
-    if (passedObstacle) {
-      this.score++;
-      passedObstacle.passed = true;
-    }
-  }
-
-  handleCollision() {
-    this.isGameRunning = false;
-    this.showMessage = true;
-    this.gameMessage = `Game Over - Puntuació: ${this.score}`;
-    if (this.gameLoop) {
-      clearInterval(this.gameLoop);
-      this.gameLoop = null;
-    }
-    // No llamamos a startGame() automáticamente
-  }
-
-  private checkBoundaries(): boolean {
-    if (this.playerY <= 0 || this.playerY >= this.canvasHeight - this.PLAYER_SIZE) {
-      this.handleCollision();
-      return true;
-    }
-    return false;
-  }
-
-  private createObstacle(): Obstacle {
-    const topHeight = Math.random() * (this.canvasHeight - this.GAP_SIZE - 100);
-    return {
-      x: this.canvasWidth,
-      topHeight: topHeight,
-      bottomHeight: this.canvasHeight - topHeight - this.GAP_SIZE,
-      passed: false
-    };
-  }
-
-  private updateGame() {
-    if (this.isPaused) return;
-    
-    this.applyGravity();
-    this.moveObstacles();
-    this.updateScore();
-    
-    if (this.checkCollision()) {
-      this.handleCollision();
-      return;
-    }
-    
-    if (this.obstacles.length === 0 || 
-        this.obstacles[this.obstacles.length - 1].x < this.canvasWidth - this.OBSTACLE_GAP) {
-      this.obstacles.push(this.createObstacle());
-    }
-    
-    this.obstacles = this.obstacles.filter(obstacle => obstacle.x > -this.OBSTACLE_WIDTH);
-    
-    this.drawGame();
-  }
-
-  public drawGame() {
+  drawGame(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     
-    this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+    this.ctx.clearRect(0, 0, this.model.CANVAS_WIDTH, this.model.CANVAS_HEIGHT);
 
     this.ctx.fillStyle = 'white';
     this.ctx.font = '32px Arial';
-    this.ctx.fillText(`Punts: ${this.score}`, 20, 50);
+    this.ctx.fillText(`Punts: ${this.model.score}`, 20, 50);
 
-    if (this.playerImage && this.playerImage.complete) {
-      this.ctx.save();
-      
-      const rotation = this.playerVelocity * 0.05;
-      
-      this.ctx.translate(
-        this.PLAYER_X + this.PLAYER_SIZE/2,
-        this.playerY + this.PLAYER_SIZE/2
-      );
-      
-      this.ctx.rotate(rotation);
-      
-      this.ctx.drawImage(
-        this.playerImage,
-        -this.PLAYER_SIZE/2,
-        -this.PLAYER_SIZE/2,
-        this.PLAYER_SIZE,
-        this.PLAYER_SIZE
-      );
-      
-      this.ctx.restore();
-    } else {
-      this.ctx.fillStyle = 'red';
-      this.ctx.fillRect(this.PLAYER_X, this.playerY, this.PLAYER_SIZE, this.PLAYER_SIZE);
-    }
+    this.ctx.fillStyle = 'red';
+    this.ctx.fillRect(
+      this.model.PLAYER_X, 
+      this.model.playerY, 
+      this.model.PLAYER_SIZE, 
+      this.model.PLAYER_SIZE
+    );
 
     this.ctx.fillStyle = '#2ecc71';
-    this.obstacles.forEach(obstacle => {
-      this.ctx.fillRect(obstacle.x, 0, this.OBSTACLE_WIDTH, obstacle.topHeight);
+    this.model.obstacles.forEach(obstacle => {
       this.ctx.fillRect(
         obstacle.x, 
-        this.canvasHeight - obstacle.bottomHeight, 
-        this.OBSTACLE_WIDTH, 
+        0, 
+        this.model.OBSTACLE_WIDTH, 
+        obstacle.topHeight
+      );
+      
+      this.ctx.fillRect(
+        obstacle.x, 
+        this.model.CANVAS_HEIGHT - obstacle.bottomHeight, 
+        this.model.OBSTACLE_WIDTH, 
         obstacle.bottomHeight
       );
 
       this.ctx.strokeStyle = '#27ae60';
       this.ctx.lineWidth = 3;
-      this.ctx.strokeRect(obstacle.x, 0, this.OBSTACLE_WIDTH, obstacle.topHeight);
       this.ctx.strokeRect(
         obstacle.x, 
-        this.canvasHeight - obstacle.bottomHeight, 
-        this.OBSTACLE_WIDTH, 
+        0, 
+        this.model.OBSTACLE_WIDTH, 
+        obstacle.topHeight
+      );
+      this.ctx.strokeRect(
+        obstacle.x, 
+        this.model.CANVAS_HEIGHT - obstacle.bottomHeight, 
+        this.model.OBSTACLE_WIDTH, 
         obstacle.bottomHeight
       );
     });
+
+    if (this.model.isGameRunning && !this.model.isPaused) {
+      requestAnimationFrame(() => this.drawGame());
+    }
   }
 
-  get isGameLoopRunning(): boolean {
-    return this.gameLoop !== null;
-  }
-
-  goToDashboard() {
-    this.stopGame(); 
-    this.router.navigate(['/dashboard']);
+  saveGame(): void {
+    this.controller.saveGameResults();
   }
 }
