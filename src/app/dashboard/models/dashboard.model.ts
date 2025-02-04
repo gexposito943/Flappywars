@@ -101,4 +101,27 @@ export class DashboardModel {
     setUserData(data: UserData): void {
         this._userData = { ...this._userData, ...data };
     }
+
+    formatTime(seconds: number): string {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = seconds % 60;
+        
+        if (hours > 0) {
+            return `${hours}h ${minutes}m ${remainingSeconds}s`;
+        } else if (minutes > 0) {
+            return `${minutes}m ${remainingSeconds}s`;
+        } else {
+            return `${remainingSeconds}s`;
+        }
+    }
+
+    loadUserStats(stats: UserStats): void {
+        this._userStats = {
+            millor_puntuacio: stats.millor_puntuacio || 0,
+            total_partides: stats.total_partides || 0,
+            temps_total_jugat: stats.temps_total_jugat || 0,
+            punts_totals: stats.punts_totals || 0
+        };
+    }
 } 

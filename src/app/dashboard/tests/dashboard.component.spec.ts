@@ -50,4 +50,25 @@ describe('DashboardComponent', () => {
             naveActual: shipId
         });
     });
+
+    it('should format statistics display correctly', () => {
+        // Arrange
+        const mockStats = {
+            millor_puntuacio: 1000,
+            total_partides: 50,
+            temps_total_jugat: 7200,
+            punts_totals: 2500
+        };
+        
+        // Act
+        component.model.loadUserStats(mockStats);
+        fixture.detectChanges();
+
+        // Assert
+        const statsElements = fixture.nativeElement.querySelectorAll('.stat-card');
+        expect(statsElements[0].textContent.toUpperCase()).toContain('MILLOR PUNTUACIÓ');
+        expect(statsElements[1].textContent.toUpperCase()).toContain('TOTAL PARTIDES');
+        expect(statsElements[2].textContent.toUpperCase()).toContain('TEMPS TOTAL JUGAT');
+        expect(component.model.formatTime(7200)).toBe('2h 0m 0s');
+    });
 }); 
