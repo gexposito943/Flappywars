@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { DashboardController, DashboardActionTypes } from './controllers/dashboard.controller';
 import { DashboardModel } from './models/dashboard.model';
 import { UserStats } from './models/interfaces';
+import { Ship } from './models/interfaces';
 
 @Component({
     selector: 'app-dashboard',
@@ -56,5 +57,9 @@ export class DashboardComponent implements OnInit {
 
     getUsername(): string {
         return this.model.username;
+    }
+
+    isShipUnlocked(ship: Ship): boolean {
+        return this.model.isShipUnlocked(ship);
     }
 }
