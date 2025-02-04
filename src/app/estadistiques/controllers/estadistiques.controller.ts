@@ -32,4 +32,8 @@ export class EstadistiquesController {
             }
         });
     }
+
+    returnToDashboard(): void {
+        this.router.navigate(['/dashboard']);
+    }
 } 

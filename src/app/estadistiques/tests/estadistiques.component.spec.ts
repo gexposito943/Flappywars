@@ -67,4 +67,16 @@ describe('EstadistiquesComponent', () => {
         expect(rows[0].nativeElement.textContent).toContain('Player2');
         expect(rows[0].nativeElement.textContent).toContain('3200');
     });
+
+    it('should have a return button', () => {
+        const returnButton = fixture.debugElement.query(By.css('.return-button'));
+        expect(returnButton).toBeTruthy();
+        expect(returnButton.nativeElement.textContent.trim()).toBe('Tornar al Dashboard');
+    });
+
+    it('should navigate to dashboard when return button is clicked', () => {
+        const returnButton = fixture.debugElement.query(By.css('.return-button'));
+        returnButton.nativeElement.click();
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
+    });
 }); 

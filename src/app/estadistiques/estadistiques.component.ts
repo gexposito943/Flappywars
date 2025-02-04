@@ -69,6 +69,6 @@ export class EstadistiquesComponent implements OnInit {
   }
 
   returnToDashboard(): void {
-    this.router.navigate(['/dashboard']);
+    this.controller.returnToDashboard();
   }
 }
