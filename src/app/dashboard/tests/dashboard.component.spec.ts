@@ -31,7 +31,13 @@ describe('DashboardComponent', () => {
             providers: [
                 {
                     provide: DashboardController,
-                    useFactory: () => new DashboardController(mockRouter, mockRegistreService, mockGameService, mockShipService)
+                    useFactory: () => new DashboardController(
+                        mockRouter, 
+                        mockRegistreService, 
+                        mockGameService, 
+                        mockShipService,
+                        'browser'
+                    )
                 },
                 { provide: Router, useValue: mockRouter },
                 { provide: RegistreService, useValue: mockRegistreService },

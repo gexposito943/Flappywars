@@ -134,37 +134,30 @@ body {
   transform: translateY(-2px);
 }
 
-/* Sección de estadísticas con efecto holográfico */
+/* Sección de estadísticas */
 .stats-section {
-  margin: 3rem 0;
+    margin: 3rem 0;
 }
 
-.stats-title {
-  color: #ffffff;
-  text-align: center;
-  font-size: 2.5rem;
-  margin-bottom: 2.5rem;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  text-shadow: 0 0 15px rgba(68, 68, 68, 0.5),
-               0 0 30px rgba(68, 68, 68, 0.3);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+.stats-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 2rem;
+    padding: 0 2rem;
 }
 
 .stat-card {
-  background: rgba(13, 20, 37, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  border-radius: 15px;
-  padding: 2rem;
-  text-align: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+    flex: 1;
+    background: rgba(13, 20, 37, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+    min-width: 200px;
 }
 
 .stat-card:hover {
@@ -224,9 +217,13 @@ body {
     padding: 1rem;
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .stats-container {
+    flex-direction: column;
     gap: 1rem;
+  }
+
+  .stat-card {
+    width: 100%;
   }
 
   .top-bar {
@@ -340,4 +337,15 @@ body {
   background: rgba(255, 0, 0, 0.8);
   padding: 5px 10px;
   border-radius: 4px;
+}
+
+.stats-title {
+    color: #ffffff;
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 0 15px rgba(68, 68, 68, 0.5),
+                 0 0 30px rgba(68, 68, 68, 0.3);
 }

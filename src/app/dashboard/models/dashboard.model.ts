@@ -14,7 +14,7 @@ export class DashboardModel extends BaseModel {
                 punts_totals: 0
             },
             userData: {
-                username: 'Usuario',
+                username: '',
                 nivel: 1,
                 puntosTotales: 0,
                 naveActual: 1
@@ -62,7 +62,8 @@ export class DashboardModel extends BaseModel {
     }
 
     get username(): string {
-        return this._data.userData.username;
+        console.log('Getting username:', this._data.userData.username); // Debug
+        return this._data.userData.username || 'Usuario';
     }
 
     get hasSavedGame(): boolean {
@@ -218,7 +219,14 @@ export class DashboardModel extends BaseModel {
     }
 
     setUserData(userData: UserData): void {
-        this.setData({ userData });
+        console.log('Setting userData in model:', userData); // Debug
+        this.setData({ 
+            userData: {
+                ...this._data.userData,
+                ...userData,
+                username: userData.username || this._data.userData.username || 'Usuario'
+            } 
+        });
     }
 
     setAchievements(achievements: Achievement[]): void {

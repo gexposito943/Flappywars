@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseController, Action } from '../core/base.controller';
 import { DashboardModel } from '../models/dashboard.model';
@@ -6,6 +6,7 @@ import { RegistreService } from '../../services/registre.service';
 import { GameService } from '../../services/game.service';
 import { ShipService } from '../../services/ship.service';
 import { UserData } from '../models/interfaces';
+import { isPlatformBrowser } from '@angular/common';
 
 export enum DashboardActionTypes {
     SELECT_SHIP = '[Dashboard] Select Ship',
@@ -24,20 +25,23 @@ export class DashboardController extends BaseController<DashboardModel> {
         private router: Router,
         private registreService: RegistreService,
         private gameService: GameService,
-        private shipService: ShipService
+        private shipService: ShipService,
+        @Inject(PLATFORM_ID) private platformId: Object
     ) {
         super(new DashboardModel());
     }
 
     initialize(): void {
-        const userData = this.registreService.getUserData();
-        if (userData) {
-            this.model.setData({ userData: userData });
+        if (isPlatformBrowser(this.platformId)) {
+            const userData = this.registreService.getUserData();
+            if (userData) {
+                this.model.setData({ userData: userData });
+            }
+            this.loadUserStats();
+            this.checkSavedGame();
+            this.loadShips();
+            this.loadAchievements();
         }
-        this.loadUserStats();
-        this.checkSavedGame();
-        this.loadShips();
-        this.loadAchievements();
     }
 
     dispatch(action: Action): void {
@@ -120,8 +124,12 @@ export class DashboardController extends BaseController<DashboardModel> {
     }
 
     private checkSavedGame(): void {
-        const hasSaved = this.gameService.hasSavedGame();
-        this.model.setHasSavedGame(hasSaved);
+        if (isPlatformBrowser(this.platformId)) {
+            const hasSaved = this.gameService.hasSavedGame();
+            this.model.setHasSavedGame(hasSaved);
+        } else {
+            this.model.setHasSavedGame(false);
+        }
     }
 
     private handleRestoreGame(): void {
@@ -137,7 +145,7 @@ export class DashboardController extends BaseController<DashboardModel> {
     }
 
     private handleViewGlobalStats(): void {
-        this.router.navigate(['/statistics']);
+        this.router.navigate(['/estadistiques']);
     }
 
     private loadShips(): void {

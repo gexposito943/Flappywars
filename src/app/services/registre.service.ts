@@ -5,6 +5,13 @@ import { tap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { throwError } from 'rxjs';
 
+const API_ROUTES = {
+    LOGIN: '/login',
+    REGISTER: '/register',
+    SHIPS: '/ships',
+    ACHIEVEMENTS: '/user/achievements',
+    STATS: '/user/stats'
+};
 
 interface AuthResponse {
   success: boolean;
@@ -53,10 +60,14 @@ export class RegistreService {
       tap(response => {
         if (response.success && response.token) {
           this.setToken(response.token);
-          this.setUserData(response.user);
-        } else {
-          this.setToken(null);
-          this.setUserData(null);
+          const userData = {
+            username: response.user.username,
+            nivel: response.user.nivel,
+            puntosTotales: response.user.puntosTotales,
+            naveActual: response.user.naveActual
+          };
+          this.setUserData(userData);
+          console.log('Usuario guardado:', userData);
         }
       }),
       catchError(error => {
@@ -142,7 +153,12 @@ export class RegistreService {
 
   setUserData(userData: any): void {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.userDataKey, JSON.stringify(userData));
+      const formattedData = {
+        ...userData,
+        username: userData.username || 'Usuario'
+      };
+      localStorage.setItem(this.userDataKey, JSON.stringify(formattedData));
+      console.log('Datos guardados:', formattedData);
     }
   }
 }

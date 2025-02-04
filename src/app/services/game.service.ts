@@ -60,10 +60,15 @@ export class GameService {
   ) {}
 
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
+    if (isPlatformBrowser(this.platformId)) {
+      const token = this.registreService.getToken();
+      return new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': token || ''
+      });
+    }
     return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Content-Type': 'application/json'
     });
   }
 
@@ -86,6 +91,15 @@ export class GameService {
   }
 
   getUserStats(): Observable<UserStats> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return of({
+        millor_puntuacio: 0,
+        total_partides: 0,
+        temps_total_jugat: 0,
+        punts_totals: 0
+      });
+    }
+
     return this.http.get<any>(
       `${this.apiUrl}/stats/user`,
       { headers: this.getHeaders() }
@@ -182,10 +196,17 @@ export class GameService {
   }
 
   hasSavedGame(): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
     return localStorage.getItem('savedGame') !== null;
   }
 
   restoreGame(): Observable<any> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return of({ success: false, message: 'No disponible en SSR' });
+    }
+
     const savedGame = localStorage.getItem('savedGame');
     if (savedGame) {
       return of({
@@ -193,7 +214,7 @@ export class GameService {
         gameState: JSON.parse(savedGame)
       });
     }
-    return throwError(() => new Error('No hi ha partida guardada'));
+    return of({ success: false, message: 'No hi ha partida guardada' });
   }
 
   getGlobalStats(): Observable<GlobalStats[]> {
