@@ -142,4 +142,17 @@ export class DashboardModel extends BaseModel {
             selectedShipId: null
         });
     }
+
+    canStartGame(): boolean {
+        return this._data.selectedShipId !== null;
+    }
+
+    getGameStartData() {
+        if (!this.canStartGame()) return null;
+        
+        return {
+            shipId: this._data.selectedShipId,
+            userData: this._data.userData
+        };
+    }
 } 

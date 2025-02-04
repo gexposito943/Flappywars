@@ -69,12 +69,10 @@ export class DashboardController extends BaseController<DashboardModel> {
     }
 
     private handleStartGame(): void {
-        if (this.model.selectedShipId) {
+        const gameData = this.model.getGameStartData();
+        if (gameData) {
             this.router.navigate(['/game'], {
-                state: { 
-                    shipId: this.model.selectedShipId,
-                    userData: this.model.userData
-                }
+                state: gameData
             });
         }
     }

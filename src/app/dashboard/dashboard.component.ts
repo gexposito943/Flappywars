@@ -62,4 +62,8 @@ export class DashboardComponent implements OnInit {
     isShipUnlocked(ship: Ship): boolean {
         return this.model.isShipUnlocked(ship);
     }
+
+    canStartGame(): boolean {
+        return this.model.canStartGame();
+    }
 }
