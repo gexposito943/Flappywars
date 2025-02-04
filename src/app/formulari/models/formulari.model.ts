@@ -1,3 +1,7 @@
+/**
+ * Model que gestiona les dades del formulari
+ * Conté les validacions i l'estat dels errors
+ */
 export class FormulariModel {
     private _username: string = '';
     private _email: string = '';
@@ -7,7 +11,8 @@ export class FormulariModel {
         username: false,
         email: false,
         password: false,
-        confirmPassword: false
+        confirmPassword: false,
+        passwordRegex: false
     };
 
     // Username getter y setter
@@ -56,6 +61,14 @@ export class FormulariModel {
         return this._errors;
     }
 
+    get isValid(): boolean {
+        return !this._errors.username && 
+               !this._errors.email && 
+               !this._errors.password && 
+               !this._errors.confirmPassword &&
+               !this._errors.passwordRegex;
+    }
+
     private validateEmail(email: string): boolean {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return email.length > 0 && emailRegex.test(email);
@@ -71,5 +84,19 @@ export class FormulariModel {
         this._errors.confirmPassword = 
             this._password !== this._confirmPassword || 
             this._confirmPassword.length === 0;
+    }
+
+    clearInputs(): void {
+        this._username = '';
+        this._email = '';
+        this._password = '';
+        this._confirmPassword = '';
+        this.resetErrors();
+    }
+
+    private resetErrors(): void {
+        Object.keys(this._errors).forEach(key => {
+            this._errors[key as keyof typeof this._errors] = false;
+        });
     }
 }

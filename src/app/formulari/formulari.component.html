@@ -10,7 +10,8 @@
           <input type="email" 
                  id="signin-email"
                  name="email"
-                 [(ngModel)]="email" 
+                 [(ngModel)]="model.email" 
+                 (ngModelChange)="model.setEmail($event)"
                  placeholder="Email"
                  aria-required="true" />
         </div>
@@ -20,7 +21,8 @@
           <input type="password"
                  id="signin-password"
                  name="password"
-                 [(ngModel)]="password"
+                 [(ngModel)]="model.password"
+                 (ngModelChange)="model.setPassword($event)"
                  placeholder="Contraseña"
                  aria-required="true" />
         </div>
@@ -35,71 +37,71 @@
       </form>
 
       <!-- Sign Up Form -->
-      <form action="#" class="sign-up-form" (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <form action="#" class="sign-up-form" (ngSubmit)="onSubmit()">
         <h2 class="title" id="signup-title">Únete a la Rebelión</h2>
-        <div class="input-field" [class.input-error]="usernameError">
+        <div class="input-field" [class.input-error]="model.errors.username">
           <label for="signup-username" class="visually-hidden">Usuari</label>
           <input type="text"
                  id="signup-username"
                  name="username"
-                 [(ngModel)]="username"
+                 [(ngModel)]="model.username"
+                 (ngModelChange)="model.setUsername($event)"
                  required
-                 placeholder="Usuari"
-                 #usernameInput="ngModel">
-          <div *ngIf="usernameError" class="error-message">
+                 placeholder="Usuari">
+          <div *ngIf="model.errors.username" class="error-message">
             El nom d'usuari és obligatori
           </div>
         </div>
         
-        <div class="input-field" [class.input-error]="emailError">
+        <div class="input-field" [class.input-error]="model.errors.email">
           <label for="signup-email" class="visually-hidden">Email</label>
           <input type="email"
                  id="signup-email"
                  name="email"
-                 [(ngModel)]="email"
+                 [(ngModel)]="model.email"
+                 (ngModelChange)="model.setEmail($event)"
                  required
                  email
-                 placeholder="Email"
-                 #emailInput="ngModel">
-          <div *ngIf="emailError" class="error-message">
+                 placeholder="Email">
+          <div *ngIf="model.errors.email" class="error-message">
             L'email és obligatori i ha de ser vàlid
           </div>
         </div>
         
-        <div class="input-field" [class.input-error]="passwordError || passwordRegexError">
+        <div class="input-field" [class.input-error]="model.errors.password || model.errors.passwordRegex">
           <label for="signup-password" class="visually-hidden">Contrasenya</label>
           <input type="password"
                  id="signup-password"
                  name="password"
-                 [(ngModel)]="password"
+                 [(ngModel)]="model.password"
+                 (ngModelChange)="model.setPassword($event)"
                  required
-                 placeholder="Contrasenya"
-                 #passwordInput="ngModel">
-          <div *ngIf="passwordError" class="error-message">
+                 placeholder="Contrasenya">
+          <div *ngIf="model.errors.password" class="error-message">
             La contrasenya és obligatòria
           </div>
-          <div *ngIf="passwordRegexError" class="error-message">
+          <div *ngIf="model.errors.passwordRegex" class="error-message">
             La contrasenya ha de tenir mínim 6 caràcters i un símbol especial
           </div>
         </div>
         
-        <div class="input-field" [class.input-error]="confirmPasswordMismatchError">
+        <div class="input-field" [class.input-error]="model.errors.confirmPassword">
           <label for="signup-confirm-password" class="visually-hidden">Confirmació Contrasenya</label>
           <input type="password"
                  id="signup-confirm-password"
                  name="confirmPassword"
-                 [(ngModel)]="confirmPassword"
+                 [(ngModel)]="model.confirmPassword"
+                 (ngModelChange)="model.setConfirmPassword($event)"
                  required
-                 placeholder="Confirma la contrasenya"
-                 #confirmPasswordInput="ngModel">
-          <div *ngIf="confirmPasswordMismatchError" class="error-message">
+                 placeholder="Confirma la contrasenya">
+          <div *ngIf="model.errors.confirmPassword" class="error-message">
             Les contrasenyes no coincideixen
           </div>
         </div>
         
         <button type="submit" 
                 class="btn-login" 
-                [disabled]="!registerForm.form.valid">
+                [disabled]="model.errors.username || model.errors.email || model.errors.password || model.errors.confirmPassword">
           Comenzar el Entrenamiento
         </button>
       </form>
