@@ -26,7 +26,7 @@ interface Obstacle {
   styleUrls: ['./game.component.css']
 })
 export class GameComponent implements OnInit {
-  @ViewChild('gameCanvas', { static: true }) gameCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('gameCanvas') canvas!: ElementRef<HTMLCanvasElement>;
   
   private ctx!: CanvasRenderingContext2D;
   private backgroundImage: HTMLImageElement | null = null;
@@ -56,7 +56,7 @@ export class GameComponent implements OnInit {
   }
 
   private initializeCanvas() {
-    this.ctx = this.gameCanvas.nativeElement.getContext('2d')!;
+    this.ctx = this.canvas.nativeElement.getContext('2d')!;
   }
 
   private loadImages(): void {

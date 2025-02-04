@@ -40,9 +40,9 @@ describe('GameService', () => {
       expect(stats).toEqual(expectedStats);
     });
 
-    const req = httpMock.expectOne('http://localhost:3000/api/v1/stats/user');
+    const req = httpMock.expectOne(`${service['apiUrl']}/stats/user`);
     expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+    expect(req.request.headers.get('Authorization')).toBe('test-token');
     req.flush({ success: true, estadistiques: expectedStats });
   });
 
@@ -54,9 +54,9 @@ describe('GameService', () => {
       expect(response).toEqual(expectedResponse);
     });
 
-    const req = httpMock.expectOne('http://localhost:3000/api/updateShip');
-    expect(req.request.method).toBe('POST');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+    const req = httpMock.expectOne(`${service['apiUrl']}/user/ship`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.headers.get('Authorization')).toBe('test-token');
     req.flush(expectedResponse);
   });
 
@@ -71,13 +71,13 @@ describe('GameService', () => {
       completada: true
     };
     service.saveGameResults(gameData).subscribe();
-    const req = httpMock.expectOne('http://localhost:3000/api/game/save');
+    const req = httpMock.expectOne(`${service['apiUrl']}/stats/update`);
     expect(req.request.method).toBe('POST');
   });
 
   it('should get available ships', () => {
     service.getAvailableShips().subscribe();
-    const req = httpMock.expectOne('http://localhost:3000/api/user/ships');
+    const req = httpMock.expectOne(`${service['apiUrl']}/ships`);
     expect(req.request.method).toBe('GET');
   });
 
@@ -97,9 +97,9 @@ describe('GameService', () => {
     service.getUserAchievements().subscribe(achievements => {
       expect(achievements).toEqual(expectedAchievements);
     });
-    const req = httpMock.expectOne('http://localhost:3000/api/achievements');
+    const req = httpMock.expectOne(`${service['apiUrl']}/achievements`);
     expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+    expect(req.request.headers.get('Authorization')).toBe('test-token');
     req.flush(expectedAchievements);
   });
 
@@ -110,7 +110,7 @@ describe('GameService', () => {
         expect(error.error.message).toBe('Token invàlid');
       }
     });
-    const req = httpMock.expectOne('http://localhost:3000/api/stats');
+    const req = httpMock.expectOne(`${service['apiUrl']}/stats/user`);
     req.flush(
       { message: 'Token invàlid' },
       { status: 401, statusText: 'Unauthorized' }
@@ -121,8 +121,8 @@ describe('GameService', () => {
     const shipId = 1;
     service.updateUserShip(shipId).subscribe();
     
-    const req = httpMock.expectOne('http://localhost:3000/api/updateShip');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+    const req = httpMock.expectOne(`${service['apiUrl']}/user/ship`);
+    expect(req.request.headers.get('Authorization')).toBe('test-token');
     req.flush({ success: true });
   });
 
@@ -140,7 +140,7 @@ describe('GameService', () => {
     service.saveGameResults(gameData).subscribe({
       error: (error) => expect(error).toBeTruthy()
     });
-    const req = httpMock.expectOne('http://localhost:3000/api/game/save');
+    const req = httpMock.expectOne(`${service['apiUrl']}/stats/update`);
     req.error(new ErrorEvent('Network error'));
   });
 
@@ -148,7 +148,7 @@ describe('GameService', () => {
     service.getAvailableShips().subscribe({
       error: (error) => expect(error).toBeTruthy()
     });
-    const req = httpMock.expectOne('http://localhost:3000/api/user/ships');
+    const req = httpMock.expectOne(`${service['apiUrl']}/ships`);
     req.error(new ErrorEvent('Network error'));
   });
 
@@ -160,7 +160,7 @@ describe('GameService', () => {
       }
     });
 
-    const req = httpMock.expectOne('http://localhost:3000/api/achievements');
+    const req = httpMock.expectOne(`${service['apiUrl']}/achievements`);
     req.flush(
       { message: 'No autoritzat' },
       { status: 401, statusText: 'Unauthorized' }

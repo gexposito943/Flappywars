@@ -16,4 +16,9 @@ export abstract class BaseController<T> {
     setModel(model: T): void {
         this.model = model;
     }
+
+    dispatch(action: { type: string, payload?: any }): void {
+        // Implementación base que puede ser sobrescrita
+        console.log('Action dispatched:', action);
+    }
 } 

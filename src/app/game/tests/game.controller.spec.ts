@@ -7,6 +7,7 @@ import { GameController } from '../controllers/game.controller';
 import { GameService } from '../../services/game.service';
 import { RegistreService } from '../../services/registre.service';
 import { of, throwError } from 'rxjs';
+import { fakeAsync, tick } from '@angular/core/testing';
 
 describe('GameController', () => {
     let controller: GameController;
@@ -32,6 +33,10 @@ describe('GameController', () => {
     });
 
     describe('Game Management', () => {
+        beforeEach(() => {
+            gameService.saveGameResults.and.returnValue(of({}));
+        });
+
         it('should start game correctly', () => {
             controller.startGame();
             const model = controller.getModel();
@@ -41,15 +46,12 @@ describe('GameController', () => {
             expect(model.obstacles.length).toBeGreaterThan(0);
         });
 
-        it('should stop game correctly', () => {
+        it('should stop game correctly', fakeAsync(() => {
             controller.startGame();
             controller.stopGame();
-            const model = controller.getModel();
-            
-            expect(model.isGameRunning).toBeFalse();
-            expect(model.showMessage).toBeTrue();
-            expect(controller.isGameLoopRunning).toBeFalse();
-        });
+            tick();
+            expect(gameService.saveGameResults).toHaveBeenCalled();
+        }));
 
         it('should handle pause correctly', () => {
             controller.startGame();

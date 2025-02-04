@@ -3,6 +3,8 @@ import { DashboardState, UserStats, UserData, Ship, Achievement } from './interf
 
 export class DashboardModel extends BaseModel {
     private _data: DashboardState;
+    user: UserData;
+    selectedShip: number;
 
     constructor() {
         super();
@@ -26,6 +28,13 @@ export class DashboardModel extends BaseModel {
             hasSavedGame: false,
             achievements: [],
         };
+        this.user = {
+            username: '',
+            nivel: 1,
+            puntosTotales: 0,
+            naveActual: 1
+        };
+        this.selectedShip = 1;
     }
 
     getData(): DashboardState {
