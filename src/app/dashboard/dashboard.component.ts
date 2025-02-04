@@ -98,4 +98,12 @@ export class DashboardComponent implements OnInit {
     get selectedShipId(): number | null {
         return this.model.selectedShipId;
     }
+
+    get isLoading(): boolean {
+        return this.model.isLoading;
+    }
+
+    get loadingMessage(): string {
+        return this.model.loadingMessage;
+    }
 }

@@ -1,5 +1,5 @@
 import { BaseModel } from './base.model';
-import { DashboardState, UserStats, UserData, Ship } from './interfaces';
+import { DashboardState, UserStats, UserData, Ship, Achievement } from './interfaces';
 
 export class DashboardModel extends BaseModel {
     private _data: DashboardState;
@@ -23,7 +23,8 @@ export class DashboardModel extends BaseModel {
             availableShips: [],
             loading: false,
             error: null,
-            hasSavedGame: false
+            hasSavedGame: false,
+            achievements: [],
         };
     }
 
@@ -76,6 +77,14 @@ export class DashboardModel extends BaseModel {
         return this._data.error;
     }
 
+    get loadingMessage(): string {
+        return 'Carregant...';
+    }
+
+    get achievements(): Achievement[] {
+        return this._data.achievements;
+    }
+
     // Setters
     setUserStats(stats: UserStats): void {
         this.setData({
@@ -114,10 +123,10 @@ export class DashboardModel extends BaseModel {
     }
 
     validate(): boolean {
-        return (
-            this._data.userStats !== null &&
-            this._data.userData !== null &&
-            Array.isArray(this._data.availableShips)
+        return Boolean(
+            this._data.userData &&
+            this._data.userData.username &&
+            this._data.userData.nivel >= 1
         );
     }
 
@@ -206,5 +215,22 @@ export class DashboardModel extends BaseModel {
 
     getPlayButtonText(): string {
         return this.canPlay() ? 'Jugar' : 'Selecciona una nau';
+    }
+
+    setUserData(userData: UserData): void {
+        this.setData({ userData });
+    }
+
+    setAchievements(achievements: Achievement[]): void {
+        this.setData({ achievements });
+    }
+
+    getCompletedAchievements(): Achievement[] {
+        return this.achievements.filter(a => a.completat);
+    }
+
+    getAchievementProgress(): number {
+        if (this.achievements.length === 0) return 0;
+        return (this.getCompletedAchievements().length / this.achievements.length) * 100;
     }
 } 

@@ -5,6 +5,7 @@ import { DashboardModel } from '../models/dashboard.model';
 import { RegistreService } from '../../services/registre.service';
 import { GameService } from '../../services/game.service';
 import { ShipService } from '../../services/ship.service';
+import { UserData } from '../models/interfaces';
 
 export enum DashboardActionTypes {
     SELECT_SHIP = '[Dashboard] Select Ship',
@@ -36,6 +37,7 @@ export class DashboardController extends BaseController<DashboardModel> {
         this.loadUserStats();
         this.checkSavedGame();
         this.loadShips();
+        this.loadAchievements();
     }
 
     dispatch(action: Action): void {
@@ -158,6 +160,36 @@ export class DashboardController extends BaseController<DashboardModel> {
                         required_points: 0
                     }
                 ]);
+            }
+        });
+    }
+
+    private loadUserData(): void {
+        const userData = this.registreService.getUserData();
+        if (userData && this.model.validate()) {
+            this.model.setUserData(userData);
+        } else {
+            this.handleError(new Error('Invalid user data'));
+        }
+    }
+
+    private updateUserData(updates: Partial<UserData>): void {
+        const updatedData = {
+            ...this.model.userData,
+            ...updates
+        };
+        this.model.setUserData(updatedData);
+        this.registreService.setUserData(updatedData);
+    }
+
+    private loadAchievements(): void {
+        this.gameService.getUserAchievements().subscribe({
+            next: (achievements) => {
+                this.model.setAchievements(achievements);
+            },
+            error: (error) => {
+                this.handleError(error);
+                this.model.setAchievements([]);
             }
         });
     }

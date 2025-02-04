@@ -6,6 +6,7 @@ export interface DashboardState {
     loading: boolean;
     error: string | null;
     hasSavedGame: boolean;
+    achievements: Achievement[];
 }
 
 export interface UserStats {
@@ -29,4 +30,10 @@ export interface Ship {
     imatge_url: string;
     descripcio: string;
     required_points: number;
+}
+
+export interface Achievement {
+    id: number;
+    nom: string;
+    completat: boolean;
 }
