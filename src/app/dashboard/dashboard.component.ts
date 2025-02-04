@@ -97,7 +97,7 @@ export class DashboardComponent implements OnInit {
     private gameService: GameService,
     private registreService: RegistreService,
     private shipService: ShipService,
-    private controller: DashboardController
+    public controller: DashboardController
   ) {
     this.model = controller.getModel();
   }
