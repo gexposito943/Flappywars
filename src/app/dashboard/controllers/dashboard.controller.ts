@@ -97,12 +97,15 @@ export class DashboardController extends BaseController<DashboardModel> {
     }
 
     private loadUserStats(): void {
+        this.model.setLoading(true);
         this.gameService.getUserStats().subscribe({
             next: (stats) => {
                 this.model.setUserStats(stats);
+                this.model.setLoading(false);
             },
             error: (error) => {
                 this.handleError(error);
+                this.model.setUserStats(this.model.getDefaultStats());
             }
         });
     }
@@ -131,5 +134,15 @@ export class DashboardController extends BaseController<DashboardModel> {
 
     private handleViewGlobalStats(): void {
         this.router.navigate(['/statistics']);
+    }
+
+    protected override handleError(error: Error): void {
+        console.error('Controller Error:', error);
+        this.model.setError(error.message);
+        this.model.setLoading(false);
+    }
+
+    protected override clearError(): void {
+        this.model.setError(null);
     }
 }

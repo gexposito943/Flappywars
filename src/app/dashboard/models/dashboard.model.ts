@@ -72,6 +72,10 @@ export class DashboardModel extends BaseModel {
         return this._data.userData.puntosTotales;
     }
 
+    get error(): string | null {
+        return this._data.error;
+    }
+
     // Setters
     setUserStats(stats: UserStats): void {
         this.setData({
@@ -113,14 +117,11 @@ export class DashboardModel extends BaseModel {
     formatTime(seconds: number): string {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
-        const remainingSeconds = seconds % 60;
         
         if (hours > 0) {
-            return `${hours}h ${minutes}m ${remainingSeconds}s`;
-        } else if (minutes > 0) {
-            return `${minutes}m ${remainingSeconds}s`;
+            return `${hours}h ${minutes}m`;
         }
-        return `${remainingSeconds}s`;
+        return `${minutes}m`;
     }
 
     validate(): boolean {
@@ -186,5 +187,14 @@ export class DashboardModel extends BaseModel {
                 puntosTotales: points
             }
         });
+    }
+
+    getDefaultStats(): UserStats {
+        return {
+            millor_puntuacio: 0,
+            total_partides: 0,
+            temps_total_jugat: 0,
+            punts_totals: 0
+        };
     }
 } 
