@@ -82,4 +82,8 @@ export class DashboardComponent implements OnInit {
             type: DashboardActionTypes.VIEW_GLOBAL_STATS
         });
     }
+
+    get totalPoints(): number {
+        return this.model.totalPoints;
+    }
 }

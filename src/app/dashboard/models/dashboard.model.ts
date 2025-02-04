@@ -68,6 +68,10 @@ export class DashboardModel extends BaseModel {
         return this._data.hasSavedGame || false;
     }
 
+    get totalPoints(): number {
+        return this._data.userData.puntosTotales;
+    }
+
     // Setters
     setUserStats(stats: UserStats): void {
         this.setData({
@@ -103,7 +107,7 @@ export class DashboardModel extends BaseModel {
     }
 
     isShipUnlocked(ship: Ship): boolean {
-        return this.userData.puntosTotales >= ship.required_points;
+        return this._data.userData.puntosTotales >= ship.required_points;
     }
 
     formatTime(seconds: number): string {
@@ -173,5 +177,14 @@ export class DashboardModel extends BaseModel {
                 nau_id: gameState.nau_id
             }
         };
+    }
+
+    updateTotalPoints(points: number): void {
+        this.setData({
+            userData: {
+                ...this._data.userData,
+                puntosTotales: points
+            }
+        });
     }
 } 
