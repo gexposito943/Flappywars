@@ -4,6 +4,7 @@ import { DashboardController, DashboardActionTypes } from './controllers/dashboa
 import { DashboardModel } from './models/dashboard.model';
 import { UserStats } from './models/interfaces';
 import { Ship } from './models/interfaces';
+import { UserData } from './models/interfaces';
 
 @Component({
     selector: 'app-dashboard',
@@ -105,5 +106,13 @@ export class DashboardComponent implements OnInit {
 
     get loadingMessage(): string {
         return this.model.loadingMessage;
+    }
+
+    get userData(): UserData {
+        return this.model.userData;
+    }
+
+    get availableShips(): Ship[] {
+        return this.model.availableShips;
     }
 }

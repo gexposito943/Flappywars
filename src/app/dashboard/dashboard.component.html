@@ -18,16 +18,16 @@
         <div class="top-buttons">
             <button 
                 class="restore-button" 
-                [disabled]="!hasSavedGame()"
-                (click)="restoreGame()">
+                [disabled]="!hasSavedGame"
+                (click)="onRestoreGame()">
                 Restaurar Partida
             </button>
             <button 
                 class="stats-button"
-                (click)="viewGlobalStats()">
+                (click)="onViewGlobalStats()">
                 Veure Estadístiques
             </button>
-            <button class="logout-button" (click)="logout()">Sortir</button>
+            <button class="logout-button" (click)="onLogout()">Sortir</button>
         </div>
     </div>
 
@@ -54,7 +54,7 @@
             <div class="button-container">
                 <button class="play-button" 
                         [disabled]="!selectedShipId"
-                        (click)="startGame()">
+                        (click)="onStartGame()">
                     {{ selectedShipId === null ? 'Selecciona una nau primer' : 'Jugar' }}
                 </button>
                 <p class="selection-message" *ngIf="!selectedShipId">
@@ -64,7 +64,7 @@
             <div class="ships-grid">
                 <div class="ship-option" 
                      *ngFor="let ship of availableShips" 
-                     (click)="selectShip(ship.id)"
+                     (click)="onShipSelect(ship.id)"
                      [class.selected]="selectedShipId === ship.id"
                      [class.locked]="!isShipUnlocked(ship)">
                     <img [src]="ship.imatge_url" [alt]="ship.nom">
