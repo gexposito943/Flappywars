@@ -10,7 +10,9 @@ export enum DashboardActionTypes {
     START_GAME = '[Dashboard] Start Game',
     LOGOUT = '[Dashboard] Logout',
     LOAD_STATS = '[Dashboard] Load Stats',
-    UPDATE_LEVEL = '[Dashboard] Update Level'
+    UPDATE_LEVEL = '[Dashboard] Update Level',
+    RESTORE_GAME = '[Dashboard] Restore Game',
+    CHECK_SAVED_GAME = '[Dashboard] Check Saved Game'
 }
 
 @Injectable()
@@ -29,6 +31,7 @@ export class DashboardController extends BaseController<DashboardModel> {
             this.model.setData({ userData: userData });
         }
         this.loadUserStats();
+        this.checkSavedGame();
     }
 
     dispatch(action: Action): void {
@@ -51,6 +54,12 @@ export class DashboardController extends BaseController<DashboardModel> {
                     break;
                 case DashboardActionTypes.UPDATE_LEVEL:
                     this.handleUpdateLevel(action.payload);
+                    break;
+                case DashboardActionTypes.RESTORE_GAME:
+                    this.handleRestoreGame();
+                    break;
+                case DashboardActionTypes.CHECK_SAVED_GAME:
+                    this.checkSavedGame();
                     break;
                 default:
                     console.warn('Unhandled action type:', action.type);
@@ -97,5 +106,22 @@ export class DashboardController extends BaseController<DashboardModel> {
     private handleUpdateLevel(level: number): void {
         this.model.updateUserLevel(level);
         this.registreService.setUserData(this.model.userData);
+    }
+
+    private checkSavedGame(): void {
+        const hasSaved = this.gameService.hasSavedGame();
+        this.model.setHasSavedGame(hasSaved);
+    }
+
+    private handleRestoreGame(): void {
+        this.gameService.restoreGame().subscribe({
+            next: (response) => {
+                if (response.success) {
+                    const gameState = this.model.getRestoredGameState(response.gameState);
+                    this.router.navigate(['/game'], { state: gameState });
+                }
+            },
+            error: (error) => this.handleError(error)
+        });
     }
 }

@@ -5,6 +5,7 @@ export interface DashboardState {
     availableShips: Ship[];
     loading: boolean;
     error: string | null;
+    hasSavedGame: boolean;
 }
 
 export interface UserStats {

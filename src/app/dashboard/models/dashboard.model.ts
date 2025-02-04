@@ -22,7 +22,8 @@ export class DashboardModel extends BaseModel {
             selectedShipId: null,
             availableShips: [],
             loading: false,
-            error: null
+            error: null,
+            hasSavedGame: false
         };
     }
 
@@ -61,6 +62,10 @@ export class DashboardModel extends BaseModel {
 
     get username(): string {
         return this._data.userData.username;
+    }
+
+    get hasSavedGame(): boolean {
+        return this._data.hasSavedGame || false;
     }
 
     // Setters
@@ -153,6 +158,20 @@ export class DashboardModel extends BaseModel {
         return {
             shipId: this._data.selectedShipId,
             userData: this._data.userData
+        };
+    }
+
+    setHasSavedGame(value: boolean): void {
+        this.setData({ hasSavedGame: value });
+    }
+
+    getRestoredGameState(gameState: any) {
+        return {
+            restored: true,
+            gameState: {
+                puntuacio: gameState.puntuacio,
+                nau_id: gameState.nau_id
+            }
         };
     }
 } 

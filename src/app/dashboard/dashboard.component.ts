@@ -66,4 +66,14 @@ export class DashboardComponent implements OnInit {
     canStartGame(): boolean {
         return this.model.canStartGame();
     }
+
+    get hasSavedGame(): boolean {
+        return this.model.hasSavedGame;
+    }
+
+    onRestoreGame(): void {
+        this.controller.dispatch({
+            type: DashboardActionTypes.RESTORE_GAME
+        });
+    }
 }
