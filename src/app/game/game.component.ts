@@ -29,6 +29,9 @@ export class GameComponent implements OnInit {
   @ViewChild('gameCanvas', { static: true }) gameCanvas!: ElementRef<HTMLCanvasElement>;
   
   private ctx!: CanvasRenderingContext2D;
+  private backgroundImage: HTMLImageElement | null = null;
+  private playerImage: HTMLImageElement | null = null;
+  private imagesLoaded: boolean = false;
 
   constructor(
     private router: Router,
@@ -36,17 +39,57 @@ export class GameComponent implements OnInit {
     private registreService: RegistreService,
     private controller: GameController,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) {
+    console.log('Controller initialized:', controller);
+    console.log('Model state:', controller.getModel());
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadImages();
+    }
+  }
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.initializeCanvas();
-      this.startGameLoop();
+      requestAnimationFrame(() => this.drawGame());
     }
   }
 
   private initializeCanvas() {
     this.ctx = this.gameCanvas.nativeElement.getContext('2d')!;
+  }
+
+  private loadImages(): void {
+    this.backgroundImage = new Image();
+    this.playerImage = new Image();
+
+    let loadedImages = 0;
+    const totalImages = 2;
+
+    const onImageLoad = () => {
+        loadedImages++;
+        console.log('Imagen cargada:', loadedImages);
+        if (loadedImages === totalImages) {
+            this.imagesLoaded = true;
+            this.startGameLoop();
+        }
+    };
+
+    const onImageError = (e: Event | string) => {
+        console.error('Error cargando imagen:', e);
+        if (e instanceof Event) {
+            console.log('Ruta de imagen:', (e.target as HTMLImageElement)?.src);
+        }
+    };
+
+    this.backgroundImage.onload = onImageLoad;
+    this.backgroundImage.onerror = onImageError;
+    this.playerImage.onload = onImageLoad;
+    this.playerImage.onerror = onImageError;
+
+    // Corregir extensión de archivo
+    this.backgroundImage.src = 'assets/images/starwars1.jpeg';
+    this.playerImage.src = 'assets/images/naus/x-wing.png';
   }
 
   private startGameLoop() {
@@ -92,22 +135,46 @@ export class GameComponent implements OnInit {
   }
 
   drawGame(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
+    if (!isPlatformBrowser(this.platformId) || !this.imagesLoaded) return;
     
     this.ctx.clearRect(0, 0, this.model.CANVAS_WIDTH, this.model.CANVAS_HEIGHT);
 
+    // Dibujar fondo solo si está cargado
+    if (this.backgroundImage) {
+      this.ctx.drawImage(
+        this.backgroundImage, 
+        0, 
+        0, 
+        this.model.CANVAS_WIDTH, 
+        this.model.CANVAS_HEIGHT
+      );
+    }
+
+    this.drawScore();
+    
+    // Dibujar jugador solo si está cargado
+    if (this.playerImage) {
+      this.ctx.drawImage(
+        this.playerImage,
+        this.model.PLAYER_X,
+        this.model.playerY,
+        this.model.PLAYER_SIZE,
+        this.model.PLAYER_SIZE
+      );
+    }
+
+    this.drawObstacles();
+
+    requestAnimationFrame(() => this.drawGame());
+  }
+
+  private drawScore(): void {
     this.ctx.fillStyle = 'white';
     this.ctx.font = '32px Arial';
     this.ctx.fillText(`Punts: ${this.model.score}`, 20, 50);
+  }
 
-    this.ctx.fillStyle = 'red';
-    this.ctx.fillRect(
-      this.model.PLAYER_X, 
-      this.model.playerY, 
-      this.model.PLAYER_SIZE, 
-      this.model.PLAYER_SIZE
-    );
-
+  private drawObstacles(): void {
     this.ctx.fillStyle = '#2ecc71';
     this.model.obstacles.forEach(obstacle => {
       this.ctx.fillRect(
@@ -139,10 +206,6 @@ export class GameComponent implements OnInit {
         obstacle.bottomHeight
       );
     });
-
-    if (this.model.isGameRunning && !this.model.isPaused) {
-      requestAnimationFrame(() => this.drawGame());
-    }
   }
 
   saveGame(): void {

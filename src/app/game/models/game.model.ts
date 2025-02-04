@@ -21,14 +21,14 @@ export class GameModel {
     private _showMessage: boolean = true;
 
     // Constants del joc
-    readonly GRAVITY: number = 0.3;
+    readonly GRAVITY: number = 0.4;
     readonly JUMP_FORCE: number = -8;
-    readonly OBSTACLE_SPEED: number = 3;
-    readonly PLAYER_SIZE: number = 120;
-    readonly PLAYER_X: number = 150;
-    readonly OBSTACLE_GAP: number = 400;
-    readonly OBSTACLE_WIDTH: number = 80;
-    readonly GAP_SIZE: number = 300;
+    readonly OBSTACLE_SPEED: number = 6;
+    readonly PLAYER_SIZE: number = 80;
+    readonly PLAYER_X: number = 100;
+    readonly OBSTACLE_GAP: number = 500;
+    readonly OBSTACLE_WIDTH: number = 60;
+    readonly GAP_SIZE: number = 220;
     readonly CANVAS_WIDTH: number = 1440;
     readonly CANVAS_HEIGHT: number = 900;
 

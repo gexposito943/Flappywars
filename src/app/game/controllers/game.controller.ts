@@ -2,36 +2,44 @@
  * Controlador que gestiona la lògica del joc
  * Gestiona les interaccions i l'estat del joc
  */
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { GameService, GameResult } from '../../services/game.service';
 import { RegistreService } from '../../services/registre.service';
 import { GameModel } from '../models/game.model';
 import { BaseController } from '../core/base.controller';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable()
 export class GameController extends BaseController<GameModel> {
     private gameLoop: any = null;
     private gameStartTime: number = 0;
-    private playerImage: HTMLImageElement;
+    private playerImage: HTMLImageElement | null = null;
 
     constructor(
         private router: Router,
         private gameService: GameService,
-        private registreService: RegistreService
+        private registreService: RegistreService,
+        @Inject(PLATFORM_ID) private platformId: Object
     ) {
         super(new GameModel());
-        this.playerImage = new Image();
-        this.playerImage.src = 'assets/images/naus/x-wing.png';
+        
+        // Solo crear la imagen si estamos en el navegador
+        if (isPlatformBrowser(platformId)) {
+            this.playerImage = new Image();
+            this.playerImage.src = 'assets/images/naus/x-wing.png';
+        }
     }
 
     /**
      * Inicia una nova partida
      */
     startGame(): void {
+        console.log('Starting game');
         if (this.model.isGameRunning) return;
         
         this.model.reset();
+        console.log('Game state after reset:', this.model);
         this.gameStartTime = Date.now();
         this.gameLoop = setInterval(() => this.updateGame(), 1000 / 60);
     }
@@ -76,7 +84,17 @@ export class GameController extends BaseController<GameModel> {
      * Actualitza l'estat del joc
      */
     private updateGame(): void {
-        if (this.model.isPaused) return;
+        if (this.model.isPaused || !this.model.isGameRunning) return;
+
+        // Limitar la posición del jugador
+        if (this.model.playerY < 0) {
+            this.model.playerY = 0;
+            this.model.playerVelocity = 0;
+        }
+        if (this.model.playerY > this.model.CANVAS_HEIGHT - this.model.PLAYER_SIZE) {
+            this.model.playerY = this.model.CANVAS_HEIGHT - this.model.PLAYER_SIZE;
+            this.model.playerVelocity = 0;
+        }
 
         this.applyGravity();
         this.moveObstacles();

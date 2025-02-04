@@ -3,7 +3,8 @@
   
   <canvas #gameCanvas 
           [width]="model.CANVAS_WIDTH" 
-          [height]="model.CANVAS_HEIGHT">
+          [height]="model.CANVAS_HEIGHT"
+          style="border: 2px solid white; background: black;">
   </canvas>
 
   <div class="game-message" *ngIf="model.showMessage">
