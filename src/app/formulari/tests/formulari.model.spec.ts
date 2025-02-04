@@ -26,4 +26,27 @@ describe('FormulariModel', () => {
             expect(model.errors.username).toBeFalse();
         });
     });
+
+    describe('Email validation', () => {
+        it('should get and set email', () => {
+            expect(model.email).toBe('');
+            
+            model.setEmail('test@example.com');
+            expect(model.email).toBe('test@example.com');
+            
+            model.setEmail('');
+            expect(model.email).toBe('');
+        });
+
+        it('should validate email format', () => {
+            model.setEmail('');
+            expect(model.errors.email).toBeTrue();
+            
+            model.setEmail('invalid-email');
+            expect(model.errors.email).toBeTrue();
+            
+            model.setEmail('test@example.com');
+            expect(model.errors.email).toBeFalse();
+        });
+    });
 });
