@@ -12,7 +12,8 @@ export enum DashboardActionTypes {
     LOAD_STATS = '[Dashboard] Load Stats',
     UPDATE_LEVEL = '[Dashboard] Update Level',
     RESTORE_GAME = '[Dashboard] Restore Game',
-    CHECK_SAVED_GAME = '[Dashboard] Check Saved Game'
+    CHECK_SAVED_GAME = '[Dashboard] Check Saved Game',
+    VIEW_GLOBAL_STATS = '[Dashboard] View Global Stats'
 }
 
 @Injectable()
@@ -60,6 +61,9 @@ export class DashboardController extends BaseController<DashboardModel> {
                     break;
                 case DashboardActionTypes.CHECK_SAVED_GAME:
                     this.checkSavedGame();
+                    break;
+                case DashboardActionTypes.VIEW_GLOBAL_STATS:
+                    this.handleViewGlobalStats();
                     break;
                 default:
                     console.warn('Unhandled action type:', action.type);
@@ -123,5 +127,9 @@ export class DashboardController extends BaseController<DashboardModel> {
             },
             error: (error) => this.handleError(error)
         });
+    }
+
+    private handleViewGlobalStats(): void {
+        this.router.navigate(['/statistics']);
     }
 }

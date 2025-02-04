@@ -76,4 +76,10 @@ export class DashboardComponent implements OnInit {
             type: DashboardActionTypes.RESTORE_GAME
         });
     }
+
+    onViewGlobalStats(): void {
+        this.controller.dispatch({
+            type: DashboardActionTypes.VIEW_GLOBAL_STATS
+        });
+    }
 }
