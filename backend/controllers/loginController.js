@@ -135,8 +135,12 @@ export const loginUser = async (req, res) => {
             token,
             user: {
                 id: user.id,
-                nom: user.nom_usuari,
-                email: user.email
+                username: user.nom_usuari,  
+                nivel: user.nivell,         
+                puntosTotales: user.punts_totals,
+                naveActual: user.nau_actual,
+                nombreNave: 'X-Wing'
+                
             }
         });
 

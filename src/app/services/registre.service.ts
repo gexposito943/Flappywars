@@ -6,7 +6,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { throwError } from 'rxjs';
 
 const API_ROUTES = {
-    LOGIN: '/auth/login',
+    LOGIN: '/login',
     REGISTER: '/register',
     SHIPS: '/ships',
     ACHIEVEMENTS: '/user/achievements',
@@ -53,23 +53,27 @@ export class RegistreService {
   }
 
   validateUser(username: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}${API_ROUTES.LOGIN}`, { 
-      email: username,
-      password: password 
+    console.log('Intentando login con:', { email: username });
+    
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { 
+        email: username,
+        password: password 
     }).pipe(
-      tap(response => {
-        if (response.success && response.token) {
-          this.setToken(response.token);
-          if (response.user) {
-            this.setUserData(response.user);
-          }
-        }
-      }),
-      catchError(error => {
-        this.setToken(null);
-        this.setUserData(null);
-        return throwError(() => error);
-      })
+        tap(response => {
+            console.log('Respuesta del servidor:', response);
+            if (response.success && response.token) {
+                this.setToken(response.token);
+                if (response.user) {
+                    this.setUserData(response.user);
+                }
+            }
+        }),
+        catchError(error => {
+            console.error('Error en validateUser:', error);
+            this.setToken(null);
+            this.setUserData(null);
+            return throwError(() => error);
+        })
     );
   }
 
@@ -146,13 +150,13 @@ export class RegistreService {
   }
 
   setUserData(userData: any): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const formattedData = {
-        ...userData,
-        username: userData.username || 'Usuario'
-      };
-      localStorage.setItem(this.userDataKey, JSON.stringify(formattedData));
-      console.log('Datos guardados:', formattedData);
+    if (isPlatformBrowser(this.platformId) && userData) {
+        const formattedData = {
+            ...userData,
+            username: userData.nom || userData.username || 'Usuario'
+        };
+        localStorage.setItem(this.userDataKey, JSON.stringify(formattedData));
+        console.log('Datos guardados:', formattedData);
     }
   }
 }

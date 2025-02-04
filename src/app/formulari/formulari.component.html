@@ -3,15 +3,13 @@
     <div class="signin-signup">
 
       <!-- Sign In Form -->
-      <form action="#" class="sign-in-form" aria-labelledby="signin-title">
+      <form [formGroup]="loginForm" (ngSubmit)="handleSignIn()" class="sign-in-form" aria-labelledby="signin-title">
         <h2 class="title" id="signin-title">Accede a la Galaxia</h2>
         <div class="input-field-2">
           <label for="signin-email" class="visually-hidden">Email</label>
           <input type="email" 
                  id="signin-email"
-                 name="email"
-                 [(ngModel)]="model.email" 
-                 (ngModelChange)="model.setEmail($event)"
+                 formControlName="email"
                  placeholder="Email"
                  aria-required="true" />
         </div>
@@ -20,17 +18,14 @@
           <label for="signin-password" class="visually-hidden">Contraseña</label>
           <input type="password"
                  id="signin-password"
-                 name="password"
-                 [(ngModel)]="model.password"
-                 (ngModelChange)="model.setPassword($event)"
+                 formControlName="password"
                  placeholder="Contraseña"
                  aria-required="true" />
         </div>
 
-        <button id="sign-in-btn" 
-                class="btn-login solid" 
-                (click)="handleSignIn()"
-                type="submit"
+        <button type="submit" 
+                class="btn-login solid"
+                [disabled]="!loginForm.valid"
                 aria-label="Iniciar sesion"> 
           Unirse a la Fuerza
         </button>

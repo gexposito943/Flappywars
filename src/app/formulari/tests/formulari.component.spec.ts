@@ -160,34 +160,24 @@ describe('FormulariComponent', () => {
             expect(controller.onSubmit).toHaveBeenCalled();
         }));
 
-        it('should call controller handleSignIn when login form is valid', fakeAsync(() => {
-            const loginData = {
-                email: 'test@test.com',
-                password: 'Password123!'
-            };
-
-            // Configurar tanto el FormGroup como el modelo
-            component.loginForm.patchValue(loginData);
-            component.model.setEmail(loginData.email);
-            component.model.setPassword(loginData.password);
-
-            // Marcar el formulario como tocado
-            Object.keys(component.loginForm.controls).forEach(key => {
-                const control = component.loginForm.get(key);
-                control?.markAsTouched();
-                control?.markAsDirty();
+        it('should call controller handleSignIn when login form is valid', () => {
+            const email = 'test@test.com';
+            const password = 'password123';
+            
+            component.loginForm.patchValue({
+                email: email,
+                password: password
             });
 
-            fixture.detectChanges();
-
-            // Llamar al método handleSignIn directamente
-            component.handleSignIn();
+            // Simular el envío del formulario
+            const form = fixture.debugElement.query(By.css('.sign-in-form'));
+            form.triggerEventHandler('ngSubmit', null);
             
-            tick();
             fixture.detectChanges();
-
+            
+            // Verificar que se llamó al controlador con los valores correctos
             expect(controller.handleSignIn).toHaveBeenCalled();
-        }));
+        });
     });
 
     describe('Panel Animations', () => {

@@ -29,7 +29,7 @@ describe('RegistreService', () => {
   let httpMock: HttpTestingController;
   const API_URL = 'http://localhost:3000/api/v1';
   const API_ROUTES = {
-    LOGIN: '/auth/login',
+    LOGIN: '/login',
     REGISTER: '/register',
     CHECK_EMAIL: '/check-email',
     CHECK_USERNAME: '/check-username'

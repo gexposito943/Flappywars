@@ -35,6 +35,10 @@ export class FormulariModel {
         this._errors.email = !this.validateEmail(value);
     }
 
+    set email(value: string) {
+        this.setEmail(value);
+    }
+
     // Password getters y setters
     get password(): string {
         return this._password;
@@ -46,6 +50,10 @@ export class FormulariModel {
         if (this._confirmPassword) {
             this.validatePasswordMatch();
         }
+    }
+
+    set password(value: string) {
+        this.setPassword(value);
     }
 
     get confirmPassword(): string {

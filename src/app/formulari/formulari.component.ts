@@ -3,6 +3,8 @@ import { Component, ViewChild, ElementRef, AfterViewInit, OnInit } from '@angula
 import { FormsModule, FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { FormulariController } from './controllers/formulari.controller';
 import { FormulariModel } from './models/formulari.model';
+import { RegistreService } from '../services/registre.service';
+import { Router } from '@angular/router';
 
 /**
  * Component que mostra el formulari de registre i login
@@ -29,7 +31,9 @@ export class FormulariComponent implements AfterViewInit, OnInit {
 
   constructor(
     public controller: FormulariController,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private registreService: RegistreService,
+    private router: Router
   ) {
     this.registerForm = this.fb.group({
       username: ['', [Validators.required]],
@@ -39,7 +43,7 @@ export class FormulariComponent implements AfterViewInit, OnInit {
 
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]]
+      password: ['', Validators.required]
     });
   }
 
@@ -63,9 +67,13 @@ export class FormulariComponent implements AfterViewInit, OnInit {
 
   handleSignIn(): void {
     if (this.loginForm.valid) {
-      this.controller.getModel().setEmail(this.loginForm.get('email')?.value);
-      this.controller.getModel().setPassword(this.loginForm.get('password')?.value);
+      const { email, password } = this.loginForm.value;
       
+      // Actualizar el modelo primero (para mantener compatibilidad con tests)
+      this.model.setEmail(email);
+      this.model.setPassword(password);
+      
+      // Llamar al controlador (para mantener compatibilidad con tests)
       this.controller.handleSignIn();
     }
   }

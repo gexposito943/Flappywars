@@ -47,22 +47,16 @@ export class FormulariController extends BaseController<FormulariModel> {
                 this.model.password
             ).subscribe({
                 next: (response) => {
-                    if (response?.token) {
-                        this.registreService.setToken(response.token);
-                        if (response.user) {
-                            localStorage.setItem('userData', JSON.stringify(response.user));
-                        }
+                    if (response.success && response.token) {
                         this.router.navigate(['/dashboard']);
                     }
                 },
                 error: (error) => {
-                    console.error('Error al verificar l\'usuari:', error);
+                    console.error('Error en login:', error);
                     if (error.status === 401) {
-                        alert('Contrasenya incorrecta');
-                    } else if (error.status === 404) {
-                        alert('Usuari no trobat');
+                        alert('Credenciales incorrectas');
                     } else {
-                        alert('Error en iniciar sessió');
+                        alert('Error en el inicio de sesión');
                     }
                 }
             });
