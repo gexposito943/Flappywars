@@ -1,23 +1,10 @@
-/**
- * @fileoverview Controlador per gestionar l'autenticació d'usuaris
- * @description Gestiona el registre i login d'usuaris amb JWT
- */
-
 import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { pool as db } from "../database.js";
 
-/**
- * Registra un nou usuari al sistema
- * @async
- * @param {Request} req - Objecte de petició amb les dades de registre
- * @param {Response} res - Objecte de resposta
- * @description Crea un nou usuari amb la seva nau inicial i estadístiques
- */
 export const registerUsers = async (req, res) => {
     try {
-        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ 
@@ -26,22 +13,36 @@ export const registerUsers = async (req, res) => {
             });
         }
 
-        const { username, email, password } = req.body;
+        const { nom_usuari, email, contrasenya } = req.body;
+        
+        // Verificar usuari
         const [existingUsers] = await db.execute(
             'SELECT * FROM usuaris WHERE nom_usuari = ? OR email = ?',
-            [username, email]
+            [nom_usuari, email]
         );
+        
         if (existingUsers.length > 0) {
             return res.status(400).json({ 
                 success: false,
                 error: "L'usuari o email ja existeix" 
             });
         }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        // Obtenir X-Wing com a nau inicial
+
+        const hashedPassword = await bcrypt.hash(contrasenya, 10);
+
+        // Obte la nau inicial (X-Wing)
         const [naus] = await db.execute(
             'SELECT id FROM naus WHERE nom = "X-Wing" AND disponible = true LIMIT 1'
         );
+
+        if (!naus.length) {
+            return res.status(500).json({
+                success: false,
+                error: "No s'ha trobat la nau inicial"
+            });
+        }
+
+        // Crear nou usuari
         const [result] = await db.execute(
             `INSERT INTO usuaris (
                 nom_usuari, 
@@ -52,15 +53,13 @@ export const registerUsers = async (req, res) => {
                 punts_totals,
                 estat
             ) VALUES (?, ?, ?, ?, 1, 0, 'actiu')`,
-            [username, email, hashedPassword, naus[0].id]
+            [nom_usuari, email, hashedPassword, naus[0].id]
         );
-        await db.execute(
-            'INSERT INTO estadistiques_usuari (usuari_id) VALUES (?)',
-            [result.insertId]
-        );
+
         res.status(201).json({ 
             success: true,
-            message: "Usuari registrat correctament"
+            message: "Usuari registrat correctament",
+            userId: result.insertId
         });
 
     } catch (error) {
@@ -72,34 +71,26 @@ export const registerUsers = async (req, res) => {
     }
 };
 
-/**
- * Autentica un usuari i genera un token JWT
- * @async
- * @param {Request} req - Objecte de petició amb les credencials
- * @param {Response} res - Objecte de resposta
- * @description Verifica les credencials i retorna un token JWT si són correctes
- */
 export const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
-        console.log('Intento de login para:', email);
+        const { email, contrasenya } = req.body;
 
-        // Verificar que se proporcionaron las credenciales
-        if (!email || !password) {
+        if (!email || !contrasenya) {
             return res.status(400).json({
                 success: false,
                 message: 'Es requereixen email i contrasenya'
             });
         }
 
-        // Buscar usuario
-        const [users] = await db.query(
-            'SELECT * FROM usuaris WHERE email = ?',
-            [email]
-        );
+        // Buscar usuari amb informació de la nau
+        const [users] = await db.query(`
+            SELECT u.*, n.nom as nom_nau, n.imatge_url as nau_imatge 
+            FROM usuaris u
+            LEFT JOIN naus n ON u.nau_actual = n.id
+            WHERE u.email = ?
+        `, [email]);
 
         if (users.length === 0) {
-            console.log('Usuario no encontrado:', email);
             return res.status(401).json({
                 success: false,
                 message: 'Credencials incorrectes'
@@ -108,17 +99,24 @@ export const loginUser = async (req, res) => {
 
         const user = users[0];
 
-        // Verificar contraseña
-        const validPassword = await bcrypt.compare(password, user.contrasenya);
+        const validPassword = await bcrypt.compare(contrasenya, user.contrasenya);
         if (!validPassword) {
-            console.log('Contraseña incorrecta para:', email);
+            await db.query(
+                'UPDATE usuaris SET intents_login = intents_login + 1 WHERE id = ?',
+                [user.id]
+            );
+            
             return res.status(401).json({
                 success: false,
                 message: 'Credencials incorrectes'
             });
         }
 
-        // Generar token
+        await db.query(
+            'UPDATE usuaris SET ultim_acces = CURRENT_TIMESTAMP, intents_login = 0 WHERE id = ?',
+            [user.id]
+        );
+
         const token = jwt.sign(
             { 
                 userId: user.id,
@@ -128,19 +126,26 @@ export const loginUser = async (req, res) => {
             { expiresIn: '24h' }
         );
 
-        
         res.json({
             success: true,
             message: 'Login correcte',
             token,
             user: {
                 id: user.id,
-                username: user.nom_usuari,  
-                nivel: user.nivell,         
-                puntosTotales: user.punts_totals,
-                naveActual: user.nau_actual,
-                nombreNave: 'X-Wing'
-                
+                nom_usuari: user.nom_usuari,
+                email: user.email,
+                nivell: user.nivell,
+                punts_totals: user.punts_totals,
+                data_registre: user.data_registre,
+                ultim_acces: user.ultim_acces,
+                estat: user.estat,
+                intents_login: user.intents_login,
+                nau_actual: user.nau_actual,
+                nau: user.nau_actual ? {
+                    id: user.nau_actual,
+                    nom: user.nom_nau,
+                    imatge_url: user.nau_imatge
+                } : null
             }
         });
 

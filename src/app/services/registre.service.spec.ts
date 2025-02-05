@@ -6,12 +6,20 @@ interface AuthResponse {
   success: boolean;
   token: string;
   user: {
-    id: number;
-    username: string;
-    nivel: number;
-    puntosTotales: number;
-    naveActual: number;
-    nombreNave: string;
+    id: string;  // Cambiado a string para UUID
+    nom_usuari: string;
+    email: string;
+    nivell: number;
+    punts_totals: number;
+    nau_actual: string | null;  // Cambiado a string | null para UUID
+    data_registre: string;
+    ultim_acces: string | null;
+    estat: 'actiu' | 'inactiu' | 'bloquejat';
+    nau?: {
+      id: string;
+      nom: string;
+      imatge_url: string;
+    }
   };
 }
 
@@ -52,7 +60,7 @@ describe('RegistreService', () => {
       done();
     });
 
-    const req = httpMock.expectOne('http://localhost:3000/api/v1/register');
+    const req = httpMock.expectOne(`${API_URL}${API_ROUTES.REGISTER}`);
     expect(req.request.method).toBe('POST');
     req.flush(mockResponse);
   });
@@ -63,16 +71,24 @@ describe('RegistreService', () => {
       success: true,
       token: mockToken,
       user: {
-        id: 1,
-        username: 'usuariProva',
-        nivel: 1,
-        puntosTotales: 0,
-        naveActual: 1,
-        nombreNave: 'Nau de Combat'
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        nom_usuari: 'usuariProva',
+        email: 'test@test.com',
+        nivell: 1,
+        punts_totals: 0,
+        nau_actual: '123e4567-e89b-12d3-a456-426614174001',
+        data_registre: '2024-01-01T00:00:00Z',
+        ultim_acces: null,
+        estat: 'actiu',
+        nau: {
+          id: '123e4567-e89b-12d3-a456-426614174001',
+          nom: 'X-Wing',
+          imatge_url: '/assets/images/naus/x-wing.png'
+        }
       }
     };
 
-    service.validateUser('usuariTest', 'contra1234').subscribe((response) => {
+    service.validateUser('test@test.com', 'contra1234').subscribe((response) => {
       expect(response.token).toBeDefined();
     });
 
@@ -107,16 +123,24 @@ describe('RegistreService', () => {
       success: true,
       token: mockToken,
       user: {
-        id: 1,
-        username: 'usuariProva',
-        nivel: 1,
-        puntosTotales: 0,
-        naveActual: 1,
-        nombreNave: 'Nau de Combat'
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        nom_usuari: 'usuariProva',
+        email: 'test@test.com',
+        nivell: 1,
+        punts_totals: 0,
+        nau_actual: '123e4567-e89b-12d3-a456-426614174001',
+        data_registre: '2024-01-01T00:00:00Z',
+        ultim_acces: null,
+        estat: 'actiu',
+        nau: {
+          id: '123e4567-e89b-12d3-a456-426614174001',
+          nom: 'X-Wing',
+          imatge_url: '/assets/images/naus/x-wing.png'
+        }
       }
     };
     
-    service.validateUser('testUser', 'password123').subscribe(() => {
+    service.validateUser('test@test.com', 'password123').subscribe(() => {
       expect(service.getToken()).toBe(mockToken);
     });
   
@@ -125,9 +149,16 @@ describe('RegistreService', () => {
   });
   it('should clear user data on logout', () => {
     const mockUserData = {
-      username: 'testUser',
-      nivel: 1,
-      puntosTotales: 100
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      nom_usuari: 'testUser',
+      email: 'test@test.com',
+      nivell: 1,
+      punts_totals: 100,
+      nau_actual: null,
+      data_registre: '2024-01-01T00:00:00Z',
+      ultim_acces: null,
+      estat: 'actiu' as const,
+      intents_login: 0
     };
     service.setUserData(mockUserData);
     service.logout();
@@ -143,12 +174,20 @@ describe('RegistreService', () => {
       success: true,
       token: 'mock-jwt-token',
       user: {
-        id: 1,
-        username: 'testuser',
-        nivel: 1,
-        puntosTotales: 0,
-        naveActual: 1,
-        nombreNave: 'Nave básica'
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        nom_usuari: 'testuser',
+        email: 'test@test.com',
+        nivell: 1,
+        punts_totals: 0,
+        nau_actual: '123e4567-e89b-12d3-a456-426614174001',
+        data_registre: '2024-01-01T00:00:00Z',
+        ultim_acces: null,
+        estat: 'actiu',
+        nau: {
+          id: '123e4567-e89b-12d3-a456-426614174001',
+          nom: 'Nave básica',
+          imatge_url: '/assets/images/naus/x-wing.png'
+        }
       }
     };
     
@@ -181,13 +220,19 @@ describe('RegistreService', () => {
   });
   it('should persist user data between page reloads', () => {
     const mockUserData = {
-      username: 'testUser',
-      nivel: 5,
-      puntosTotales: 1000
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      nom_usuari: 'testUser',
+      email: 'test@test.com',
+      nivell: 5,
+      punts_totals: 1000,
+      nau_actual: null,
+      data_registre: '2024-01-01T00:00:00Z',
+      ultim_acces: null,
+      estat: 'actiu' as const,
+      intents_login: 0
     };
     service.setUserData(mockUserData);
     const newServiceInstance = TestBed.inject(RegistreService);
-    // Verificar que las dades persisteixen
     const persistedData = newServiceInstance.getUserData();
     expect(persistedData).toEqual(mockUserData);
   });
@@ -197,12 +242,20 @@ describe('RegistreService', () => {
       success: true,
       token: 'test-token',
       user: {
-        id: 1,
-        username: 'test',
-        nivel: 1,
-        puntosTotales: 0,
-        naveActual: 1,
-        nombreNave: 'Nave básica'
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        nom_usuari: 'test',
+        email: 'test@test.com',
+        nivell: 1,
+        punts_totals: 0,
+        nau_actual: '123e4567-e89b-12d3-a456-426614174001',
+        data_registre: '2024-01-01T00:00:00Z',
+        ultim_acces: null,
+        estat: 'actiu',
+        nau: {
+          id: '123e4567-e89b-12d3-a456-426614174001',
+          nom: 'Nave básica',
+          imatge_url: '/assets/images/naus/x-wing.png'
+        }
       }
     };
     
@@ -220,12 +273,20 @@ describe('RegistreService', () => {
       success: true,
       token: 'mock-jwt-token',
       user: {
-        id: 1,
-        username: 'testuser',
-        nivel: 1,
-        puntosTotales: 0,
-        naveActual: 1,
-        nombreNave: 'Nave básica'
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        nom_usuari: 'testuser',
+        email: 'test@test.com',
+        nivell: 1,
+        punts_totals: 0,
+        nau_actual: '123e4567-e89b-12d3-a456-426614174001',
+        data_registre: '2024-01-01T00:00:00Z',
+        ultim_acces: null,
+        estat: 'actiu',
+        nau: {
+          id: '123e4567-e89b-12d3-a456-426614174001',
+          nom: 'Nave básica',
+          imatge_url: '/assets/images/naus/x-wing.png'
+        }
       }
     };
     

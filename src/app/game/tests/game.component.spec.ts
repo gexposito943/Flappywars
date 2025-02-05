@@ -27,7 +27,18 @@ describe('GameComponent', () => {
 
         mockGameService.saveGameResults.and.returnValue(of({}));
         mockRegistreService.getToken.and.returnValue('test-token');
-        mockRegistreService.getUserData.and.returnValue({});
+        mockRegistreService.getUserData.and.returnValue({
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            nom_usuari: 'testUser',
+            email: 'test@test.com',
+            nivell: 5,
+            punts_totals: 1000,
+            nau_actual: null,
+            data_registre: '2024-01-01T00:00:00Z',
+            ultim_acces: null,
+            estat: 'actiu' as const,
+            intents_login: 0
+        });
 
         await TestBed.configureTestingModule({
             imports: [GameComponent, HttpClientTestingModule],

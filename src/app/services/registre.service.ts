@@ -5,26 +5,52 @@ import { tap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { throwError } from 'rxjs';
 
-const API_ROUTES = {
-    LOGIN: '/login',
-    REGISTER: '/register',
-    SHIPS: '/ships',
-    ACHIEVEMENTS: '/user/achievements',
-    STATS: '/user/stats'
-};
+interface Nau {
+  id: string;
+  nom: string;
+  velocitat: number;
+  imatge_url: string;
+  descripcio: string;
+  disponible: boolean;
+  data_creacio: string;
+}
+
+interface Usuari {
+  id: string;
+  nom_usuari: string;
+  email: string;
+  contrasenya: string;
+  nivell: number;
+  punts_totals: number;
+  data_registre: string;
+  ultim_acces: string | null;
+  estat: 'actiu' | 'inactiu' | 'bloquejat';
+  intents_login: number;
+  nau_actual: string | null;
+  nau?: {
+    id: string;
+    nom: string;
+    imatge_url: string;
+  };
+}
 
 interface AuthResponse {
   success: boolean;
   token: string;
-  user: {
-    id: number;
-    username: string;
-    nivel: number;
-    puntosTotales: number;
-    naveActual: number;
-    nombreNave: string;
-  };
+  user: Omit<Usuari, 'contrasenya'>;
 }
+
+const API_ROUTES = {
+  LOGIN: '/login',
+  REGISTER: '/register',
+  NAUS: '/naus',
+  NIVELLS: '/nivells',
+  USUARI: {
+    PERFIL: '/usuari/perfil',
+    PARTIDES: '/usuari/partides',
+    ESTADISTIQUES: '/usuari/estadistiques'
+  }
+};
 
 @Injectable({
   providedIn: 'root',
@@ -39,41 +65,43 @@ export class RegistreService {
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    // Verificar token al iniciar el servicio
     if (this.isInBrowser()) {
       const token = this.getToken();
       console.log('Token inicial:', token);
     }
   }
 
-  register(username: string, email: string, password: string): Observable<any> {
-    const body = { username, email, password };
-    console.log('Enviando petición de registro:', body);
-    return this.http.post(`${this.apiUrl}/register`, body);
+  register(nom_usuari: string, email: string, contrasenya: string): Observable<any> {
+    const body = { 
+      nom_usuari,
+      email, 
+      contrasenya
+    };
+    console.log('Enviant petició de registre:', body);
+    return this.http.post(`${this.apiUrl}${API_ROUTES.REGISTER}`, body);
   }
 
-  validateUser(username: string, password: string): Observable<AuthResponse> {
-    console.log('Intentando login con:', { email: username });
+  validateUser(email: string, contrasenya: string): Observable<AuthResponse> {
+    console.log('Intentant login amb:', { email });
     
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { 
-        email: username,
-        password: password 
+    return this.http.post<AuthResponse>(`${this.apiUrl}${API_ROUTES.LOGIN}`, { 
+      email,
+      contrasenya
     }).pipe(
-        tap(response => {
-            console.log('Respuesta del servidor:', response);
-            if (response.success && response.token) {
-                this.setToken(response.token);
-                if (response.user) {
-                    this.setUserData(response.user);
-                }
-            }
-        }),
-        catchError(error => {
-            console.error('Error en validateUser:', error);
-            this.setToken(null);
-            this.setUserData(null);
-            return throwError(() => error);
-        })
+      tap(response => {
+        if (response.success && response.token) {
+          this.setToken(response.token);
+          if (response.user) {
+            this.setUserData(response.user);
+          }
+        }
+      }),
+      catchError(error => {
+        console.error('Error en validateUser:', error);
+        this.setToken(null);
+        this.setUserData(null);
+        return throwError(() => error);
+      })
     );
   }
 
@@ -89,12 +117,12 @@ export class RegistreService {
       });
       return true;
     } catch (e) {
-      console.error('Error validando token JWT:', e);
+      console.error('Error validant token JWT:', e);
       return false;
     }
   }
 
-  getUserData(): any {
+  getUserData(): Omit<Usuari, 'contrasenya'> | null {
     if (isPlatformBrowser(this.platformId)) {
       const userData = localStorage.getItem(this.userDataKey);
       return userData ? JSON.parse(userData) : null;
@@ -110,21 +138,24 @@ export class RegistreService {
   }
 
   logout(): void {
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.userDataKey);
-    this.removeToken();
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.tokenKey);
+      localStorage.removeItem(this.userDataKey);
+    }
+    this.token = null;
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    return !!token && this.isValidJWT(token);
   }
 
   checkEmailExists(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/check-email`, { email });
   }
 
-  checkUsernameExists(username: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/check-username`, { username });
+  checkUsernameExists(nom_usuari: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/check-username`, { nom_usuari });
   }
 
   private isInBrowser(): boolean {
@@ -142,21 +173,10 @@ export class RegistreService {
     this.token = token;
   }
 
-  removeToken(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem(this.tokenKey);
-    }
-    this.token = null;
-  }
-
-  setUserData(userData: any): void {
+  setUserData(userData: Omit<Usuari, 'contrasenya'> | null): void {
     if (isPlatformBrowser(this.platformId) && userData) {
-        const formattedData = {
-            ...userData,
-            username: userData.nom || userData.username || 'Usuario'
-        };
-        localStorage.setItem(this.userDataKey, JSON.stringify(formattedData));
-        console.log('Datos guardados:', formattedData);
+      localStorage.setItem(this.userDataKey, JSON.stringify(userData));
+      console.log('Dades desades:', userData);
     }
   }
 }

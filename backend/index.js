@@ -15,62 +15,83 @@ dotenv.config();
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(logRequest);
 
-// Configuración para servir archivos estáticos
-app.use('/public', express.static(path.join(__dirname, 'public')));
+// Configuración de rutas estáticas
+const ASSETS_PATH = path.join(__dirname, 'public/assets');
+app.use('/public/assets', express.static(ASSETS_PATH));
 
-// Ruta de prueba para verificar las imágenes
-app.get('/test-images', (req, res) => {
-  const imagesPath = path.join(__dirname, 'public/assets/images/naus');
-  res.json({
-    publicPath: imagesPath,
-    exists: {
-      xwing: path.join(imagesPath, 'x-wing.png'),
-      tie: path.join(imagesPath, 'tie-fighter.png'),
-      falcon: path.join(imagesPath, 'millennium-falcon.png')
-    },
-    urls: {
-      xwing: '/public/assets/images/naus/x-wing.png',
-      tie: '/public/assets/images/naus/tie-fighter.png',
-      falcon: '/public/assets/images/naus/millennium-falcon.png'
-    }
+// Rutas de assets organizadas por tipo
+const assetRoutes = {
+  naus: '/public/assets/images/naus',
+  nivells: '/public/assets/images/nivells',
+  obstacles: '/public/assets/images/obstacles'
+};
+
+// Ruta para verificar assets
+app.get('/api/v1/assets/verify', (req, res) => {
+  const assetStatus = {};
+  
+  for (const [key, route] of Object.entries(assetRoutes)) {
+    const fullPath = path.join(__dirname, 'public', route);
+    assetStatus[key] = {
+      path: fullPath,
+      route: route,
+      exists: true // Aquí podrías añadir una verificación real si lo necesitas
+    };
+  }
+
+  res.json({ 
+    success: true,
+    assets: assetStatus 
   });
 });
 
 const PORT = process.env.PORT || 3000;
 
-// Inicialització de la base de dades
-connectToDatabase().then(connected => {
-  if (!connected) {
-    console.error('No es va poder connectar a la base de dades. Tancant aplicació.');
+// Inicialización de la base de datos
+async function initializeServer() {
+  try {
+    const dbConnected = await connectToDatabase();
+    if (!dbConnected) {
+      console.error('❌ Error fatal: No es va poder connectar a la base de dades');
+      process.exit(1);
+    }
+
+    // Rutas API
+    app.use('/api/v1', routes);
+
+    // Manejador de errores global
+    app.use((err, req, res, next) => {
+      console.error('Error no controlat:', err);
+      res.status(500).json({
+        success: false,
+        message: 'Error intern del servidor',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+      });
+    });
+
+    // Iniciar servidor
+    app.listen(PORT, () => {
+      console.log(`
+🚀 Servidor iniciat correctament:
+   - Port: ${PORT}
+   - Mode: ${process.env.NODE_ENV || 'development'}
+   - Base de dades: Connectada
+   - Assets: ${Object.keys(assetRoutes).join(', ')}
+      `);
+    });
+
+  } catch (error) {
+    console.error('❌ Error fatal durant l\'inicialització:', error);
     process.exit(1);
   }
-});
+}
 
-// Ruta de prova per verificar que el servidor funciona
-app.get('/', (req, res) => {
-  res.json({ message: 'Servidor funcionant correctament' });
-});
-
-app.get('/test-db', async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT NOW() as serverTime');
-    res.json({ 
-      message: 'Conexión exitosa a flappywars_db', 
-      serverTime: rows[0].serverTime 
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      message: 'Error conectando a la BD', 
-      error: error.message 
-    });
-  }
-});
-
-app.use('/api/v1', routes);
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-}); 
+initializeServer();

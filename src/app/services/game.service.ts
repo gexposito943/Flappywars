@@ -108,7 +108,7 @@ export class GameService {
       tap(stats => {
         const userData = this.registreService.getUserData();
         if (userData && stats.punts_totals !== undefined) {
-          userData.puntosTotales = stats.punts_totals;
+          userData.punts_totals = stats.punts_totals;
           this.registreService.setUserData(userData);
         }
       }),
@@ -169,7 +169,7 @@ export class GameService {
         if (response.success && response.estadistiques) {
           const userData = this.registreService.getUserData();
           if (userData) {
-            userData.puntosTotales = response.estadistiques.punts_totals;
+            userData.punts_totals = response.estadistiques.punts_totals;
             this.registreService.setUserData(userData);
           }
         }

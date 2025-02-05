@@ -1,68 +1,84 @@
-/**
- * @fileoverview Controlador per gestionar les partides del joc
- * @description Gestiona el guardat i la consulta de partides dels usuaris
- */
-
 import { pool as db } from "../database.js";
 
-/**
- * Guarda una nova partida a la base de dades
- * @async
- * @param {Request} req - Objecte de petició amb les dades de la partida
- * @param {Response} res - Objecte de resposta
- * @description 
- */
 export const saveGame = async (req, res) => {
   try {
     const userId = req.user.userId;
     const { 
       puntuacio,          
       duracio_segons,      
-      nau_utilitzada,      
-      obstacles_superats   
+      nau_utilitzada,
+      obstacles_superats,
+      posicioX,
+      posicioY,
+      completada = true
     } = req.body;
     
-    // Insereix la nova partida a la base de dades
-    await db.query(`
-      INSERT INTO partides 
-      (usuari_id, puntuacio, duracio_segons, nau_utilitzada, obstacles_superats)
-      VALUES (?, ?, ?, ?, ?)
-    `, [userId, puntuacio, duracio_segons, nau_utilitzada, obstacles_superats]);
-    
-    res.json({ 
-      success: true,
-      message: 'Partida guardada correctament'
-    });
+    // Iniciar transicio
+    await db.query('START TRANSACTION');
+
+    try {
+      // Insertar partida
+      const [result] = await db.query(`
+        INSERT INTO partides 
+        (usuari_id, puntuacio, duracio_segons, nau_utilitzada, obstacles_superats, completada)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [userId, puntuacio, duracio_segons, nau_utilitzada, obstacles_superats, completada]);
+
+      const partidaId = result.insertId;
+
+      // Guardar posicio actual jugador
+      await db.query(`
+        INSERT INTO partida_usuari_nau 
+        (partida_id, usuari_id, nau_id, posicioX, posicioY)
+        VALUES (?, ?, ?, ?, ?)
+      `, [partidaId, userId, nau_utilitzada, posicioX, posicioY]);
+
+      // Actualizar punts totals usuari
+      await db.query(`
+        UPDATE usuaris 
+        SET punts_totals = punts_totals + ?
+        WHERE id = ?
+      `, [puntuacio, userId]);
+
+      // Confirmar transaccio
+      await db.query('COMMIT');
+      
+      res.json({ 
+        success: true,
+        message: 'Partida guardada correctament',
+        partidaId
+      });
+
+    } catch (error) {
+      // Revertir transaccio si hi ha error
+      await db.query('ROLLBACK');
+      throw error;
+    }
 
   } catch (error) {
-    console.error('Error al guardar partida:', error);
+    console.error('Error el guardar la partida:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Error al guardar la partida',
+      message: 'Error el guardar la partida',
       error: error.message 
     });
   }
 };
 
-/**
- * Obté l'historial de partides d'un usuari
- * @async
- * @param {Request} req - 
- * @param {Response} res - 
- * @description Retorna les últimes 10 partides de l'usuari ordenades per data
- */
 export const getGameHistory = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    // Consulta les últimes 10 partides amb informació de la nau utilitzada
     const [partides] = await db.query(`
       SELECT 
-        p.*,                    // Tota la informació de la partida
-        n.nom as nom_nau,       // Nom de la nau utilitzada
-        n.imatge_url           // URL de la imatge de la nau
+        p.*,
+        n.nom as nom_nau,
+        n.imatge_url as nau_imatge,
+        pun.posicioX,
+        pun.posicioY
       FROM partides p
       JOIN naus n ON p.nau_utilitzada = n.id
+      LEFT JOIN partida_usuari_nau pun ON p.id = pun.partida_id
       WHERE p.usuari_id = ?
       ORDER BY p.data_partida DESC
       LIMIT 10
@@ -70,7 +86,23 @@ export const getGameHistory = async (req, res) => {
     
     res.json({
       success: true,
-      partides: partides
+      partides: partides.map(p => ({
+        id: p.id,
+        puntuacio: p.puntuacio,
+        duracio_segons: p.duracio_segons,
+        data_partida: p.data_partida,
+        obstacles_superats: p.obstacles_superats,
+        completada: p.completada,
+        nau: {
+          id: p.nau_utilitzada,
+          nom: p.nom_nau,
+          imatge: p.nau_imatge
+        },
+        posicio: {
+          x: p.posicioX,
+          y: p.posicioY
+        }
+      }))
     });
 
   } catch (error) {
@@ -83,3 +115,54 @@ export const getGameHistory = async (req, res) => {
   }
 };
 
+// Nova funcio per carregar una partida guardada
+export const loadGame = async (req, res) => {
+  try {
+    const { partidaId } = req.params;
+    const userId = req.user.userId;
+
+    const [partida] = await db.query(`
+      SELECT 
+        p.*,
+        n.nom as nom_nau,
+        n.imatge_url as nau_imatge,
+        pun.posicioX,
+        pun.posicioY
+      FROM partides p
+      JOIN naus n ON p.nau_utilitzada = n.id
+      LEFT JOIN partida_usuari_nau pun ON p.id = pun.partida_id
+      WHERE p.id = ? AND p.usuari_id = ?
+    `, [partidaId, userId]);
+
+    if (partida.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Partida no trobada'
+      });
+    }
+
+    res.json({
+      success: true,
+      partida: {
+        ...partida[0],
+        nau: {
+          id: partida[0].nau_utilitzada,
+          nom: partida[0].nom_nau,
+          imatge: partida[0].nau_imatge
+        },
+        posicio: {
+          x: partida[0].posicioX,
+          y: partida[0].posicioY
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error el carregar la  partida:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error el carregar la partida',
+      error: error.message
+    });
+  }
+};

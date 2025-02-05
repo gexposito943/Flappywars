@@ -17,10 +17,21 @@ export interface UserStats {
 }
 
 export interface UserData {
-    username: string;
-    nivel: number;
-    puntosTotales: number;
-    naveActual?: number;
+    id: string;
+    nom_usuari: string;
+    email: string;
+    nivell: number;
+    punts_totals: number;
+    data_registre: string;
+    ultim_acces: string | null;
+    estat: 'actiu' | 'inactiu' | 'bloquejat';
+    intents_login: number;
+    nau_actual: string | null;
+    nau?: {
+        id: string;
+        nom: string;
+        imatge_url: string;
+    };
 }
 
 export interface Ship {

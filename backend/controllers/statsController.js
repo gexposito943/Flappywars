@@ -1,49 +1,93 @@
-import { pool } from '../database.js';
+import { pool as db } from '../database.js';
 
-/**
- * Obté les estadístiques d'un usuari
- * @async
- * @param {Request} req - Objecte de petició
- * @param {Response} res - Objecte de resposta
- * @description Retorna les estadístiques acumulades de l'usuari (puntuació, partides, temps)
- */
-const getUserStats = async (req, res) => {
+export const getUserStats = async (req, res) => {
   try {
     const userId = req.user.userId;
-    // Obtenir estadístiques i punts totals en una sola consulta
-    const [stats] = await pool.query(
-      `SELECT e.*, u.punts_totals 
-       FROM estadistiques_usuari e 
-       LEFT JOIN usuaris u ON e.usuari_id = u.id 
-       WHERE e.usuari_id = ?`,
-      [userId]
-    );
+    
+    // Obtener estadísticas generales del usuario
+    const [userStats] = await db.query(`
+      SELECT 
+        u.punts_totals,
+        u.nivell,
+        n.nom as nivell_nom,
+        n.imatge_url as nivell_imatge,
+        COUNT(DISTINCT p.id) as total_partides,
+        MAX(p.puntuacio) as millor_puntuacio,
+        SUM(p.duracio_segons) as temps_total_jugat,
+        SUM(p.obstacles_superats) as total_obstacles,
+        nau.nom as nau_actual_nom,
+        nau.imatge_url as nau_actual_imatge
+      FROM usuaris u
+      LEFT JOIN partides p ON u.id = p.usuari_id
+      LEFT JOIN nivells n ON u.nivell = n.punts_requerits
+      LEFT JOIN naus nau ON u.nau_actual = nau.id
+      WHERE u.id = ?
+      GROUP BY u.id
+    `, [userId]);
 
-    if (stats.length === 0) {
-      await pool.query(
-        'INSERT INTO estadistiques_usuari (usuari_id) VALUES (?)',
-        [userId]
-      );
-      res.json({
-        success: true,
-        estadistiques: {
-          millor_puntuacio: 0,
-          total_partides: 0,
-          temps_total_jugat: 0,
-          punts_totals: 0
-        }
-      });
-    } else {
-      res.json({
-        success: true,
-        estadistiques: {
-          millor_puntuacio: stats[0].millor_puntuacio,
-          total_partides: stats[0].total_partides,
-          temps_total_jugat: stats[0].temps_total_jugat,
-          punts_totals: stats[0].punts_totals
-        }
-      });
-    }
+    // Obtener últimas 5 partidas
+    const [ultimesPartides] = await db.query(`
+      SELECT 
+        p.*,
+        n.nom as nau_nom,
+        n.imatge_url as nau_imatge
+      FROM partides p
+      JOIN naus n ON p.nau_utilitzada = n.id
+      WHERE p.usuari_id = ?
+      ORDER BY p.data_partida DESC
+      LIMIT 5
+    `, [userId]);
+
+    // Obtener siguiente nivel
+    const [nextLevel] = await db.query(`
+      SELECT *
+      FROM nivells
+      WHERE punts_requerits > ?
+      ORDER BY punts_requerits ASC
+      LIMIT 1
+    `, [userStats[0].punts_totals]);
+
+    res.json({
+      success: true,
+      estadistiques: {
+        general: {
+          punts_totals: userStats[0].punts_totals,
+          nivell_actual: {
+            nivell: userStats[0].nivell,
+            nom: userStats[0].nivell_nom,
+            imatge: userStats[0].nivell_imatge
+          },
+          seguent_nivell: nextLevel.length > 0 ? {
+            nom: nextLevel[0].nom,
+            punts_necessaris: nextLevel[0].punts_requerits - userStats[0].punts_totals,
+            imatge: nextLevel[0].imatge_url
+          } : null,
+          nau_actual: {
+            nom: userStats[0].nau_actual_nom,
+            imatge: userStats[0].nau_actual_imatge
+          }
+        },
+        partides: {
+          total_partides: userStats[0].total_partides || 0,
+          millor_puntuacio: userStats[0].millor_puntuacio || 0,
+          temps_total_jugat: userStats[0].temps_total_jugat || 0,
+          total_obstacles: userStats[0].total_obstacles || 0
+        },
+        ultimes_partides: ultimesPartides.map(p => ({
+          id: p.id,
+          puntuacio: p.puntuacio,
+          duracio_segons: p.duracio_segons,
+          obstacles_superats: p.obstacles_superats,
+          data_partida: p.data_partida,
+          completada: p.completada,
+          nau: {
+            nom: p.nau_nom,
+            imatge: p.nau_imatge
+          }
+        }))
+      }
+    });
+
   } catch (error) {
     console.error('Error al obtenir estadístiques:', error);
     res.status(500).json({ 
@@ -54,73 +98,58 @@ const getUserStats = async (req, res) => {
   }
 };
 
-/**
- * Actualitza les estadístiques d'un usuari després d'una partida
- * @async
- * @param {Request} req - Objecte de petició amb les noves estadístiques
- * @param {Response} res - Objecte de resposta
- * @description Actualitza les estadístiques acumulades després de cada partida
- */
-const updateStats = async (req, res) => {
+export const updateStats = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { puntuacio, temps_jugat } = req.body;
+    const { puntuacio, temps_jugat, obstacles_superats } = req.body;
     
-    if (typeof puntuacio !== 'number' || typeof temps_jugat !== 'number') {
-      return res.status(400).json({
-        success: false,
-        message: 'Les dades de puntuació i temps han de ser números'
-      });
-    }
-
-    // Iniciar transacción
-    await pool.query('START TRANSACTION');
+    await db.query('START TRANSACTION');
 
     try {
-      // Actualizar estadísticas
-      await pool.query(`
-        UPDATE estadistiques_usuari 
-        SET 
-          millor_puntuacio = GREATEST(millor_puntuacio, ?),
-          total_partides = total_partides + 1,
-          temps_total_jugat = temps_total_jugat + ?
-        WHERE usuari_id = ?
-      `, [puntuacio, temps_jugat, userId]);
-
-      // Actualizar puntos totales del usuario
-      await pool.query(`
+      // Actualizar puntos totales y verificar nivel
+      const [userUpdate] = await db.query(`
         UPDATE usuaris 
-        SET punts_totals = punts_totals + ? 
+        SET 
+          punts_totals = punts_totals + ?,
+          nivell = (
+            SELECT MAX(punts_requerits)
+            FROM nivells
+            WHERE punts_requerits <= (punts_totals + ?)
+          )
         WHERE id = ?
-      `, [puntuacio, userId]);
+      `, [puntuacio, puntuacio, userId]);
 
       // Obtener estadísticas actualizadas
-      const [updatedStats] = await pool.query(
-        `SELECT e.*, u.punts_totals 
-         FROM estadistiques_usuari e 
-         JOIN usuaris u ON e.usuari_id = u.id 
-         WHERE e.usuari_id = ?`,
-        [userId]
-      );
+      const [updatedStats] = await db.query(`
+        SELECT 
+          u.*,
+          n.nom as nivell_nom,
+          n.imatge_url as nivell_imatge
+        FROM usuaris u
+        LEFT JOIN nivells n ON u.nivell = n.punts_requerits
+        WHERE u.id = ?
+      `, [userId]);
 
-      // Confirmar transacción
-      await pool.query('COMMIT');
+      await db.query('COMMIT');
 
       res.json({
         success: true,
         message: 'Estadístiques actualitzades correctament',
         estadistiques: {
-          millor_puntuacio: updatedStats[0].millor_puntuacio,
-          total_partides: updatedStats[0].total_partides,
-          temps_total_jugat: updatedStats[0].temps_total_jugat,
-          punts_totals: updatedStats[0].punts_totals
+          punts_totals: updatedStats[0].punts_totals,
+          nivell: {
+            nivell: updatedStats[0].nivell,
+            nom: updatedStats[0].nivell_nom,
+            imatge: updatedStats[0].nivell_imatge
+          }
         }
       });
+
     } catch (error) {
-      // Revertir transacción si hay error
-      await pool.query('ROLLBACK');
+      await db.query('ROLLBACK');
       throw error;
     }
+
   } catch (error) {
     console.error('Error al actualitzar estadístiques:', error);
     res.status(500).json({ 
@@ -131,36 +160,46 @@ const updateStats = async (req, res) => {
   }
 };
 
-const getGlobalStats = async (req, res) => {
-    try {
-        const query = `
-            SELECT 
-                u.nom_usuari as username,
-                u.punts_totals,
-                e.millor_puntuacio,
-                e.total_partides,
-                e.temps_total_jugat
-            FROM usuaris u
-            LEFT JOIN estadistiques_usuari e ON u.id = e.usuari_id
-            WHERE u.estat = 'actiu'
-            ORDER BY u.punts_totals DESC
-        `;
+export const getGlobalStats = async (req, res) => {
+  try {
+    const [globalStats] = await db.query(`
+      SELECT 
+        u.nom_usuari,
+        u.punts_totals,
+        n.nom as nivell,
+        nau.nom as nau_actual,
+        COUNT(DISTINCT p.id) as total_partides,
+        MAX(p.puntuacio) as millor_puntuacio,
+        SUM(p.obstacles_superats) as total_obstacles
+      FROM usuaris u
+      LEFT JOIN partides p ON u.id = p.usuari_id
+      LEFT JOIN nivells n ON u.nivell = n.punts_requerits
+      LEFT JOIN naus nau ON u.nau_actual = nau.id
+      WHERE u.estat = 'actiu'
+      GROUP BY u.id
+      ORDER BY u.punts_totals DESC
+      LIMIT 10
+    `);
 
-        const [stats] = await pool.query(query);
-        
-        res.json(stats);
-    } catch (error) {
-        console.error('Error al obtener estadísticas globales:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Error al obtener estadísticas globales' 
-        });
-    }
+    res.json({
+      success: true,
+      ranking: globalStats.map(user => ({
+        username: user.nom_usuari,
+        punts_totals: user.punts_totals,
+        nivell: user.nivell,
+        nau_actual: user.nau_actual,
+        total_partides: user.total_partides,
+        millor_puntuacio: user.millor_puntuacio,
+        total_obstacles: user.total_obstacles
+      }))
+    });
+
+  } catch (error) {
+    console.error('Error al obtenir estadístiques globals:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error al obtenir les estadístiques globals',
+      error: error.message 
+    });
+  }
 };
-
-export {
-    getUserStats,
-    updateStats,
-    getGlobalStats
-};
-

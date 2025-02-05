@@ -1,10 +1,10 @@
 import { CommonModule, NgIf } from '@angular/common';
 import { Component, ViewChild, ElementRef, AfterViewInit, OnInit } from '@angular/core';
-import { FormsModule, FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { FormulariController } from './controllers/formulari.controller';
-import { FormulariModel } from './models/formulari.model';
-import { RegistreService } from '../services/registre.service';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { RegistreService } from '../services/registre.service';
+import { User } from './models/user.model';
+import { userLogin } from './models/userLogin.model';
 
 /**
  * Component que mostra el formulari de registre i login
@@ -13,8 +13,8 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'etiqueta-formulari',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, NgIf, CommonModule],
-  providers: [FormulariController],
+  imports: [FormsModule, NgIf, CommonModule],
+  providers: [],
   templateUrl: './formulari.component.html',
   styleUrls: ['./formulari.component.css']
 })
@@ -23,90 +23,108 @@ export class FormulariComponent implements AfterViewInit, OnInit {
   @ViewChild('signUpBtn') signUpBtn!: ElementRef<HTMLButtonElement>;
   @ViewChild('container') container!: ElementRef<HTMLElement>;
 
-  registerForm: FormGroup;
-  loginForm: FormGroup;
-  isSignUpMode: boolean = false;
-  email: string = '';
-  password: string = '';
+  registerUser = new User();
+  loginCredentials = new userLogin();
+  isSignUpMode = false;
+  showRegisterErrors = false;
+  showLoginErrors = false;
+  showSuccessPopup = false;
 
   constructor(
-    public controller: FormulariController,
-    private fb: FormBuilder,
-    private registreService: RegistreService,
-    private router: Router
-  ) {
-    this.registerForm = this.fb.group({
-      username: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
-    });
+    private router: Router,
+    private registreService: RegistreService
+  ) {}
 
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
-    });
-  }
-
-  get model(): FormulariModel {
-    return this.controller.getModel();
+  ngOnInit(): void {
+    this.registreService.logout();
   }
 
   ngAfterViewInit() {
-    this.setupPanelAnimations();
+    this.setupButtonListeners();
   }
 
-  onSubmit(): void {
-    if (this.registerForm.valid) {
-      this.controller.getModel().setUsername(this.registerForm.get('username')?.value);
-      this.controller.getModel().setEmail(this.registerForm.get('email')?.value);
-      this.controller.getModel().setPassword(this.registerForm.get('password')?.value);
-      
-      this.controller.onSubmit();
-    }
-  }
-
-  handleSignIn(): void {
-    if (this.loginForm.valid) {
-      const { email, password } = this.loginForm.value;
-      
-      // Actualizar el modelo primero (para mantener compatibilidad con tests)
-      this.model.setEmail(email);
-      this.model.setPassword(password);
-      
-      // Llamar al controlador (para mantener compatibilidad con tests)
-      this.controller.handleSignIn();
-    }
-  }
-
-  private setupPanelAnimations(): void {
+  private setupButtonListeners(): void {
     if (this.signUpBtn && this.container) {
       this.signUpBtn.nativeElement.addEventListener('click', () => {
         this.container.nativeElement.classList.add('sign-up-mode');
+        this.showRegisterErrors = false;
+        this.showLoginErrors = false;
       });
     }
 
     if (this.signInBtn && this.container) {
       this.signInBtn.nativeElement.addEventListener('click', () => {
         this.container.nativeElement.classList.remove('sign-up-mode');
+        this.showRegisterErrors = false;
+        this.showLoginErrors = false;
       });
     }
   }
 
-  ngOnInit() {}
-
-  getPasswordErrorMessage(): string {
-    const password = this.registerForm.get('password');
-    if (password?.hasError('required') || password?.hasError('minlength')) {
-      return 'La contrasenya ha de tenir mínim 6 caràcters i un símbol especial';
+  onSubmit(): void {
+    this.showRegisterErrors = true;
+    const { isValid, errors } = this.registerUser.validate();
+    
+    if (isValid) {
+      this.registreService.register(
+        this.registerUser.username,
+        this.registerUser.email,
+        this.registerUser.password
+      ).subscribe({
+        next: () => {
+          this.showSuccessPopup = true;
+          this.registerUser.clear();
+          this.showRegisterErrors = false;
+          setTimeout(() => {
+            this.showSuccessPopup = false;
+            this.container.nativeElement.classList.remove('sign-up-mode');
+          }, 2000);
+        },
+        error: (error) => {
+          console.error('Error en el registre:', error);
+          if (error.error?.error) {
+            alert(error.error.error);
+          } else {
+            alert('Error en el registre');
+          }
+        }
+      });
     }
-    return '';
+  }
+
+  handleSignIn(): void {
+    this.showLoginErrors = true;
+    const { isValid } = this.loginCredentials.validate();
+    
+    if (isValid) {
+      this.registreService.validateUser(
+        this.loginCredentials.email,
+        this.loginCredentials.password
+      ).subscribe({
+        next: (response) => {
+          if (response.success && response.token) {
+            this.registreService.setToken(response.token);
+            this.router.navigate(['/dashboard']);
+          }
+        },
+        error: (error) => {
+          console.error('Error en login:', error);
+          if (error.status === 401) {
+            alert('Credencials incorrectes');
+          } else {
+            alert('Error en l\'inici de sessió');
+          }
+        }
+      });
+    }
   }
 
   toggleMode(): void {
     this.isSignUpMode = !this.isSignUpMode;
-    const container = document.querySelector('.container');
-    if (container) {
-      container.classList.toggle('sign-up-mode', this.isSignUpMode);
+    this.showRegisterErrors = false;
+    this.showLoginErrors = false;
+    if (this.container) {
+      this.container.nativeElement.classList.toggle('sign-up-mode', this.isSignUpMode);
     }
   }
 }

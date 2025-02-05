@@ -9,14 +9,12 @@ import {
 } from "../controllers/statsController.js";
 import { 
   saveGame, 
-  getGameHistory 
+  getGameHistory
 } from "../controllers/gameController.js";
 import {
   getShips,
   getUserShip,
-  updateUserShip,
-  getUserShips,
-  getUserAchievements
+  updateUserShip
 } from "../controllers/shipController.js";
 
 const router = express.Router();
@@ -40,14 +38,10 @@ router.get("/stats/global", getGlobalStats);
 router.get("/ships", getShips);
 router.get("/user/ship", getUserShip);
 router.put("/user/ship", updateUserShip);
-router.get("/user/ships", getUserShips);
 
 // Rutas de partidas
 router.post("/game/save", saveGame);
 router.get("/game/history", getGameHistory);
-
-// Rutas de logros
-router.get("/user/achievements", getUserAchievements);
 
 // Logging para debug
 router.use((req, res, next) => {

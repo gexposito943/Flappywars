@@ -16,10 +16,16 @@ export class DashboardModel extends BaseModel {
                 punts_totals: 0
             },
             userData: {
-                username: '',
-                nivel: 1,
-                puntosTotales: 0,
-                naveActual: 1
+                id: '',
+                email: '',
+                data_registre: '',
+                ultim_acces: '',
+                estat: 'actiu',
+                intents_login: 0,
+                nom_usuari: '',
+                nivell: 1,
+                punts_totals: 0,
+                nau_actual: null
             },
             selectedShipId: null,
             availableShips: [],
@@ -29,10 +35,16 @@ export class DashboardModel extends BaseModel {
             achievements: [],
         };
         this.user = {
-            username: '',
-            nivel: 1,
-            puntosTotales: 0,
-            naveActual: 1
+            id: '',
+            email: '',
+            data_registre: '',
+            ultim_acces: '',
+            estat: 'actiu',
+            intents_login: 0,
+            nom_usuari: '',
+            nivell: 1,
+            punts_totals: 0,
+            nau_actual: null
         };
         this.selectedShip = 1;
     }
@@ -67,12 +79,12 @@ export class DashboardModel extends BaseModel {
     }
 
     get userLevel(): number {
-        return this._data.userData.nivel;
+        return this._data.userData.nivell;
     }
 
     get username(): string {
-        console.log('Getting username:', this._data.userData.username); // Debug
-        return this._data.userData.username || 'Usuario';
+        console.log('Getting username:', this._data.userData.nom_usuari); // Debug
+        return this._data.userData.nom_usuari || 'Usuario';
     }
 
     get hasSavedGame(): boolean {
@@ -80,7 +92,7 @@ export class DashboardModel extends BaseModel {
     }
 
     get totalPoints(): number {
-        return this._data.userData.puntosTotales;
+        return this._data.userData.punts_totals;
     }
 
     get error(): string | null {
@@ -101,7 +113,7 @@ export class DashboardModel extends BaseModel {
             userStats: stats,
             userData: {
                 ...this._data.userData,
-                puntosTotales: stats.punts_totals
+                punts_totals: stats.punts_totals
             }
         });
     }
@@ -119,7 +131,7 @@ export class DashboardModel extends BaseModel {
     }
 
     isShipUnlocked(ship: Ship): boolean {
-        return this._data.userData.puntosTotales >= ship.required_points;
+        return this._data.userData.punts_totals >= ship.required_points;
     }
 
     formatTime(seconds: number): string {
@@ -133,8 +145,8 @@ export class DashboardModel extends BaseModel {
     validate(): boolean {
         return Boolean(
             this._data.userData &&
-            this._data.userData.username &&
-            this._data.userData.nivel >= 1
+            this._data.userData.nom_usuari &&
+            this._data.userData.nivell >= 1
         );
     }
 
@@ -142,7 +154,7 @@ export class DashboardModel extends BaseModel {
         this.setData({
             userData: {
                 ...this._data.userData,
-                nivel: level
+                nivell: level
             }
         });
     }
@@ -150,10 +162,16 @@ export class DashboardModel extends BaseModel {
     clearSession(): void {
         this.setData({
             userData: {
-                username: '',
-                nivel: 1,
-                puntosTotales: 0,
-                naveActual: undefined
+                nom_usuari: '',
+                nivell: 1,
+                punts_totals: 0,
+                nau_actual: null,
+                id: '',
+                email: '',
+                data_registre: '',
+                ultim_acces: '',
+                estat: 'actiu',
+                intents_login: 0
             },
             selectedShipId: null
         });
@@ -190,7 +208,7 @@ export class DashboardModel extends BaseModel {
         this.setData({
             userData: {
                 ...this._data.userData,
-                puntosTotales: points
+                punts_totals: points
             }
         });
     }
@@ -231,7 +249,7 @@ export class DashboardModel extends BaseModel {
             userData: {
                 ...this._data.userData,
                 ...userData,
-                username: userData.username || this._data.userData.username || 'Usuario'
+                nom_usuari: userData.nom_usuari || this._data.userData.nom_usuari || 'Usuario'
             } 
         });
     }

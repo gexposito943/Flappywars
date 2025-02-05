@@ -1,23 +1,35 @@
-/**
- * @fileoverview Controlador per gestionar les naus del joc
- * @description Gestiona les operacions relacionades amb les naus dels usuaris
- */
-
 import { pool as db } from "../database.js";
 
-/**
- * Obté totes les naus disponibles
- * @async
- * @param {Request} req - Objecte de petició
- * @param {Response} res - Objecte de resposta
- * @description Retorna totes les naus que poden ser utilitzades en el joc
- */
 export const getShips = async (req, res) => {
   try {
-    const [naus] = await db.query('SELECT * FROM naus WHERE disponible = true');
+    // Obte naus amb els  seus requisits nivell
+    const [naus] = await db.query(`
+      SELECT 
+        n.*,
+        nv.nivell_id,
+        ni.punts_requerits,
+        ni.nom as nivell_nom
+      FROM naus n
+      LEFT JOIN nivells_naus nv ON n.id = nv.nau_id
+      LEFT JOIN nivells ni ON nv.nivell_id = ni.id
+      WHERE n.disponible = true
+      ORDER BY ni.punts_requerits ASC
+    `);
+
     res.json({
       success: true,
-      naus: naus
+      naus: naus.map(nau => ({
+        id: nau.id,
+        nom: nau.nom,
+        velocitat: nau.velocitat,
+        imatge_url: nau.imatge_url,
+        descripcio: nau.descripcio,
+        nivell_requerit: {
+          id: nau.nivell_id,
+          nom: nau.nivell_nom,
+          punts_requerits: nau.punts_requerits || 0
+        }
+      }))
     });
   } catch (error) {
     console.error('Error al obtenir naus:', error);
@@ -29,33 +41,54 @@ export const getShips = async (req, res) => {
   }
 };
 
-/**
- * Obté la nau actual d'un usuari específic
- * @async
- * @param {Request} req - Objecte de petició amb l'ID de l'usuari
- * @param {Response} res - Objecte de resposta
- * @description Retorna la informació de la nau que l'usuari té seleccionada actualment
- */
 export const getUserShip = async (req, res) => {
   try {
     const userId = req.params.userId;
     const [rows] = await db.query(`
-      SELECT n.* 
+      SELECT 
+        n.*,
+        u.punts_totals,
+        ni.punts_requerits,
+        ni.nom as nivell_nom
       FROM naus n 
       INNER JOIN usuaris u ON u.nau_actual = n.id 
+      LEFT JOIN nivells_naus nv ON n.id = nv.nau_id
+      LEFT JOIN nivells ni ON nv.nivell_id = ni.id
       WHERE u.id = ?
     `, [userId]);
     
     if (rows.length === 0) {
-      const [defaultShip] = await db.query('SELECT * FROM naus WHERE nom = "X-Wing"');
+      // Obtener X-Wing como a nau per defecte
+      const [defaultShip] = await db.query(`
+        SELECT n.* 
+        FROM naus n
+        WHERE n.nom = 'X-Wing'
+      `);
+
       res.json({
         success: true,
-        nau: defaultShip[0]
+        nau: {
+          id: defaultShip[0].id,
+          nom: defaultShip[0].nom,
+          velocitat: defaultShip[0].velocitat,
+          imatge_url: defaultShip[0].imatge_url,
+          descripcio: defaultShip[0].descripcio
+        }
       });
     } else {
       res.json({
         success: true,
-        nau: rows[0]
+        nau: {
+          id: rows[0].id,
+          nom: rows[0].nom,
+          velocitat: rows[0].velocitat,
+          imatge_url: rows[0].imatge_url,
+          descripcio: rows[0].descripcio,
+          nivell_requerit: rows[0].nivell_nom ? {
+            nom: rows[0].nivell_nom,
+            punts_requerits: rows[0].punts_requerits
+          } : null
+        }
       });
     }
   } catch (error) {
@@ -68,26 +101,36 @@ export const getUserShip = async (req, res) => {
   }
 };
 
-/**
- * Actualitza la nau seleccionada per l'usuari
- * @async
- * @param {Request} req - Objecte de petició amb l'ID de l'usuari i la nova nau
- * @param {Response} res - Objecte de resposta
- * @description Canvia la nau actual de l'usuari per una nova seleccionada
- */
 export const updateUserShip = async (req, res) => {
   try {
     const userId = req.params.userId;
     const { shipId } = req.body;
-    const [shipExists] = await db.query(
-      'SELECT id FROM naus WHERE id = ? AND disponible = true',
-      [shipId]
-    );
 
-    if (shipExists.length === 0) {
+    // Verificar que la nave existe y comprobar requisitos
+    const [shipData] = await db.query(`
+      SELECT 
+        n.*,
+        ni.punts_requerits,
+        u.punts_totals
+      FROM naus n
+      LEFT JOIN nivells_naus nv ON n.id = nv.nau_id
+      LEFT JOIN nivells ni ON nv.nivell_id = ni.id
+      CROSS JOIN usuaris u
+      WHERE n.id = ? AND n.disponible = true AND u.id = ?
+    `, [shipId, userId]);
+
+    if (shipData.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'La nau seleccionada no existeix o no està disponible'
+      });
+    }
+
+    // Verificar si el usuario cumple los requisitos de punto 
+    if (shipData[0].punts_requerits && shipData[0].punts_totals < shipData[0].punts_requerits) {
+      return res.status(403).json({
+        success: false,
+        message: 'No tens suficients punts per utilitzar aquesta nau'
       });
     }
     
@@ -98,7 +141,14 @@ export const updateUserShip = async (req, res) => {
 
     res.json({ 
       success: true,
-      message: 'Nau actualitzada correctament'
+      message: 'Nau actualitzada correctament',
+      nau: {
+        id: shipData[0].id,
+        nom: shipData[0].nom,
+        velocitat: shipData[0].velocitat,
+        imatge_url: shipData[0].imatge_url,
+        descripcio: shipData[0].descripcio
+      }
     });
   } catch (error) {
     console.error('Error al actualitzar nau del usuari:', error);
@@ -110,69 +160,51 @@ export const updateUserShip = async (req, res) => {
   }
 };
 
-/**
- * Obté les naus disponibles per a un usuari específic
- * @async
- * @param {Request} req - Objecte de petició
- * @param {Response} res - Objecte de resposta
- * @description Retorna totes les naus que l'usuari pot utilitzar
- */
-export const getUserShips = async (req, res) => {
+export const getUserAvailableShips = async (req, res) => {
   try {
     const userId = req.user.userId;
+    
+    // Obtener todas las naves disponibles para el usuario según sus puntos
     const [ships] = await db.query(`
-      SELECT n.* 
-      FROM naus n
-      WHERE n.disponible = true
-      OR n.id IN (
-        SELECT nau_actual 
-        FROM usuaris 
-        WHERE id = ?
-      )
-    `, [userId]);
-    
-    res.json({
-      success: true,
-      naus: ships
-    });
-  } catch (error) {
-    console.error('Error al obtenir naus del usuari:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Error al obtenir les naus del usuari',
-      error: error.message 
-    });
-  }
-};
-
-/**
- * Obté els assoliments d'un usuari
- * @async
- * @param {Request} req - Objecte de petició
- * @param {Response} res - Objecte de resposta
- * @description Retorna tots els assoliments i indica quins ha completat l'usuari
- */
-export const getUserAchievements = async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const [achievements] = await db.query(`
       SELECT 
-        a.*,
-        CASE WHEN ua.usuari_id IS NOT NULL THEN true ELSE false END as completat
-      FROM assoliments a
-      LEFT JOIN usuari_assoliments ua ON a.id = ua.assoliment_id AND ua.usuari_id = ?
-      ORDER BY a.punts_requerits ASC
+        n.*,
+        ni.punts_requerits,
+        ni.nom as nivell_nom,
+        u.punts_totals,
+        CASE 
+          WHEN ni.punts_requerits IS NULL OR u.punts_totals >= ni.punts_requerits 
+          THEN true 
+          ELSE false 
+        END as disponible_per_usuari
+      FROM naus n
+      LEFT JOIN nivells_naus nv ON n.id = nv.nau_id
+      LEFT JOIN nivells ni ON nv.nivell_id = ni.id
+      CROSS JOIN usuaris u
+      WHERE n.disponible = true AND u.id = ?
+      ORDER BY ni.punts_requerits ASC
     `, [userId]);
     
     res.json({
       success: true,
-      assoliments: achievements
+      naus: ships.map(nau => ({
+        id: nau.id,
+        nom: nau.nom,
+        velocitat: nau.velocitat,
+        imatge_url: nau.imatge_url,
+        descripcio: nau.descripcio,
+        disponible: nau.disponible_per_usuari,
+        nivell_requerit: nau.nivell_nom ? {
+          nom: nau.nivell_nom,
+          punts_requerits: nau.punts_requerits,
+          punts_faltants: Math.max(0, nau.punts_requerits - nau.punts_totals)
+        } : null
+      }))
     });
   } catch (error) {
-    console.error('Error al obtenir assoliments:', error);
+    console.error('Error al obtenir naus disponibles:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Error al obtenir els assoliments del usuari',
+      message: 'Error al obtenir les naus disponibles',
       error: error.message 
     });
   }
