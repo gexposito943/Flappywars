@@ -18,6 +18,11 @@ export interface Ship {
 export class ShipService {
   private apiUrl = 'http://localhost:3000/api/v1';
 
+  private API_ROUTES = {
+    SHIPS: '/ships',
+    ACHIEVEMENTS: '/user/achievements'
+  };
+
   constructor(
     private http: HttpClient,
     private registreService: RegistreService

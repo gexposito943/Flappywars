@@ -26,12 +26,13 @@ interface Obstacle {
   styleUrls: ['./game.component.css']
 })
 export class GameComponent implements OnInit {
-  @ViewChild('gameCanvas') canvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('gameCanvas', { static: true }) canvas!: ElementRef<HTMLCanvasElement>;
   
   private ctx!: CanvasRenderingContext2D;
-  private backgroundImage: HTMLImageElement | null = null;
-  private playerImage: HTMLImageElement | null = null;
+  private backgroundImage: HTMLImageElement;
+  private playerImage: HTMLImageElement;
   private imagesLoaded: boolean = false;
+  private gameLoop: any = null;
 
   constructor(
     private router: Router,
@@ -40,9 +41,9 @@ export class GameComponent implements OnInit {
     private controller: GameController,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    console.log('Controller initialized:', controller);
-    console.log('Model state:', controller.getModel());
-
+    this.backgroundImage = new Image();
+    this.playerImage = new Image();
+    
     if (isPlatformBrowser(this.platformId)) {
       this.loadImages();
     }
@@ -51,43 +52,41 @@ export class GameComponent implements OnInit {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.initializeCanvas();
-      requestAnimationFrame(() => this.drawGame());
+      this.startGameLoop();
     }
   }
 
   private initializeCanvas() {
-    this.ctx = this.canvas.nativeElement.getContext('2d')!;
+    if (!this.canvas) {
+      console.error('Canvas element not found');
+      return;
+    }
+    
+    const context = this.canvas.nativeElement.getContext('2d');
+    if (!context) {
+      console.error('Could not get 2D context');
+      return;
+    }
+    
+    this.ctx = context;
   }
 
   private loadImages(): void {
-    this.backgroundImage = new Image();
-    this.playerImage = new Image();
-
     let loadedImages = 0;
     const totalImages = 2;
 
     const onImageLoad = () => {
-        loadedImages++;
-        console.log('Imagen cargada:', loadedImages);
-        if (loadedImages === totalImages) {
-            this.imagesLoaded = true;
-            this.startGameLoop();
-        }
-    };
-
-    const onImageError = (e: Event | string) => {
-        console.error('Error cargando imagen:', e);
-        if (e instanceof Event) {
-            console.log('Ruta de imagen:', (e.target as HTMLImageElement)?.src);
-        }
+      loadedImages++;
+      console.log('Imagen cargada:', loadedImages);
+      if (loadedImages === totalImages) {
+        this.imagesLoaded = true;
+        console.log('Todas las imágenes cargadas');
+      }
     };
 
     this.backgroundImage.onload = onImageLoad;
-    this.backgroundImage.onerror = onImageError;
     this.playerImage.onload = onImageLoad;
-    this.playerImage.onerror = onImageError;
 
-    // Corregir extensión de archivo
     this.backgroundImage.src = 'assets/images/starwars1.jpeg';
     this.playerImage.src = 'assets/images/naus/x-wing.png';
   }
@@ -115,15 +114,36 @@ export class GameComponent implements OnInit {
   }
 
   startGame(): void {
+    console.log('Iniciando juego...');
     this.controller.startGame();
+    
+    // Iniciar el bucle del juego si no está corriendo
+    if (!this.gameLoop) {
+      this.gameLoop = setInterval(() => {
+        if (this.model.isGameRunning && !this.model.isPaused) {
+          this.controller.updateGame();
+          this.drawGame();
+        }
+      }, 1000 / 60);
+    }
   }
 
   stopGame(): void {
+    if (this.gameLoop) {
+      clearInterval(this.gameLoop);
+      this.gameLoop = null;
+    }
     this.controller.stopGame();
   }
 
   togglePause(): void {
     this.controller.togglePause();
+    if (this.model.isPaused && this.gameLoop) {
+      clearInterval(this.gameLoop);
+      this.gameLoop = null;
+    } else if (!this.model.isPaused && !this.gameLoop) {
+      this.startGame();
+    }
   }
 
   goToDashboard(): void {
@@ -135,25 +155,26 @@ export class GameComponent implements OnInit {
   }
 
   drawGame(): void {
-    if (!isPlatformBrowser(this.platformId) || !this.imagesLoaded) return;
-    
-    this.ctx.clearRect(0, 0, this.model.CANVAS_WIDTH, this.model.CANVAS_HEIGHT);
-
-    // Dibujar fondo solo si está cargado
-    if (this.backgroundImage) {
-      this.ctx.drawImage(
-        this.backgroundImage, 
-        0, 
-        0, 
-        this.model.CANVAS_WIDTH, 
-        this.model.CANVAS_HEIGHT
-      );
+    if (!this.ctx || !this.imagesLoaded) {
+      console.log('No se puede dibujar: contexto o imágenes no disponibles');
+      return;
     }
 
-    this.drawScore();
-    
-    // Dibujar jugador solo si está cargado
-    if (this.playerImage) {
+    // Limpiar el canvas
+    this.ctx.clearRect(0, 0, this.model.CANVAS_WIDTH, this.model.CANVAS_HEIGHT);
+
+    // Dibujar fondo
+    if (this.backgroundImage.complete) {
+      this.ctx.drawImage(this.backgroundImage, 0, 0, this.model.CANVAS_WIDTH, this.model.CANVAS_HEIGHT);
+    }
+
+    // Dibujar obstáculos solo si el juego está corriendo
+    if (this.model.isGameRunning) {
+      this.drawObstacles();
+    }
+
+    // Dibujar jugador solo si el juego está corriendo
+    if (this.model.isGameRunning && this.playerImage.complete) {
       this.ctx.drawImage(
         this.playerImage,
         this.model.PLAYER_X,
@@ -162,16 +183,6 @@ export class GameComponent implements OnInit {
         this.model.PLAYER_SIZE
       );
     }
-
-    this.drawObstacles();
-
-    requestAnimationFrame(() => this.drawGame());
-  }
-
-  private drawScore(): void {
-    this.ctx.fillStyle = 'white';
-    this.ctx.font = '32px Arial';
-    this.ctx.fillText(`Punts: ${this.model.score}`, 20, 50);
   }
 
   private drawObstacles(): void {

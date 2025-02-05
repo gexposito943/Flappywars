@@ -1,28 +1,34 @@
 <div class="game-container">
   <div class="score">Punts: <span class="score-value">{{ model.score }}</span></div>
   
-  <canvas #gameCanvas 
-          [width]="model.CANVAS_WIDTH" 
-          [height]="model.CANVAS_HEIGHT"
-          style="border: 2px solid white; background: black;">
-  </canvas>
+  <canvas #gameCanvas [width]="model.CANVAS_WIDTH" [height]="model.CANVAS_HEIGHT"></canvas>
 
-  <div class="game-message" *ngIf="model.showMessage">
-    {{ model.gameMessage }}
+  <!-- Mensaje inicial -->
+  <div class="game-message initial" *ngIf="!model.isGameRunning && !model.isPaused">
+    <p>Prem Enter per començar</p>
   </div>
 
-  <div class="game-controls">
-    <button class="control-button start" (click)="startGame()" *ngIf="!model.isGameRunning">
-      🎮 Iniciar Partida
-    </button>
-    <button class="control-button pause" (click)="togglePause()" *ngIf="model.isGameRunning">
-      {{ model.isPaused ? '▶️ Continuar' : '⏸️ Pausar (Espai)' }}
-    </button>
-    <button class="control-button save" (click)="saveGame()" *ngIf="(model.isPaused || !model.isGameRunning) && model.score > 0">
-      💾 Guardar Partida
-    </button>
-    <button class="control-button dashboard" (click)="goToDashboard()">
-      🏠 Tornar al Dashboard
-    </button>
+  <!-- Panel de control unificado -->
+  <div class="game-controls" *ngIf="model.isGameRunning">
+    <!-- Botones durante el juego activo -->
+    <div class="buttons-container" *ngIf="!model.isPaused">
+      <button class="control-button pause" (click)="togglePause()">
+        ⏸️ Pausar
+      </button>
+      <button class="control-button save" (click)="saveGame()" *ngIf="model.score > 0">
+        💾 Guardar partida
+      </button>
+    </div>
+
+    <!-- Botones durante la pausa -->
+    <div class="buttons-container" *ngIf="model.isPaused">
+      <h2 class="pause-title">Joc Pausat</h2>
+      <button class="control-button resume" (click)="togglePause()">
+        ▶️ Continuar
+      </button>
+      <button class="control-button dashboard" (click)="goToDashboard()">
+        🏠 Tornar al Dashboard
+      </button>
+    </div>
   </div>
 </div>

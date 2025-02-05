@@ -1,23 +1,21 @@
--- Crear la base de dades
+-- Crear la base de datos
 CREATE DATABASE flappywars_db;
 USE flappywars_db;
 
---CRUD SIMPLE (taula sense claus foraneas)
---taula naus espaciales
+-- CRUD SIMPLE (tabla sin claves foráneas)
 CREATE TABLE naus (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     nom VARCHAR(50) NOT NULL,
     velocitat INT NOT NULL DEFAULT 1,
     imatge_url VARCHAR(255),
     descripcio TEXT,
-    disponible BOOLEAN DEFAULT true,
+    disponible BOOLEAN DEFAULT TRUE,
     data_creacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Taula principal d'usuaris
--- Gestiona l'autenticació i progrés del jugador
+-- Tabla principal de usuarios
 CREATE TABLE usuaris (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     nom_usuari VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     contrasenya VARCHAR(255) NOT NULL,
@@ -27,64 +25,80 @@ CREATE TABLE usuaris (
     ultim_acces TIMESTAMP,
     estat ENUM('actiu', 'inactiu', 'bloquejat') DEFAULT 'actiu',
     intents_login INT DEFAULT 0,
-    nau_actual INT,
-    FOREIGN KEY (nau_actual) REFERENCES naus(id)
+    nau_actual CHAR(36),
+    FOREIGN KEY (nau_actual) REFERENCES naus(id) ON DELETE SET NULL
 );
--- 3. CRUD amb Relació 1:N (Un usuari pot tenir moltes partides)
--- Registra cada partida jugada i les seves estadístiques
+
+-- Tabla de partidas (1 usuario puede tener muchas partidas)
 CREATE TABLE partides (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    usuari_id INT NOT NULL,
+    id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    usuari_id CHAR(36) NOT NULL,
     puntuacio INT NOT NULL DEFAULT 0,
     duracio_segons INT NOT NULL,
-    nau_utilitzada INT NOT NULL,
-    nivell_dificultat ENUM('facil', 'mitja', 'dificil') DEFAULT 'facil',
+    nau_utilitzada CHAR(36) NOT NULL, 
     data_partida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     obstacles_superats INT DEFAULT 0,
-    completada BOOLEAN DEFAULT true,
-    FOREIGN KEY (usuari_id) REFERENCES usuaris(id),
-    FOREIGN KEY (nau_utilitzada) REFERENCES naus(id)
+    completada BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (usuari_id) REFERENCES usuaris(id) ON DELETE CASCADE,
+    FOREIGN KEY (nau_utilitzada) REFERENCES naus(id) ON DELETE CASCADE
 );
--- 4. CRUD amb Relació N:M (Usuaris i Assoliments)
--- Sistema d'assoliments del joc
-CREATE TABLE assoliments (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+
+-- Tabla de niveles
+CREATE TABLE nivells (
+    id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     nom VARCHAR(100) NOT NULL,
-    descripcio TEXT,
     imatge_url VARCHAR(255),
-    punts_requerits INT NOT NULL,
-    tipus ENUM('distancia', 'punts', 'temps') NOT NULL,
-    data_creacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
--- Taula intermitja per la relació N:M entre usuaris i assoliments
-CREATE TABLE usuaris_assoliments (
-    usuari_id INT,
-    assoliment_id INT,
-    data_obtencio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (usuari_id, assoliment_id),
-    FOREIGN KEY (usuari_id) REFERENCES usuaris(id),
-    FOREIGN KEY (assoliment_id) REFERENCES assoliments(id)
-);
--- Taula d'estadístiques
--- Resum d'estadístiques per consulta ràpida
-CREATE TABLE estadistiques_usuari (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    usuari_id INT NOT NULL,
-    millor_puntuacio INT DEFAULT 0,
-    total_partides INT DEFAULT 0,
-    temps_total_jugat INT DEFAULT 0,
-    data_actualitzacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuari_id) REFERENCES usuaris(id)
+    punts_requerits INT NOT NULL
 );
 
--- Inserts bàsics de naus
-INSERT INTO naus (nom, velocitat, descripcio, imatge_url, disponible) VALUES
-('X-Wing', 1, 'Nau inicial perfecta per començar', '/assets/images/naus/x-wing.png', true),
-('TIE Fighter', 2, 'Nau ràpida de l''Imperi', '/assets/images/naus/tie-fighter.png', false),
-('Millennium Falcon', 3, 'La nau més ràpida', '/assets/images/naus/millennium-falcon.png', false);
+-- Relación N:M entre niveles y naves
+CREATE TABLE nivells_naus (
+    nivell_id CHAR(36) NOT NULL,
+    nau_id CHAR(36) NOT NULL,
+    FOREIGN KEY (nivell_id) REFERENCES nivells(id) ON DELETE CASCADE,
+    FOREIGN KEY (nau_id) REFERENCES naus(id) ON DELETE CASCADE
+);
 
--- Inserts bàsics d'assoliments
-INSERT INTO assoliments (nom, descripcio, imatge_url, punts_requerits, tipus) VALUES
-('Pilot Novell', 'Primera partida completada', '/assets/images/assoliments/novell.png', 0, 'punts'),
-('As Espacial', 'Aconsegueix 1000 punts', '/assets/images/assoliments/as.png', 1000, 'punts'),
-('Mestre Jedi', 'Sobreviu 5 minuts', '/assets/images/assoliments/jedi.png', 300, 'temps')
+-- Tabla de obstáculos
+CREATE TABLE obstacles (
+    id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    imatge_url VARCHAR(255)
+);
+
+-- Relación N:M entre obstáculos y partidas
+CREATE TABLE obstacles_partides (
+    obstacle_id CHAR(36) NOT NULL,
+    partida_id CHAR(36) NOT NULL,
+    posicioX INT NOT NULL,
+    posicioY INT NOT NULL,
+    FOREIGN KEY (obstacle_id) REFERENCES obstacles(id) ON DELETE CASCADE,
+    FOREIGN KEY (partida_id) REFERENCES partides(id) ON DELETE CASCADE
+);
+
+-- Relación N:M entre partidas, usuarios y naves (para registrar posición en tiempo real)
+CREATE TABLE partida_usuari_nau (
+    partida_id CHAR(36) NOT NULL,
+    usuari_id CHAR(36) NOT NULL,
+    nau_id CHAR(36) NOT NULL,
+    posicioX INT NOT NULL,
+    posicioY INT NOT NULL,
+    FOREIGN KEY (partida_id) REFERENCES partides(id) ON DELETE CASCADE,
+    FOREIGN KEY (usuari_id) REFERENCES usuaris(id) ON DELETE CASCADE,
+    FOREIGN KEY (nau_id) REFERENCES naus(id) ON DELETE CASCADE
+);
+
+-- Inserts de prueba (se debe usar UUID())
+INSERT INTO naus (id, nom, velocitat, descripcio, imatge_url, disponible) VALUES
+(UUID(), 'X-Wing', 1, 'Nau inicial perfecta per començar', '/assets/images/naus/x-wing.png', TRUE),
+(UUID(), 'TIE Fighter', 2, 'Nau ràpida de l''Imperi', '/assets/images/naus/tie-fighter.png', FALSE),
+(UUID(), 'Millennium Falcon', 3, 'La nau més ràpida', '/assets/images/naus/millennium-falcon.png', FALSE);
+
+-- Inserts de niveles
+INSERT INTO nivells (id, nom, imatge_url, punts_requerits) VALUES
+(UUID(), 'Pilot Novell', '/assets/images/nivells/novell.png', 0),
+(UUID(), 'As Espacial', '/assets/images/nivells/as.png', 1000),
+(UUID(), 'Mestre Jedi', '/assets/images/nivells/jedi.png', 300);
+
+-- Inserts de obstáculos
+INSERT INTO obstacles (id, imatge_url) VALUES
+(UUID(), '/assets/images/obstacles/asteroide.png'),

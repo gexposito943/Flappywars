@@ -83,7 +83,7 @@ export class GameController extends BaseController<GameModel> {
     /**
      * Actualitza l'estat del joc
      */
-    private updateGame(): void {
+    public updateGame(): void {
         if (this.model.isPaused || !this.model.isGameRunning) return;
 
         // Limitar la posición del jugador

@@ -59,26 +59,31 @@ describe('GameComponent', () => {
     });
 
     describe('Game Controls', () => {
-        it('should toggle pause when clicking pause button', () => {
+        it('should toggle pause when pressing space', () => {
             component.model.isGameRunning = true;
             fixture.detectChanges();
             
-            const pauseButton = fixture.debugElement.query(By.css('.control-button.pause'));
-            pauseButton?.nativeElement.click();
-            
+            component.handleKeyboardEvent(new KeyboardEvent('keydown', { key: ' ' }));
             expect(component.model.isPaused).toBeDefined();
         });
 
-        it('should start game when clicking start button', () => {
-            const startButton = fixture.debugElement.query(By.css('.control-button.start'));
-            startButton?.nativeElement.click();
+        it('should start game when pressing Enter', () => {
+            component.model.isGameRunning = false;
+            fixture.detectChanges();
             
-            expect(component.model.isGameRunning).toBeDefined();
+            component.handleKeyboardEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+            expect(component.model.isGameRunning).toBeTruthy();
         });
 
         it('should navigate to dashboard when clicking dashboard button', () => {
+            component.model.showMessage = true;
+            fixture.detectChanges();
+            
             const dashboardButton = fixture.debugElement.query(By.css('.control-button.dashboard'));
-            dashboardButton?.nativeElement.click();
+            expect(dashboardButton).toBeTruthy('Dashboard button should be present');
+            
+            dashboardButton.nativeElement.click();
+            fixture.detectChanges();
             
             expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
         });
