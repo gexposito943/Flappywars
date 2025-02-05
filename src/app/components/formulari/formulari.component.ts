@@ -2,7 +2,7 @@ import { CommonModule, NgIf } from '@angular/common';
 import { Component, ViewChild, ElementRef, AfterViewInit, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { RegistreService } from '../services/registre.service';
+import { RegistreService } from '../../services/registre.service';
 import { User } from './models/user.model';
 import { userLogin } from './models/userLogin.model';
 
@@ -63,7 +63,7 @@ export class FormulariComponent implements AfterViewInit, OnInit {
 
   onSubmit(): void {
     this.showRegisterErrors = true;
-    const { isValid, errors } = this.registerUser.validate();
+    const { isValid } = this.registerUser.validate();
     
     if (isValid) {
       this.registreService.register(

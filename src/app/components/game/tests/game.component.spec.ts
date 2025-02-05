@@ -5,8 +5,8 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { GameComponent } from '../game.component';
 import { GameController } from '../controllers/game.controller';
-import { GameService } from '../../services/game.service';
-import { RegistreService } from '../../services/registre.service';
+import { GameService } from '../../../services/game.service';
+import { RegistreService } from '../../../services/registre.service';
 import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { GameActionTypes } from '../models/game.actions';

@@ -4,8 +4,8 @@
  */
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
-import { GameService, GameResult } from '../../services/game.service';
-import { RegistreService } from '../../services/registre.service';
+import { GameService, GameResult } from '../../../services/game.service';
+import { RegistreService } from '../../../services/registre.service';
 import { GameModel } from '../models/game.model';
 import { BaseController } from '../core/base.controller';
 import { isPlatformBrowser } from '@angular/common';

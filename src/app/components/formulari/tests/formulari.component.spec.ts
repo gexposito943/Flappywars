@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { FormulariComponent } from '../formulari.component';
-import { RegistreService } from '../../services/registre.service';
+import { RegistreService } from '../../../services/registre.service';
 import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';

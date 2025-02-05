@@ -36,21 +36,20 @@
       <!-- Sign Up Form -->
       <form (ngSubmit)="onSubmit()" class="sign-up-form">
         <h2 class="title" id="signup-title">Únete a la Rebelión</h2>
-        <div class="input-field" [class.input-error]="registerUser.validate().errors.username">
-          <label for="signup-username" class="visually-hidden">Usuari</label>
+        
+        <div class="input-field">
           <input type="text"
                  id="signup-username"
                  name="username"
                  [(ngModel)]="registerUser.username"
                  required
                  placeholder="Usuari">
-          <div *ngIf="showRegisterErrors && registerUser.validate().errors.username" class="error-message">
+          <div *ngIf="showRegisterErrors && !registerUser.username" class="error-message">
             El nom d'usuari és obligatori
           </div>
         </div>
         
-        <div class="input-field" [class.input-error]="registerUser.validate().errors.email">
-          <label for="signup-email" class="visually-hidden">Email</label>
+        <div class="input-field">
           <input type="email"
                  id="signup-email"
                  name="email"
@@ -58,40 +57,42 @@
                  required
                  email
                  placeholder="Email">
-          <div *ngIf="showRegisterErrors && registerUser.validate().errors.email" class="error-message">
+          <div *ngIf="showRegisterErrors && !registerUser.email" class="error-message">
             L'email és obligatori i ha de ser vàlid
           </div>
         </div>
         
-        <div class="input-field" [class.input-error]="registerUser.validate().errors.password">
-          <label for="signup-password" class="visually-hidden">Contrasenya</label>
+        <div class="input-field">
           <input type="password"
                  id="signup-password"
                  name="password"
                  [(ngModel)]="registerUser.password"
                  required
                  placeholder="Contrasenya">
-          <div *ngIf="registerUser.validate().errors.password" class="error-message">
+          <div *ngIf="showRegisterErrors && !registerUser.password" class="error-message">
             La contrasenya és obligatòria
+          </div>
+          <div *ngIf="showRegisterErrors && registerUser.password && !registerUser.passwordValidator()" class="error-message">
+            La contrasenya ha de tenir mínim 6 caràcters i un símbol especial
           </div>
         </div>
         
-        <div class="input-field" [class.input-error]="registerUser.validate().errors.confirmPassword">
-          <label for="signup-confirm-password" class="visually-hidden">Confirmació Contrasenya</label>
+        <div class="input-field">
           <input type="password"
                  id="signup-confirm-password"
                  name="confirmPassword"
                  [(ngModel)]="registerUser.confirmPassword"
                  required
                  placeholder="Confirma la contrasenya">
-          <div *ngIf="registerUser.validate().errors.confirmPassword" class="error-message">
+          <div *ngIf="showRegisterErrors && !registerUser.confirmPassword" class="error-message">
+            La confirmació de contrasenya és obligatòria
+          </div>
+          <div *ngIf="showRegisterErrors && registerUser.confirmPassword && !registerUser.passwordMatch()" class="error-message">
             Les contrasenyes no coincideixen
           </div>
         </div>
         
-        <button type="submit" 
-                class="btn-login" 
-                [disabled]="!registerUser.validate().isValid">
+        <button type="submit" class="btn-login">
           Comenzar el Entrenamiento
         </button>
       </form>
@@ -130,31 +131,6 @@
         </button> 
       </div>
     </div>
-  </div>
-
-  <!-- Mensajes de error para registro -->
-  <div *ngIf="showRegisterErrors && registerUser.validate().errors.username" class="error-message">
-    El nom d'usuari és obligatori
-  </div>
-
-  <div *ngIf="showRegisterErrors && registerUser.validate().errors.email" class="error-message">
-    L'email és obligatori i ha de ser vàlid
-  </div>
-
-  <div *ngIf="showRegisterErrors && registerUser.validate().errors.password" class="error-message">
-    La contrasenya és obligatòria
-  </div>
-
-  <div *ngIf="showRegisterErrors && registerUser.validate().errors.passwordRegex && !registerUser.validate().errors.password" class="error-message">
-    La contrasenya ha de tenir mínim 6 caràcters i un símbol especial
-  </div>
-
-  <div *ngIf="showRegisterErrors && registerUser.validate().errors.confirmPasswordEmpty" class="error-message">
-    La confirmació de contrasenya és obligatòria
-  </div>
-
-  <div *ngIf="showRegisterErrors && registerUser.validate().errors.confirmPassword && !registerUser.validate().errors.confirmPasswordEmpty" class="error-message">
-    Les contrasenyes no coincideixen
   </div>
 
   <!-- Popup de éxito -->

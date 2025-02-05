@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { EstadistiquesComponent } from '../estadistiques.component';
-import { GameService } from '../../services/game.service';
+import { GameService } from '../../../services/game.service';
 import { Router } from '@angular/router';
 import { EstadistiquesController } from '../controllers/estadistiques.controller';
 import { of } from 'rxjs';

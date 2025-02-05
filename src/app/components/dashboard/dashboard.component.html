@@ -1,0 +1,67 @@
+<div class="game-container">
+    <!-- Cabecera -->
+    <div class="header">
+        <h1>Benvingut, {{ dashboardModel.usuari.nom_usuari }}!</h1>
+        <div class="user-info">
+            <div class="level-badge">Nivell: {{ dashboardModel.usuari.nivell }}</div>
+            <div class="points-badge">Punts: {{ dashboardModel.usuari.punts_totals }}</div>
+        </div>
+        <div class="header-buttons">
+            <button class="btn restore" [disabled]="!dashboardModel.hasSavedGame">
+                Restaurar Partida
+            </button>
+            <button class="btn stats" (click)="onViewStats()">
+                Veure Estadístiques
+            </button>
+            <button class="btn logout" (click)="onLogout()">Sortir</button>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <h2 class="stats-title">LES TEVES ESTADÍSTIQUES</h2>
+    <div class="stats-container">
+        <div class="stat-card">
+            <h3>MILLOR PUNTUACIÓ</h3>
+            <p>{{ dashboardModel.getMillorPuntuacio() }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>TOTAL PARTIDES</h3>
+            <p>{{ dashboardModel.getTotalPartides() }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>TEMPS TOTAL JUGAT</h3>
+            <p>{{ formatTime(dashboardModel.getTempsTotal()) }}</p>
+        </div>
+    </div>
+
+    <!-- Selección de nave -->
+    <div class="ship-selection">
+        <button class="play-button" 
+                [disabled]="!dashboardModel.canPlay()"
+                (click)="onStartGame()">
+            {{ dashboardModel.getPlayButtonText() }}
+        </button>
+
+        <p class="selection-message" *ngIf="!dashboardModel.nauSeleccionada">
+            Has de seleccionar una nau abans de començar
+        </p>
+
+        <div class="ships-grid">
+            <div *ngFor="let nau of dashboardModel.naus" 
+                 class="ship-card"
+                 [class.selected]="nau === dashboardModel.nauSeleccionada"
+                 [class.locked]="!dashboardModel.isNauDisponible(nau)"
+                 (click)="onShipSelect(nau)">
+                <img [src]="nau.imatge_url" [alt]="nau.nom">
+                <h3>{{ nau.nom }}</h3>
+                <p>{{ nau.descripcio }}</p>
+                <div class="ship-stats">
+                    <span>Velocitat: {{ nau.velocitat }}</span>
+                    <span *ngIf="!dashboardModel.isNauDisponible(nau)" class="lock-message">
+                        Necessites {{ nau.velocitat * 1000 }} punts per desbloquejar
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

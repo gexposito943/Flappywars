@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { GameService } from '../../services/game.service';
+import { GameService } from '../../../services/game.service';
 import { EstadistiquesModel } from '../models/estadistiques.model';
 import { BaseController } from '../core/base.controller';
 

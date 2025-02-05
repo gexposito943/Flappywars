@@ -5,8 +5,8 @@
 import { Component, ElementRef, ViewChild, OnInit, HostListener, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
-import { GameService, GameResult } from '../services/game.service';
-import { RegistreService } from '../services/registre.service';
+import { GameService, GameResult } from '../../services/game.service';
+import { RegistreService } from '../../services/registre.service';
 import { GameController } from './controllers/game.controller';
 import { GameModel } from './models/game.model';
 

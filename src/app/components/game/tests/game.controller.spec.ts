@@ -4,8 +4,8 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { GameController } from '../controllers/game.controller';
-import { GameService } from '../../services/game.service';
-import { RegistreService } from '../../services/registre.service';
+import { GameService } from '../../../services/game.service';
+import { RegistreService } from '../../../services/registre.service';
 import { of, throwError } from 'rxjs';
 import { fakeAsync, tick } from '@angular/core/testing';
 
