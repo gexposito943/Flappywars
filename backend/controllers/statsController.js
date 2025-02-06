@@ -22,7 +22,7 @@ export const getUserStats = async (req, res) => {
       LEFT JOIN nivells n ON u.nivell = n.punts_requerits
       LEFT JOIN naus nau ON u.nau_actual = nau.id
       WHERE u.id = ?
-      GROUP BY u.id
+      GROUP BY u.id, u.punts_totals, u.nivell, n.nom, n.imatge_url, nau.nom, nau.imatge_url
     `, [userId]);
 
     // Obtener últimas 5 partidas
@@ -176,7 +176,7 @@ export const getGlobalStats = async (req, res) => {
       LEFT JOIN nivells n ON u.nivell = n.punts_requerits
       LEFT JOIN naus nau ON u.nau_actual = nau.id
       WHERE u.estat = 'actiu'
-      GROUP BY u.id
+      GROUP BY u.id, u.nom_usuari, u.punts_totals, n.nom, nau.nom
       ORDER BY u.punts_totals DESC
       LIMIT 10
     `);

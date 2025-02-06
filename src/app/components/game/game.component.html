@@ -1,33 +1,55 @@
 <div class="game-container">
-  <div class="score">Punts: <span class="score-value">{{ model.score }}</span></div>
+  <!-- Panell de puntuació -->
+  <div class="score" *ngIf="model.isGameRunning">
+    Punts: <span class="score-value">{{ model.score }}</span>
+  </div>
   
+  <!-- Llenç del joc -->
   <canvas #gameCanvas [width]="model.CANVAS_WIDTH" [height]="model.CANVAS_HEIGHT"></canvas>
 
-  <!-- Mensaje inicial -->
-  <div class="game-message initial" *ngIf="!model.isGameRunning && !model.isPaused">
-    <p>Prem Enter per començar</p>
+  <!-- Missatges del joc -->
+  <div class="game-message" 
+       *ngIf="model.showMessage"
+       [class.initial]="!model.isGameRunning">
+    <p>{{ model.gameMessage }}</p>
   </div>
 
-  <!-- Panel de control unificado -->
-  <div class="game-controls" *ngIf="model.isGameRunning">
-    <!-- Botones durante el juego activo -->
-    <div class="buttons-container" *ngIf="!model.isPaused">
-      <button class="control-button pause" (click)="togglePause()">
-        ⏸️ Pausar
+  <!-- Panell de control -->
+  <div class="game-controls">
+    <!-- Controls durant el joc -->
+    <div class="buttons-container" *ngIf="model.isGameRunning && !model.isPaused">
+      <button class="control-button pause" 
+              (click)="togglePause()"
+              title="Pausar el joc">
+        <span class="icon">⏸️</span>
+        <span class="text">Pausar</span>
       </button>
-      <button class="control-button save" (click)="saveGame()" *ngIf="model.score > 0">
-        💾 Guardar partida
+      
+      <button class="control-button save" 
+              (click)="saveGameResults()"
+              *ngIf="model.score > 0"
+              title="Guardar la partida actual">
+        <span class="icon">💾</span>
+        <span class="text">Guardar</span>
       </button>
     </div>
 
-    <!-- Botones durante la pausa -->
-    <div class="buttons-container" *ngIf="model.isPaused">
-      <h2 class="pause-title">Joc Pausat</h2>
-      <button class="control-button resume" (click)="togglePause()">
-        ▶️ Continuar
+    <!-- Controls durant la pausa -->
+    <div class="buttons-container pause-menu" *ngIf="model.isPaused">
+      <h2 class="pause-title">Joc en Pausa</h2>
+      
+      <button class="control-button resume" 
+              (click)="togglePause()"
+              title="Continuar jugant">
+        <span class="icon">▶️</span>
+        <span class="text">Continuar</span>
       </button>
-      <button class="control-button dashboard" (click)="goToDashboard()">
-        🏠 Tornar al Dashboard
+      
+      <button class="control-button dashboard" 
+              (click)="goToDashboard()"
+              title="Tornar al menú principal">
+        <span class="icon">🏠</span>
+        <span class="text">Dashboard</span>
       </button>
     </div>
   </div>

@@ -166,4 +166,23 @@ describe('GameService', () => {
       { status: 401, statusText: 'Unauthorized' }
     );
   });
+
+  it('should get default ship (X-Wing)', () => {
+    const expectedShip = {
+      id: 'uuid-1',
+      nom: 'X-Wing',
+      velocitat: 1,
+      imatge_url: '/assets/images/naus/x-wing.png',
+      descripcio: 'Nau inicial perfecta per començar',
+      disponible: true
+    };
+
+    service.getNau().subscribe(ship => {
+      expect(ship).toEqual(expectedShip);
+    });
+
+    const req = httpMock.expectOne(`${service['apiUrl']}/naus/default`);
+    expect(req.request.method).toBe('GET');
+    req.flush(expectedShip);
+  });
 });

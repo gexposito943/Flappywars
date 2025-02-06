@@ -47,6 +47,20 @@ interface GlobalStats {
   temps_total_jugat: number;
 }
 
+export interface Nau {
+  id: string;
+  nom: string;
+  velocitat: number;
+  imatge_url: string;
+  descripcio: string;
+  disponible: boolean;
+}
+
+export interface Obstacle {
+  id: string;
+  imatge_url: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -227,6 +241,24 @@ export class GameService {
         console.error('Error obteniendo estadísticas globales:', error);
         return of([]);
       })
+    );
+  }
+
+  getNau(): Observable<Nau> {
+    return this.http.get<Nau>(
+      `${this.apiUrl}/naus/default`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(error => throwError(() => error))
+    );
+  }
+
+  getObstacle(): Observable<Obstacle> {
+    return this.http.get<Obstacle>(
+      `${this.apiUrl}/obstacles/default`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(error => throwError(() => error))
     );
   }
 }

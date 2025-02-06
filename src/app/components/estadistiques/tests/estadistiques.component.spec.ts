@@ -3,10 +3,8 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { EstadistiquesComponent } from '../estadistiques.component';
 import { GameService } from '../../../services/game.service';
 import { Router } from '@angular/router';
-import { EstadistiquesController } from '../controllers/estadistiques.controller';
 import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
-import { GlobalStats } from '../models/estadistiques.model';
 import { fakeAsync, tick } from '@angular/core/testing';
 
 describe('EstadistiquesComponent', () => {
@@ -14,34 +12,42 @@ describe('EstadistiquesComponent', () => {
     let fixture: ComponentFixture<EstadistiquesComponent>;
     let mockGameService: jasmine.SpyObj<GameService>;
     let mockRouter: jasmine.SpyObj<Router>;
-    let controller: EstadistiquesController;
 
-    const mockGlobalStats: GlobalStats[] = [
+    const mockStats = [
         { 
-            username: 'Player2', 
+            id: '1',
+            nom_usuari: 'Player2',
             punts_totals: 3200,
             millor_puntuacio: 600,
-            total_partides: 15,
-            temps_total_jugat: 4800
+            temps_total_jugat: 4800,
+            estat: 'actiu'
         },
         { 
-            username: 'Player1', 
+            id: '2',
+            nom_usuari: 'Player1',
             punts_totals: 2500,
             millor_puntuacio: 500,
-            total_partides: 10,
-            temps_total_jugat: 3600
+            temps_total_jugat: 3600,
+            estat: 'actiu'
+        },
+        { 
+            id: '3',
+            nom_usuari: 'Player3',
+            punts_totals: 1000,
+            millor_puntuacio: 300,
+            temps_total_jugat: 1800,
+            estat: 'inactiu' 
         }
     ];
 
     beforeEach(async () => {
         mockGameService = jasmine.createSpyObj('GameService', ['getGlobalStats']);
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
-        mockGameService.getGlobalStats.and.returnValue(of(mockGlobalStats));
+        mockGameService.getGlobalStats.and.returnValue(of(mockStats as any));
 
         await TestBed.configureTestingModule({
             imports: [EstadistiquesComponent, HttpClientTestingModule],
             providers: [
-                EstadistiquesController,
                 { provide: GameService, useValue: mockGameService },
                 { provide: Router, useValue: mockRouter }
             ]
@@ -49,76 +55,37 @@ describe('EstadistiquesComponent', () => {
 
         fixture = TestBed.createComponent(EstadistiquesComponent);
         component = fixture.componentInstance;
-        controller = TestBed.inject(EstadistiquesController);
-        controller.loadGlobalStats();
         fixture.detectChanges();
     });
 
-    it('should create with controller', () => {
+    it('should create', () => {
         expect(component).toBeTruthy();
-        expect(controller).toBeTruthy();
     });
 
-    it('should load global statistics on init', fakeAsync(() => {
+    it('should load statistics on init', fakeAsync(() => {
         tick();
         fixture.detectChanges();
         expect(mockGameService.getGlobalStats).toHaveBeenCalled();
-        expect(controller.getModel().globalStats).toEqual(mockGlobalStats);
+        expect(component.estadistiques.length).toBe(2); 
     }));
 
-    it('should display player statistics in order', fakeAsync(() => {
+    it('should sort statistics by total points', fakeAsync(() => {
         tick();
         fixture.detectChanges();
-
-        const rows = fixture.debugElement.queryAll(By.css('.stats-row'));
-        const firstRowCells = rows[0].queryAll(By.css('.stats-cell'));
-        expect(firstRowCells[1].nativeElement.textContent.trim()).toBe('Player2');
-        expect(firstRowCells[2].nativeElement.textContent.trim()).toBe('3,200');
+        const stats = component.estadistiques;
+        expect(stats[0].usuari.punts_totals).toBeGreaterThan(stats[1].usuari.punts_totals);
     }));
 
-    it('should have a return button', () => {
-        const returnButton = fixture.debugElement.query(By.css('.return-button'));
-        expect(returnButton).toBeTruthy();
-        expect(returnButton.nativeElement.textContent.trim()).toBe('Tornar al Dashboard');
-    });
-
-    it('should navigate to dashboard when return button is clicked', () => {
-        const returnButton = fixture.debugElement.query(By.css('.return-button'));
-        returnButton.nativeElement.click();
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
-    });
-
-    it('should show loading state', fakeAsync(() => {
-        component.model.startLoading();
-        fixture.detectChanges();
+    it('should filter out inactive users', fakeAsync(() => {
         tick();
-
-        const loadingElement = fixture.debugElement.query(By.css('.loading-error'));
-        expect(loadingElement).toBeTruthy();
-        expect(loadingElement.nativeElement.textContent).toContain('Carregant estadístiques');
-    }));
-
-    it('should show error state', fakeAsync(() => {
-        component.model.handleError();
         fixture.detectChanges();
-        tick();
-
-        const errorElement = fixture.debugElement.query(By.css('.loading-error'));
-        expect(errorElement).toBeTruthy();
-        expect(errorElement.nativeElement.textContent).toContain('Error carregant les estadístiques');
+        const inactiveUser = component.estadistiques.find(stat => 
+            stat.usuari.nom_usuari === 'Player3'
+        );
+        expect(inactiveUser).toBeUndefined();
     }));
 
-    it('should show message when no statistics are available', fakeAsync(() => {
-        component.model.setGlobalStats([]);
-        fixture.detectChanges();
-        tick();
-
-        const noStatsElement = fixture.debugElement.query(By.css('.stats-content'));
-        expect(noStatsElement).toBeTruthy();
-        expect(noStatsElement.nativeElement.textContent.trim()).toContain('No hi ha estadístiques disponibles');
-    }));
-
-    it('should display all player statistics fields correctly', fakeAsync(() => {
+    it('should display player statistics correctly', fakeAsync(() => {
         tick();
         fixture.detectChanges();
 
@@ -128,13 +95,48 @@ describe('EstadistiquesComponent', () => {
         expect(firstRowCells[1].nativeElement.textContent.trim()).toBe('Player2');
         expect(firstRowCells[2].nativeElement.textContent.trim()).toBe('3,200');
         expect(firstRowCells[3].nativeElement.textContent.trim()).toBe('600');
-        expect(firstRowCells[4].nativeElement.textContent.trim()).toBe('15');
-        expect(firstRowCells[5].nativeElement.textContent.trim()).toBe('1h 20m 0s');
+        expect(firstRowCells[4].nativeElement.textContent.trim()).toBe('1h 20m 0s');
     }));
 
-    it('should format time correctly', () => {
-        expect(controller.formatTime(3665)).toBe('1h 1m 5s');
-        expect(controller.formatTime(65)).toBe('1m 5s');
-        expect(controller.formatTime(30)).toBe('30s');
+    it('should show loading state initially', () => {
+        component['_loading'] = true;
+        fixture.detectChanges();
+
+        const loadingElement = fixture.debugElement.query(By.css('.loading-error'));
+        expect(loadingElement).toBeTruthy();
+        expect(loadingElement.nativeElement.textContent).toContain('Carregant estadístiques');
     });
+
+    it('should show error state when there is an error', () => {
+        component['_error'] = true;
+        fixture.detectChanges();
+
+        const errorElement = fixture.debugElement.query(By.css('.loading-error'));
+        expect(errorElement).toBeTruthy();
+        expect(errorElement.nativeElement.textContent).toContain('Error carregant les estadístiques');
+    });
+
+    it('should format time correctly for different durations', () => {
+        expect(component.formatTime(3665)).toBe('1h 1m 5s');
+        expect(component.formatTime(65)).toBe('1m 5s');
+        expect(component.formatTime(30)).toBe('30s');
+    });
+
+    it('should navigate to dashboard when return button is clicked', () => {
+        const returnButton = fixture.debugElement.query(By.css('.return-button'));
+        returnButton.nativeElement.click();
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
+    });
+
+    it('should show message when no statistics are available', fakeAsync(() => {
+        mockGameService.getGlobalStats.and.returnValue(of([]));
+        component.ngOnInit();
+        tick();
+        fixture.detectChanges();
+
+        const noStatsElement = fixture.debugElement.query(By.css('.no-stats'));
+        expect(noStatsElement).toBeTruthy();
+        expect(noStatsElement.nativeElement.textContent.trim())
+            .toBe('No hi ha estadístiques disponibles');
+    }));
 }); 

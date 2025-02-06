@@ -1,32 +1,30 @@
 <div class="estadistiques-container">
   <h1>Estadístiques Globals</h1>
 
-  <div class="loading-error" *ngIf="model.loading || model.error">
-    <p *ngIf="model.loading">Carregant estadístiques...</p>
-    <p *ngIf="model.error">Error carregant les estadístiques</p>
+  <div class="loading-error" *ngIf="loading || error">
+    <p *ngIf="loading">Carregant estadístiques...</p>
+    <p *ngIf="error">Error carregant les estadístiques</p>
   </div>
 
-  <div class="stats-table" *ngIf="!model.loading && !model.error">
+  <div class="stats-table" *ngIf="!loading && !error">
     <div class="stats-header">
       <div class="header-cell">Posició</div>
       <div class="header-cell">Jugador</div>
       <div class="header-cell">Punts Totals</div>
       <div class="header-cell">Millor Puntuació</div>
-      <div class="header-cell">Total Partides</div>
       <div class="header-cell">Temps Total</div>
     </div>
 
     <div class="stats-content">
-      <div class="stats-row" *ngFor="let stat of model.globalStats; let i = index">
+      <div class="stats-row" *ngFor="let stat of estadistiques; let i = index">
         <div class="stats-cell">{{ i + 1 }}</div>
-        <div class="stats-cell">{{ stat.username }}</div>
-        <div class="stats-cell">{{ stat.punts_totals | number }}</div>
+        <div class="stats-cell">{{ stat.usuari.nom_usuari }}</div>
+        <div class="stats-cell">{{ stat.usuari.punts_totals | number }}</div>
         <div class="stats-cell">{{ stat.millor_puntuacio | number }}</div>
-        <div class="stats-cell">{{ stat.total_partides }}</div>
         <div class="stats-cell">{{ formatTime(stat.temps_total_jugat) }}</div>
       </div>
 
-      <div class="no-stats" *ngIf="model.globalStats.length === 0">
+      <div class="no-stats" *ngIf="estadistiques.length === 0">
         No hi ha estadístiques disponibles
       </div>
     </div>

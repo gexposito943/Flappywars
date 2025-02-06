@@ -173,6 +173,11 @@ export class RegistreService {
     this.token = token;
   }
 
+  getUserId(): string | null {
+    const userData = this.getUserData();
+    return userData ? userData.id : null;
+  }
+
   setUserData(userData: Omit<Usuari, 'contrasenya'> | null): void {
     if (isPlatformBrowser(this.platformId) && userData) {
       localStorage.setItem(this.userDataKey, JSON.stringify(userData));

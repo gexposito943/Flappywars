@@ -211,7 +211,7 @@ form.sign-in-form {
   top: -10%;
   right: 48%;
   transform: translateY(-50%);
-  background: url('../../../public/fons.jpg') no-repeat center center;
+  background: url('/assets/images/fons.jpg') no-repeat center center;
   background-size: cover;
   transition: 1.8s ease-in-out;
   z-index: 6;
