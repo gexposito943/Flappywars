@@ -53,163 +53,207 @@ body {
   overflow-y: auto;
 }
 
-
-.top-bar {
+/* Ajustes del header */
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background: rgba(13, 20, 33, 0.8);
+  background: rgba(13, 20, 33, 0.7);
   border-radius: 10px;
-  margin-bottom: 20px;
 }
 
-.profile {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.profile h1 {
+.header h1 {
   color: white;
-  font-size: 2em;
+  font-size: 2.5rem;
   margin: 0;
+  font-family: 'Montserrat', sans-serif;
 }
 
-.user-stats {
+.user-info {
   display: flex;
   gap: 10px;
 }
 
-.stat-badge {
+.level-badge, .points-badge {
   background: rgba(41, 41, 27, 0.8);
   color: #FFD700;
   padding: 8px 16px;
   border-radius: 20px;
-  border: 1px solid #4a4a3a;
+  font-weight: bold;
 }
 
-.top-buttons {
+.header-buttons {
   display: flex;
   gap: 10px;
-  align-items: center;
 }
 
-.restore-button,
-.stats-button {
+.btn {
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn.restore {
   background: #2c3e50;
   color: white;
-  border: 1px solid #34495e;
-  padding: 8px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s ease;
 }
 
-.restore-button:hover:not(:disabled),
-.stats-button:hover {
+.btn.stats {
   background: #34495e;
-  transform: translateY(-2px);
+  color: white;
 }
 
-.restore-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.logout-button {
+.btn.logout {
   background: #e74c3c;
   color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s ease;
 }
 
-.logout-button:hover {
-  background: #c0392b;
-  transform: translateY(-2px);
-}
-
-/* Sección de estadísticas */
-.stats-section {
-    margin: 3rem 0;
+/* Estadísticas */
+.stats-title {
+  text-align: center;
+  color: white;
+  font-size: 3rem;
+  margin: 40px 0;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .stats-container {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    gap: 2rem;
-    padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 0 auto;
+  max-width: 1200px;
 }
 
 .stat-card {
-    flex: 1;
-    background: rgba(13, 20, 37, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 215, 0, 0.2);
-    border-radius: 15px;
-    padding: 2rem;
-    text-align: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
-    min-width: 200px;
-}
-
-.stat-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
+  flex: 1;
+  background: rgba(13, 20, 33, 0.8);
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
 }
 
 .stat-card h3 {
-  color: #FFE81F;
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  color: #FFD700;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
 }
 
 .stat-card p {
-  color: #fff;
-  font-size: 2.5rem;
-  font-weight: bold;
+  color: white;
+  font-size: 3rem;
   margin: 0;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
-/* Botón de jugar con efecto energético */
+/* Selección de naves */
+.ship-selection {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 50px;
+  margin-top: 40px;
+}
+
+/* Contenedor izquierdo para el botón y mensaje */
+.selection-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  width: 25%;
+}
+
 .play-button {
-  background: linear-gradient(45deg, #FFE81F, #FFA500);
+  background: #FFD700;
   color: black;
+  padding: 15px 30px;
+  font-size: 1.5rem;
+  font-weight: bold;
   border: none;
-  padding: 1.2rem 3.5rem;
   border-radius: 8px;
-  font-size: 1.3rem;
   cursor: pointer;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
-  margin: 2rem 0;
-  font-weight: bold;
-}
-
-.play-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.6),
-              0 0 60px rgba(255, 255, 255, 0.3);
+  width: 100%;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
 }
 
 .selection-message {
-  color: #ffffff;
-  font-size: 1.3rem;
-  margin: 0;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 1.2rem;
+  font-family: 'Montserrat', sans-serif;
+  text-align: left;
+}
+
+/* Grid de naves a la derecha */
+.ships-grid {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  width: 70%;
+  margin-right: -50px;
+}
+
+.ship-card {
+  background: rgba(13, 20, 33, 0.9);
+  padding: 15px;
+  border-radius: 10px;
+  width: 180px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.ship-card img {
+  width: 150px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.ship-card h3 {
+  color: #FFD700;
+  font-size: 1rem;
+  margin: 5px 0;
+}
+
+.ship-card p {
+  color: #8e9297;
+  font-size: 0.8rem;
+  margin: 5px 0;
+}
+
+.ship-stats {
+  color: #8e9297;
+  font-size: 0.7rem;
+}
+
+.ship-card.locked {
+  opacity: 0.7;
+  position: relative;
+}
+
+.ship-card.locked::after {
+  content: '🔒';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  color: #FFD700;
+}
+
+.ship-card.selected {
+  border: 2px solid #FFD700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+/* Ajuste del texto de velocidad */
+.ship-stats span {
+  display: block;
+  margin: 5px 0;
 }
 
 @media (max-width: 768px) {
@@ -251,7 +295,7 @@ body {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.8rem;
     max-width: 600px;
-    margin: 0 auto;
+    margin: 30px;
 }
 
 .ship-option {
@@ -326,26 +370,9 @@ body {
     font-size: 2em;
 }
 
-.lock-message {
-    color: #ff4444;
-    font-size: 0.9em;
-    margin-top: 5px;
-}
-
 .points-needed {
   font-size: 0.9em;
   background: rgba(255, 0, 0, 0.8);
   padding: 5px 10px;
   border-radius: 4px;
-}
-
-.stats-title {
-    color: #ffffff;
-    text-align: center;
-    font-size: 2.5rem;
-    margin-bottom: 2.5rem;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    text-shadow: 0 0 15px rgba(68, 68, 68, 0.5),
-                 0 0 30px rgba(68, 68, 68, 0.3);
 }

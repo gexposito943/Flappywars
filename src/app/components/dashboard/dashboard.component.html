@@ -36,15 +36,16 @@
 
     <!-- Selección de nave -->
     <div class="ship-selection">
-        <button class="play-button" 
-                [disabled]="!dashboardModel.canPlay()"
-                (click)="onStartGame()">
-            {{ dashboardModel.getPlayButtonText() }}
-        </button>
-
-        <p class="selection-message" *ngIf="!dashboardModel.nauSeleccionada">
-            Has de seleccionar una nau abans de començar
-        </p>
+        <div class="selection-left">
+            <button class="play-button" 
+                    [disabled]="!dashboardModel.canPlay()"
+                    (click)="onStartGame()">
+                Selecciona una nau
+            </button>
+            <p class="selection-message" *ngIf="!dashboardModel.nauSeleccionada">
+                Has de seleccionar una nau abans de començar
+            </p>
+        </div>
 
         <div class="ships-grid">
             <div *ngFor="let nau of dashboardModel.naus" 
