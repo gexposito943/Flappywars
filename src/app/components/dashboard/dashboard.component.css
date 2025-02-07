@@ -112,6 +112,11 @@ body {
   color: white;
 }
 
+.btn.reset {
+  background: #e67e22;
+  color: white;
+}
+
 /* Estadísticas */
 .stats-title {
   text-align: center;

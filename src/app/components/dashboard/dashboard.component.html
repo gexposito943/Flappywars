@@ -3,12 +3,15 @@
     <div class="header">
         <h1>Benvingut, {{ dashboardModel.usuari.nom_usuari }}!</h1>
         <div class="user-info">
-            <div class="level-badge">Nivell: {{ dashboardModel.usuari.nivell }}</div>
-            <div class="points-badge">Punts: {{ dashboardModel.usuari.punts_totals }}</div>
+            <div class="level-badge">Nivell: {{ dashboardModel.usuari.nivell || 0 }}</div>
+            <div class="points-badge">Punts: {{ dashboardModel.usuari.punts_totals || 0 }}</div>
         </div>
         <div class="header-buttons">
             <button class="btn restore" [disabled]="!dashboardModel.hasSavedGame">
                 Restaurar Partida
+            </button>
+            <button class="btn reset" (click)="onResetPoints()">
+                Reset Punts
             </button>
             <button class="btn stats" (click)="onViewStats()">
                 Veure Estadístiques
@@ -22,15 +25,15 @@
     <div class="stats-container">
         <div class="stat-card">
             <h3>MILLOR PUNTUACIÓ</h3>
-            <p>{{ dashboardModel.getMillorPuntuacio() }}</p>
+            <p>{{ dashboardModel.stats.millor_puntuacio }}</p>
         </div>
         <div class="stat-card">
             <h3>TOTAL PARTIDES</h3>
-            <p>{{ dashboardModel.getTotalPartides() }}</p>
+            <p>{{ dashboardModel.stats.total_partides }}</p>
         </div>
         <div class="stat-card">
             <h3>TEMPS TOTAL JUGAT</h3>
-            <p>{{ formatTime(dashboardModel.getTempsTotal()) }}</p>
+            <p>{{ formatTime(dashboardModel.stats.temps_total_jugat) }}</p>
         </div>
     </div>
 
