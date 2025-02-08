@@ -269,4 +269,8 @@ export class GameService {
         { headers: this.getHeaders() }
     );
   }
+
+  checkSavedGame(userId: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/users/${userId}/saved-game`);
+  }
 }

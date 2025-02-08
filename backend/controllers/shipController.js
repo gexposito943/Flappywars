@@ -2,18 +2,16 @@ import { pool as db } from "../database.js";
 
 export const getShips = async (req, res) => {
   try {
-    // Obte naus amb els  seus requisits nivell
     const [naus] = await db.query(`
       SELECT 
-        n.*,
-        nv.nivell_id,
-        ni.punts_requerits,
-        ni.nom as nivell_nom
-      FROM naus n
-      LEFT JOIN nivells_naus nv ON n.id = nv.nau_id
-      LEFT JOIN nivells ni ON nv.nivell_id = ni.id
-      WHERE n.disponible = true
-      ORDER BY ni.punts_requerits ASC
+        id,
+        nom,
+        velocitat,
+        imatge_url,
+        descripcio,
+        punts_requerits
+      FROM naus
+      ORDER BY punts_requerits ASC
     `);
 
     res.json({
@@ -24,11 +22,7 @@ export const getShips = async (req, res) => {
         velocitat: nau.velocitat,
         imatge_url: nau.imatge_url,
         descripcio: nau.descripcio,
-        nivell_requerit: {
-          id: nau.nivell_id,
-          nom: nau.nivell_nom,
-          punts_requerits: nau.punts_requerits || 0
-        }
+        punts_requerits: nau.punts_requerits
       }))
     });
   } catch (error) {
@@ -106,7 +100,6 @@ export const updateUserShip = async (req, res) => {
     const userId = req.params.userId;
     const { shipId } = req.body;
 
-    // Verificar que la nave existe y comprobar requisitos
     const [shipData] = await db.query(`
       SELECT 
         n.*,
@@ -116,13 +109,13 @@ export const updateUserShip = async (req, res) => {
       LEFT JOIN nivells_naus nv ON n.id = nv.nau_id
       LEFT JOIN nivells ni ON nv.nivell_id = ni.id
       CROSS JOIN usuaris u
-      WHERE n.id = ? AND n.disponible = true AND u.id = ?
+      WHERE n.id = ? AND u.id = ?
     `, [shipId, userId]);
 
     if (shipData.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'La nau seleccionada no existeix o no està disponible'
+        message: 'La nau seleccionada no existeix'
       });
     }
 
@@ -164,7 +157,7 @@ export const getUserAvailableShips = async (req, res) => {
   try {
     const userId = req.user.userId;
     
-    // Obtener todas las naves disponibles para el usuario según sus puntos
+    // Eliminada la referencia a la columna 'disponible'
     const [ships] = await db.query(`
       SELECT 
         n.*,
@@ -180,7 +173,7 @@ export const getUserAvailableShips = async (req, res) => {
       LEFT JOIN nivells_naus nv ON n.id = nv.nau_id
       LEFT JOIN nivells ni ON nv.nivell_id = ni.id
       CROSS JOIN usuaris u
-      WHERE n.disponible = true AND u.id = ?
+      WHERE u.id = ?
       ORDER BY ni.punts_requerits ASC
     `, [userId]);
     

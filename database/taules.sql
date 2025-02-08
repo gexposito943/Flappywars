@@ -9,7 +9,7 @@ CREATE TABLE naus (
     velocitat INT NOT NULL DEFAULT 1,
     imatge_url VARCHAR(255),
     descripcio TEXT,
-    disponible BOOLEAN DEFAULT TRUE,
+    punts_requerits INT NOT NULL,
     data_creacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -87,11 +87,11 @@ CREATE TABLE partida_usuari_nau (
     FOREIGN KEY (nau_id) REFERENCES naus(id) ON DELETE CASCADE
 );
 
--- Inserts de prueba (se debe usar UUID())
-INSERT INTO naus (id, nom, velocitat, descripcio, imatge_url, disponible) VALUES
-(UUID(), 'X-Wing', 1, 'Nau inicial perfecta per començar', '/assets/images/naus/x-wing.png', TRUE),
-(UUID(), 'TIE Fighter', 2, 'Nau ràpida de l''Imperi', '/assets/images/naus/tie-fighter.png', FALSE),
-(UUID(), 'Millennium Falcon', 3, 'La nau més ràpida', '/assets/images/naus/millennium-falcon.png', FALSE);
+-- Inserts de prueba con punts_requerits en lugar de disponible
+INSERT INTO naus (id, nom, velocitat, descripcio, imatge_url, punts_requerits) VALUES
+(UUID(), 'X-Wing', 1, 'Nau inicial perfecta per començar', '/assets/images/naus/x-wing.png', 0),
+(UUID(), 'TIE Fighter', 2, 'Nau ràpida de l''Imperi', '/assets/images/naus/tie-fighter.png', 500),
+(UUID(), 'Millennium Falcon', 3, 'La nau més ràpida', '/assets/images/naus/millennium-falcon.png', 1000);
 
 -- Inserts de niveles
 INSERT INTO nivells (id, nom, imatge_url, punts_requerits) VALUES

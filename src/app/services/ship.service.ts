@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, catchError, of } from 'rxjs';
-import { RegistreService } from './registre.service';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 
 export interface Ship {
-  id: number;
+  id: string;
   nom: string;
   velocitat: number;
   imatge_url: string;
   descripcio: string;
-  required_points: number;
+  punts_requerits: number;
 }
 
 @Injectable({
@@ -18,67 +17,20 @@ export interface Ship {
 export class ShipService {
   private apiUrl = 'http://localhost:3000/api/v1';
 
-  private API_ROUTES = {
-    SHIPS: '/ships',
-    ACHIEVEMENTS: '/user/achievements'
-  };
-
-  constructor(
-    private http: HttpClient,
-    private registreService: RegistreService
-  ) {}
-
-  private getHeaders(): HttpHeaders {
-    const token = this.registreService.getToken();
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  }
+  constructor(private http: HttpClient) {}
 
   getShips(): Observable<Ship[]> {
-    return this.http.get<Ship[]>(`${this.apiUrl}/ships`, { 
-      headers: this.getHeaders() 
-    }).pipe(
-      catchError(error => {
-        console.error('Error loading ships:', error);
-        return of([
-          {
-            id: 8,
-            nom: 'Nau de Combat',
-            velocitat: 100,
-            imatge_url: 'assets/images/naus/x-wing.png',
-            descripcio: 'Nau de combat versàtil',
-            required_points: 0
-          },
-          {
-            id: 2,
-            nom: 'Nau Imperial',
-            velocitat: 120,
-            imatge_url: 'assets/images/naus/tie-fighter.png',
-            descripcio: 'Nau ràpida de l\'Imperi',
-            required_points: 1000
-          },
-          {
-            id: 5,
-            nom: 'Nau Llegendària',
-            velocitat: 150,
-            imatge_url: 'assets/images/naus/millenium-falcon.png',
-            descripcio: 'Nau llegendària',
-            required_points: 2500
-          }
-        ]);
-      })
-    );
+    return this.http.get<{success: boolean, naus: Ship[]}>(`${this.apiUrl}/ships`)
+      .pipe(
+        map(response => response.naus)
+      );
   }
 
   getUserShip(userId: number): Observable<Ship> {
-    return this.http.get<Ship>(`${this.apiUrl}/users/${userId}/ship`, {
-      headers: this.getHeaders()
-    });
+    return this.http.get<Ship>(`${this.apiUrl}/users/${userId}/ship`);
   }
 
   updateUserShip(userId: number, shipId: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/users/${userId}/ship`, 
-      { shipId }, 
-      { headers: this.getHeaders() }
-    );
+    return this.http.put(`${this.apiUrl}/users/${userId}/ship`, { shipId });
   }
 }

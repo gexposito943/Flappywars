@@ -11,28 +11,28 @@ describe('ShipService', () => {
 
   const mockShips = [
     {
-      id: 1,
+      id: "uuid-1",
       nom: 'X-Wing',
       velocitat: 1,
       imatge_url: '/assets/images/naus/x-wing.png',
       descripcio: 'Nau de combat versàtil',
-      required_points: 0
+      punts_requerits: 0
     },
     {
-      id: 2,
+      id: "uuid-2",
       nom: 'TIE Fighter',
       velocitat: 2,
       imatge_url: '/assets/images/naus/tie-fighter.png',
       descripcio: 'Nau de combat imperial',
-      required_points: 1000
+      punts_requerits: 500
     },
     {
-      id: 3,
+      id: "uuid-3",
       nom: 'Millennium Falcon',
       velocitat: 3,
       imatge_url: '/assets/images/naus/millennium-falcon.png',
       descripcio: 'Nau de contrabandistes',
-      required_points: 2500
+      punts_requerits: 1000
     }
   ];
 
@@ -75,16 +75,17 @@ describe('ShipService', () => {
   it('should return ships with correct properties', (done) => {
     service.getShips().subscribe((ships) => {
       const firstShip = ships[0];
-      expect(firstShip.id).toBe(1);
+      expect(firstShip.id).toBe("uuid-1");
       expect(firstShip.nom).toBe('X-Wing');
       expect(firstShip.velocitat).toBe(1);
       expect(firstShip.imatge_url).toBe('/assets/images/naus/x-wing.png');
       expect(firstShip.descripcio).toBe('Nau de combat versàtil');
+      expect(firstShip.punts_requerits).toBe(0);
       done();
     });
 
-    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/naus');
-    req.flush(mockShips);
+    const req = httpTestingController.expectOne(`${service['apiUrl']}/ships`);
+    req.flush({ success: true, naus: mockShips });
   });
 
   it('should have ships with increasing velocities', (done) => {
@@ -128,7 +129,7 @@ describe('ShipService', () => {
       const names = ships.map(ship => ship.nom);
       const uniqueNames = new Set(names);
       expect(uniqueNames.size).toBe(ships.length);
-      //verifica que els noms no estan buits
+      //verifica que los nombres no están vacíos
       names.forEach(name => {
         expect(name.length).toBeGreaterThan(0);
       });

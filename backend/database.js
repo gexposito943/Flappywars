@@ -53,8 +53,9 @@ async function connectToDatabase() {
 
     // Verificar datos básicos necesarios
     const [defaultShip] = await pool.query(
-      "SELECT id FROM naus WHERE nom = 'X-Wing' AND disponible = true"
+      "SELECT id FROM naus WHERE nom = 'X-Wing' AND punts_requerits = 0"
     );
+
     if (defaultShip.length === 0) {
       console.warn('⚠️ Falta la nau inicial X-Wing');
       return false;

@@ -1,13 +1,13 @@
 <div class="game-container">
-    <!-- Cabecera -->
-    <div class="header">
-        <h1>Benvingut, {{ dashboardModel.usuari.nom_usuari }}!</h1>
+    <!-- Header -->
+    <div class="header" *ngIf="userData">
+        <h1>Benvingut, {{ userData.nom_usuari }}!</h1>
         <div class="user-info">
-            <div class="level-badge">Nivell: {{ dashboardModel.usuari.nivell || 0 }}</div>
-            <div class="points-badge">Punts: {{ dashboardModel.usuari.punts_totals || 0 }}</div>
+            <div class="level-badge">Nivell: {{ userData.nivell || 0 }}</div>
+            <div class="points-badge">Punts: {{ userData.punts_totals || 0 }}</div>
         </div>
         <div class="header-buttons">
-            <button class="btn restore" [disabled]="!dashboardModel.hasSavedGame">
+            <button class="btn restore" [disabled]="!hasSavedGame">
                 Restaurar Partida
             </button>
             <button class="btn reset" (click)="onResetPoints()">
@@ -20,52 +20,61 @@
         </div>
     </div>
 
-    <!-- Estadísticas -->
+    <!-- Stats Section -->
     <h2 class="stats-title">LES TEVES ESTADÍSTIQUES</h2>
     <div class="stats-container">
         <div class="stat-card">
             <h3>MILLOR PUNTUACIÓ</h3>
-            <p>{{ dashboardModel.stats.millor_puntuacio }}</p>
+            <p>{{ stats.millor_puntuacio }}</p>
         </div>
         <div class="stat-card">
             <h3>TOTAL PARTIDES</h3>
-            <p>{{ dashboardModel.stats.total_partides }}</p>
+            <p>{{ stats.total_partides }}</p>
         </div>
         <div class="stat-card">
             <h3>TEMPS TOTAL JUGAT</h3>
-            <p>{{ formatTime(dashboardModel.stats.temps_total_jugat) }}</p>
+            <p>{{ formatTime(stats.temps_total_jugat) }}</p>
         </div>
     </div>
 
-    <!-- Selección de nave -->
+    <!-- Ship Selection -->
     <div class="ship-selection">
         <div class="selection-left">
             <button class="play-button" 
-                    [disabled]="!dashboardModel.canPlay()"
+                    [disabled]="!selectedShip"
                     (click)="onStartGame()">
-                Selecciona una nau
+                {{ selectedShip ? 'Jugar' : 'Selecciona una nau' }}
             </button>
-            <p class="selection-message" *ngIf="!dashboardModel.nauSeleccionada">
+            <p class="selection-message" *ngIf="!selectedShip">
                 Has de seleccionar una nau abans de començar
             </p>
         </div>
 
         <div class="ships-grid">
-            <div *ngFor="let nau of dashboardModel.naus" 
+            <div *ngFor="let ship of ships" 
                  class="ship-card"
-                 [class.selected]="nau === dashboardModel.nauSeleccionada"
-                 [class.locked]="!dashboardModel.isNauDisponible(nau)"
-                 (click)="onShipSelect(nau)">
-                <img [src]="nau.imatge_url" [alt]="nau.nom">
-                <h3>{{ nau.nom }}</h3>
-                <p>{{ nau.descripcio }}</p>
-                <div class="ship-stats">
-                    <span>Velocitat: {{ nau.velocitat }}</span>
-                    <span *ngIf="!dashboardModel.isNauDisponible(nau)" class="lock-message">
-                        Necessites {{ nau.velocitat * 1000 }} punts per desbloquejar
-                    </span>
+                 [class.locked]="!isShipAvailable(ship)"
+                 [class.selected]="ship === selectedShip"
+                 (click)="selectShip(ship)">
+                <img [src]="ship.imatge_url" [alt]="ship.nom">
+                <div class="ship-info">
+                    <h3>{{ ship.nom }}</h3>
+                    <p>{{ ship.descripcio }}</p>
+                    <p class="points-required" *ngIf="!isShipAvailable(ship)">
+                        Necessites {{ ship.punts_requerits }} punts per desbloquejar
+                    </p>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-overlay" *ngIf="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="error">
+        {{ error }}
     </div>
 </div>
