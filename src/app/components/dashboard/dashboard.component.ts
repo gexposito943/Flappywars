@@ -60,21 +60,22 @@ export class DashboardComponent implements OnInit {
         this.dashboardModel.loading = true;
         this.shipService.getShips().subscribe({
             next: (ships) => {
-                const naus = ships.map(ship => {
-                    const nau = new Nau();
-                    Object.assign(nau, {
-                        _id: ship.id,
-                        _nom: ship.nom,
-                        _velocitat: ship.velocitat,
-                        _imatge_url: ship.imatge_url,
-                        _descripcio: ship.descripcio,
-                        _disponible: true,
-                        _data_creacio: new Date()
-                    });
-                    return nau;
-                });
-                this.dashboardModel.naus = naus;
-                this.dashboardModel.loading = false;
+                //const naus = ships.map(ship => {
+                    //const nau = new Nau();
+                    console.log(ships);
+                    // Object.assign(nau, {
+                    //     _id: ship.id,
+                    //     _nom: ship.nom,
+                    //     _velocitat: ship.velocitat,
+                    //     _imatge_url: ship.imatge_url,
+                    //     _descripcio: ship.descripcio,
+                    //     _disponible: true,
+                    //     _data_creacio: new Date()
+                    // });
+                    return null;
+               // });
+                //this.dashboardModel.naus = naus;
+                //this.dashboardModel.loading = false;
             },
             error: (error) => {
                 this.dashboardModel.error = error.message;

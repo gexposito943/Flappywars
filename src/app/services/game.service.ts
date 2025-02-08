@@ -263,6 +263,10 @@ export class GameService {
   }
 
   resetUserPoints(userId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/users/${userId}/reset-points`, {});
+    return this.http.post(
+        `${this.apiUrl}/users/${userId}/reset-points`, 
+        {},
+        { headers: this.getHeaders() }
+    );
   }
 }

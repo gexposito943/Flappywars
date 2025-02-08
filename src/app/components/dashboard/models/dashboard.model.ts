@@ -79,7 +79,11 @@ export class DashboardModel {
     }
 
     isNauDisponible(nau: Nau): boolean {
+        console.log(this._usuari.punts_totals,nau);
+      
+        // Para las demás naves, se mantiene la lógica de puntos
         return this._usuari.punts_totals >= nau.velocitat * 1000;
+        
     }
 
     formatTime(seconds: number): string {

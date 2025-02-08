@@ -34,14 +34,14 @@ export class ShipService {
   }
 
   getShips(): Observable<Ship[]> {
-    return this.http.get<Ship[]>(`${this.apiUrl}/naus`, { 
+    return this.http.get<Ship[]>(`${this.apiUrl}/ships`, { 
       headers: this.getHeaders() 
     }).pipe(
       catchError(error => {
         console.error('Error loading ships:', error);
         return of([
           {
-            id: 1,
+            id: 8,
             nom: 'Nau de Combat',
             velocitat: 100,
             imatge_url: 'assets/images/naus/x-wing.png',
@@ -57,7 +57,7 @@ export class ShipService {
             required_points: 1000
           },
           {
-            id: 3,
+            id: 5,
             nom: 'Nau Llegendària',
             velocitat: 150,
             imatge_url: 'assets/images/naus/millenium-falcon.png',
