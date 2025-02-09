@@ -103,7 +103,7 @@ export class FormulariComponent implements AfterViewInit, OnInit {
       ).subscribe({
         next: (response) => {
           if (response.success && response.token) {
-            this.registreService.setToken(response.token);
+            this.registreService.login(response);
             this.router.navigate(['/dashboard']);
           }
         },

@@ -1,13 +1,11 @@
-/**
- * Component principal del joc
- * Gestiona la interfície d'usuari i delega la lògica al controlador
- */
-import { Component, ElementRef, ViewChild, OnInit, HostListener, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy, HostListener, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
-import { GameService, GameResult } from '../../services/game.service';
+import { GameService } from '../../services/game.service';
 import { RegistreService } from '../../services/registre.service';
 import { GameModel } from './models/game.model';
+import { Partida } from '../../models/partida.model';
+import { Obstacle } from '../../models/obstacle.model';
 
 @Component({
   selector: 'app-game',
@@ -16,18 +14,16 @@ import { GameModel } from './models/game.model';
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.css']
 })
-export class GameComponent implements OnInit {
+export class GameComponent implements OnInit, OnDestroy {
   @ViewChild('gameCanvas', { static: true }) canvas!: ElementRef<HTMLCanvasElement>;
   
   private ctx!: CanvasRenderingContext2D;
-  private backgroundImage: HTMLImageElement;
-  private playerImage: HTMLImageElement;
-  private imagesLoaded: boolean = false;
-  private gameLoop: any = null;
+  private backgroundImage = new Image();
+  private shipImage = new Image();
+  private obstacleImage = new Image();
   private gameStartTime: number = 0;
-  private _model: GameModel;
-  private defaultShipId: string = ''; 
-  private defaultObstacleImage: string = ''; 
+  private animationFrameId: number | null = null;
+  public model: GameModel;
 
   constructor(
     private router: Router,
@@ -35,248 +31,202 @@ export class GameComponent implements OnInit {
     private registreService: RegistreService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    this._model = new GameModel();
-    this.backgroundImage = new Image();
-    this.playerImage = new Image();
-    
+    this.model = new GameModel();
+  }
+
+  async ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      this.loadGameAssets();
+      this.ctx = this.canvas.nativeElement.getContext('2d')!;
+      await this.loadAssets();
+      this.startGame();
     }
   }
 
-  ngOnInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.initializeCanvas();
-      this.startGameLoop();
+  ngOnDestroy() {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
+  }
+
+  private async loadAssets() {
+    try {
+      this.backgroundImage.src = 'assets/images/starwars1.jpeg';
+      this.shipImage.src = 'assets/images/naus/x-wing.png';
+      this.obstacleImage.src = 'assets/images/obstacles/asteroide.png';
+
+      await Promise.all([
+        new Promise(resolve => this.backgroundImage.onload = resolve),
+        new Promise(resolve => this.shipImage.onload = resolve),
+        new Promise(resolve => this.obstacleImage.onload = resolve)
+      ]);
+    } catch (error) {
+      console.error('Error cargando assets:', error);
     }
   }
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    if (event.key === 'Enter' && !this._model.isGameRunning) {
-      this.startGame();
+    switch(event.code) {
+      case 'ArrowUp':
+        if (this.model.isGameRunning && !this.model.isPaused) {
+          this.model.velocity = this.model.JUMP_FORCE;
+        }
+        break;
+      case 'Space':
+        if (this.model.isGameRunning) {
+          event.preventDefault();
+          this.togglePause();
+        }
+        break;
+      case 'Enter':
+        if (!this.model.isGameRunning) {
+          event.preventDefault();
+          this.startGame();
+        }
+        break;
     }
-    if (event.key === 'ArrowUp' && this._model.isGameRunning) {
-      this.jump();
-    }
-    if (event.key === ' ') {
-      event.preventDefault();
-      if (this._model.isGameRunning) {
-        this.togglePause();
-      }
-    }
-  }
-
-  private initializeCanvas() {
-    const context = this.canvas?.nativeElement.getContext('2d');
-    if (!context) {
-      console.error('Could not get 2D context');
-      return;
-    }
-    this.ctx = context;
-  }
-
-  private async loadGameAssets(): Promise<void> {
-    try {
-      // Cargar la nave X-Wing
-      const defaultShip = await this.gameService.getNau().toPromise();
-      if (defaultShip) {
-        this.playerImage.src = defaultShip.imatge_url;
-        this.defaultShipId = defaultShip.id;
-      }
-
-      // Cargar el obstáculo por defecto
-      const defaultObstacle = await this.gameService.getObstacle().toPromise();
-      if (defaultObstacle) {
-        this.defaultObstacleImage = defaultObstacle.imatge_url;
-      }
-
-      // Cargar el fondo
-      this.backgroundImage.src = 'assets/images/starwars1.jpeg';
-      
-      this.imagesLoaded = true;
-    } catch (error) {
-      console.error('Error loading game assets:', error);
-    }
-  }
-
-  startGame(): void {
-    if (this._model.isGameRunning) return;
-    
-    this._model.reset();
-    this.gameStartTime = Date.now();
-    this.gameLoop = setInterval(() => this.updateGame(), 1000 / 60);
   }
 
   private updateGame(): void {
-    if (this._model.isPaused || !this._model.isGameRunning) return;
+    if (!this.model.isGameRunning || this.model.isPaused) return;
 
-    this.applyGravity();
-    this.moveObstacles();
-    this.updateScore();
-    
-    if (this._model.checkCollision()) {
-      this.stopGame();
-      return;
-    }
-    
-    this.manageObstacles();
-  }
-
-  private applyGravity(): void {
-    this._model.player.velocity += this._model.GRAVITY;
-    this._model.player.y += this._model.player.velocity;
-
-    // Límites del canvas
-    if (this._model.player.y < 0) {
-      this._model.player.y = 0;
-      this._model.player.velocity = 0;
-    }
-    if (this._model.player.y > this._model.CANVAS_HEIGHT - this._model.player.size) {
-      this._model.player.y = this._model.CANVAS_HEIGHT - this._model.player.size;
-      this._model.player.velocity = 0;
-    }
-  }
-
-  private moveObstacles(): void {
-    this._model.obstacles = this._model.obstacles.map(obstacle => {
-      obstacle.x -= this._model.OBSTACLE_SPEED;
-      return obstacle;
-    });
-  }
-
-  private updateScore(): void {
-    const passedObstacle = this._model.obstacles.find(obstacle => 
-      obstacle.x + obstacle.width < this._model.player.x && !obstacle.passed
-    );
-    if (passedObstacle) {
-      this._model.score++;
-      passedObstacle.passed = true;
-    }
-  }
-
-  private manageObstacles(): void {
-    if (this._model.obstacles.length === 0 || 
-      this._model.obstacles[this._model.obstacles.length - 1].x < this._model.CANVAS_WIDTH - this._model.OBSTACLE_GAP) {
-      this._model.obstacles.push(this._model.createObstacle());
-    }
-    
-    this._model.obstacles = this._model.obstacles.filter(obstacle => 
-      obstacle.x > -obstacle.width
-    );
-  }
-
-  jump(): void {
-    if (!this._model.isGameRunning) return;
-    this._model.player.velocity = this._model.JUMP_FORCE;
-  }
-
-  stopGame(): void {
-    this._model.isGameRunning = false;
-    this._model.showMessage = true;
-    this._model.gameMessage = `Game Over - Puntuació: ${this._model.score}`;
-    
-    if (this.gameLoop) {
-      clearInterval(this.gameLoop);
-      this.gameLoop = null;
-    }
-    
-    this.saveGameResults();
-  }
-
-  togglePause(): void {
-    this._model.isPaused = !this._model.isPaused;
-  }
-
-  public saveGameResults(): void {
-    const gameTime = Math.floor((Date.now() - this.gameStartTime) / 1000);
-    
-    const gameResult: GameResult = {
-      usuari_id: parseInt(this.registreService.getUserId() || '0'),
-      puntuacio: this._model.score,
-      duracio_segons: gameTime,
-      nau_utilitzada: parseInt(this.defaultShipId || '0'),
-      nivell_dificultat: 'normal',
-      obstacles_superats: this._model.score,
-      completada: true
+    // Física básica
+    this.model.velocity += this.model.GRAVITY;
+    this.model.position = {
+      x: this.model.position.x,
+      y: this.model.position.y + this.model.velocity
     };
 
-    this.gameService.saveGameResults(gameResult).subscribe({
-      next: () => {
-        this._model.gameMessage = 'Partida guardada! Prem Enter per tornar a jugar';
-      },
-      error: () => {
-        this._model.gameMessage = 'Error al guardar la partida';
+    // Actualizar obstáculos
+    this.model.obstacles = this.model.obstacles.map(obs => {
+      obs.x -= this.model.OBSTACLE_SPEED;
+      if (!obs.passed && obs.x + obs.width < this.model.position.x) {
+        obs.passed = true;
+        this.model.score += 1;
       }
+      return obs;
     });
-  }
 
-  goToDashboard(): void {
-    if (this.gameLoop) {
-      clearInterval(this.gameLoop);
-      this.gameLoop = null;
+    // Gestionar obstáculos
+    if (this.model.obstacles.length === 0 || 
+        this.model.obstacles[this.model.obstacles.length - 1].x < 
+        this.model.CANVAS_WIDTH - this.model.OBSTACLE_GAP) {
+      this.model.obstacles.push(new Obstacle(this.model.CANVAS_WIDTH));
     }
-    this.router.navigate(['/dashboard']);
-  }
 
-  private startGameLoop(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      requestAnimationFrame(() => this.drawGame());
+    // Limpiar obstáculos fuera de pantalla
+    this.model.obstacles = this.model.obstacles.filter(obs => obs.x > -obs.width);
+
+    // Verificar colisiones
+    if (this.model.checkCollision()) {
+      this.gameOver();
     }
   }
 
   private drawGame(): void {
-    if (!this.ctx || !this.imagesLoaded) return;
-
-    this.ctx.clearRect(0, 0, this._model.CANVAS_WIDTH, this._model.CANVAS_HEIGHT);
+    this.ctx.clearRect(0, 0, this.model.CANVAS_WIDTH, this.model.CANVAS_HEIGHT);
     
-    if (this.backgroundImage.complete) {
-      this.ctx.drawImage(this.backgroundImage, 0, 0, this._model.CANVAS_WIDTH, this._model.CANVAS_HEIGHT);
-    }
+    // Fondo
+    this.ctx.fillStyle = '#000000';
+    this.ctx.fillRect(0, 0, this.model.CANVAS_WIDTH, this.model.CANVAS_HEIGHT);
+    this.ctx.drawImage(this.backgroundImage, 0, 0, this.model.CANVAS_WIDTH, this.model.CANVAS_HEIGHT);
+    
+    // Obstáculos
+    this.model.obstacles.forEach(obs => {
+      this.ctx.drawImage(this.obstacleImage, obs.x, 0, obs.width, obs.topHeight);
+      this.ctx.drawImage(
+        this.obstacleImage,
+        obs.x,
+        this.model.CANVAS_HEIGHT - obs.bottomHeight,
+        obs.width,
+        obs.bottomHeight
+      );
+    });
 
-    if (this._model.isGameRunning) {
-      this.drawObstacles();
-      if (this.playerImage.complete) {
-        this.ctx.drawImage(
-          this.playerImage,
-          this._model.player.x,
-          this._model.player.y,
-          this._model.player.size,
-          this._model.player.size
-        );
-      }
-    }
-
-    requestAnimationFrame(() => this.drawGame());
+    // Nave
+    this.ctx.drawImage(
+      this.shipImage,
+      this.model.position.x,
+      this.model.position.y,
+      this.model.PLAYER_SIZE,
+      this.model.PLAYER_SIZE
+    );
   }
 
-  private drawObstacles(): void {
-    this.ctx.fillStyle = '#2ecc71';
-    this.ctx.strokeStyle = '#27ae60';
-    this.ctx.lineWidth = 3;
+  private gameLoop(): void {
+    if (!this.model.isGameRunning) return;
+    
+    if (!this.model.isPaused) {
+      this.updateGame();
+      this.drawGame();
+    }
+    
+    this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+  }
 
-    this._model.obstacles.forEach(obstacle => {
-      // Dibujar obstáculo superior
-      this.ctx.fillRect(obstacle.x, 0, obstacle.width, obstacle.topHeight);
-      this.ctx.strokeRect(obstacle.x, 0, obstacle.width, obstacle.topHeight);
+  startGame(): void {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
+    this.model.reset();
+    this.gameStartTime = Date.now();
+    this.gameLoop();
+  }
 
-      // Dibujar obstáculo inferior
-      this.ctx.fillRect(
-        obstacle.x,
-        this._model.CANVAS_HEIGHT - obstacle.bottomHeight,
-        obstacle.width,
-        obstacle.bottomHeight
-      );
-      this.ctx.strokeRect(
-        obstacle.x,
-        this._model.CANVAS_HEIGHT - obstacle.bottomHeight,
-        obstacle.width,
-        obstacle.bottomHeight
-      );
+  togglePause(): void {
+    this.model.isPaused = !this.model.isPaused;
+    if (this.model.isPaused) {
+      this.model.gameMessage = 'Juego en Pausa';
+      this.model.showMessage = true;
+    } else {
+      this.model.showMessage = false;
+    }
+  }
+
+  private gameOver(): void {
+    this.model.isGameRunning = false;
+    this.model.gameMessage = 'Game Over\nPresiona ENTER para volver a jugar';
+    this.model.showMessage = true;
+    this.saveGameResults(true);
+  }
+
+  public saveGameResults(completed: boolean = false): void {
+    const partida = new Partida();
+    const gameTime = Math.floor((Date.now() - this.gameStartTime) / 1000);
+
+    this.gameService.getUserShip().subscribe({
+      next: (shipResponse) => {
+        partida.nau_utilitzada = shipResponse?.success && shipResponse?.data?.id ? 
+          shipResponse.data.id : '1';
+        partida.usuari_id = this.registreService.getUserId() || '0';
+        partida.puntuacio = this.model.score;
+        partida.duracio_segons = gameTime;
+        partida.obstacles_superats = this.model.score;
+        partida.completada = completed ? 1 : 0;
+        partida.posicioX = this.model.position.x;
+        partida.posicioY = this.model.position.y;
+        partida.obstacles = this.model.obstacles.map(obs => ({
+          posicioX: obs.x,
+          posicioY: obs.topHeight
+        }));
+
+        this.gameService.saveGameResults(partida).subscribe({
+          next: (response) => {
+            if (response.success) {
+              this.model.gameMessage = completed ? 
+                `Game Over! Puntuación: ${this.model.score}` : 
+                'Partida guardada! Presiona Espacio para continuar';
+              this.model.showMessage = true;
+            }
+          },
+          error: (error) => console.error('Error al guardar la partida:', error)
+        });
+      },
+      error: (error) => console.error('Error al obtener la nave:', error)
     });
   }
 
-  get model(): GameModel {
-    return this._model;
+  goToDashboard(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

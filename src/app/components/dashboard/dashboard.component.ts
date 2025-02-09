@@ -1,26 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ShipService } from '../../services/ship.service';
-import { RegistreService } from '../../services/registre.service';
 import { GameService } from '../../services/game.service';
-
-
-interface UserStats {
-  millor_puntuacio: number;
-  total_partides: number;
-  temps_total_jugat: number;
-  punts_totals: number;
-}
-
-interface Ship {
-  id: string;
-  nom: string;
-  velocitat: number;
-  imatge_url: string;
-  descripcio: string;
-  punts_requerits: number;
-}
+import { RegistreService } from '../../services/registre.service';
+import { DashboardModel } from './models/dashboard.model';
+import { Nau, Usuari, Nivell } from '../../models';
+import { ApiResponse, UserStats, UserData, Nivell as NivellInterface } from '../../interfaces/stats.interface';
+import { ShipService } from '../../services/ship.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,138 +16,184 @@ interface Ship {
   imports: [CommonModule]
 })
 export class DashboardComponent implements OnInit {
-  userData: any = null;
-  ships: Ship[] = [];
-  selectedShip: Ship | null = null;
-  stats: UserStats = {
-    millor_puntuacio: 0,
-    total_partides: 0,
-    temps_total_jugat: 0,
-    punts_totals: 0
-  };
-  loading = false;
-  error: string | null = null;
-  hasSavedGame = false;
+  dashboardModel = new DashboardModel();
 
   constructor(
     private router: Router,
-    private registreService: RegistreService,
     private gameService: GameService,
+    private registreService: RegistreService,
     private shipService: ShipService
   ) {}
 
   ngOnInit(): void {
-    this.loadUserData();
-    this.loadShips();
-    this.loadStats();
-    this.checkSavedGame();
+    this.initializeDashboard();
   }
 
-  private loadUserData(): void {
-    const userData = this.registreService.getUserData();
-    if (!userData) {
-      this.router.navigate(['/']);
-      return;
+  private async initializeDashboard(): Promise<void> {
+    this.dashboardModel.loading = true;
+    try {
+      await this.loadUserData();
+      await this.loadGameData();
+    } catch (error) {
+      this.dashboardModel.error = 'Error carregant dades';
+    } finally {
+      this.dashboardModel.loading = false;
     }
-    this.userData = userData;
   }
 
-  private loadShips(): void {
-    this.loading = true;
-    this.shipService.getShips().subscribe({
-      next: (ships) => {
-        console.log('Todas las naves recibidas:', ships);
-        this.ships = ships;
-        const defaultShip = ships.find(ship => ship.punts_requerits === 0);
-        if (defaultShip) {
-          this.selectedShip = defaultShip;
+  private async loadUserData(): Promise<void> {
+    const userData = this.registreService.getUserData();
+    console.log('userData completo:', userData);
+
+    if (userData) {
+        const nivell = new Nivell(
+            '1',
+            'Novell',
+            '/assets/images/nivells/novell.png',
+            userData.nivell || 0
+        );
+
+        const usuari = new Usuari(
+            userData.id,
+            userData.nom_usuari,
+            userData.email,
+            nivell,
+            userData.punts_totals,
+            new Date(userData.data_registre),
+            userData.ultim_acces ? new Date(userData.ultim_acces) : null,
+            userData.estat,
+            userData.intents_login,
+            userData.nau_actual
+        );
+
+        // Añadir estadísticas si existen
+        if (userData.estadistiques) {
+            usuari.estadistiques = {
+                millor_puntuacio: userData.estadistiques.millor_puntuacio || 0,
+                total_partides: userData.estadistiques.total_partides || 0,
+                temps_total_jugat: userData.estadistiques.temps_total_jugat || 0
+            };
         }
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error cargando naves:', error);
-        this.loading = false;
-      }
-    });
+
+        this.dashboardModel.usuari = usuari;
+    }
   }
 
-  private loadStats(): void {
-    this.loading = true;
-    this.gameService.getUserStats().subscribe({
-      next: (stats) => {
-        this.stats = stats;
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading stats:', error);
-        this.error = 'Error carregant les estadístiques';
-        this.loading = false;
-      }
-    });
+  private async loadGameData(): Promise<void> {
+    try {
+      // Primero cargar las naves
+      this.shipService.getShips().subscribe({
+        next: (ships) => {
+          console.log('Naves recibidas:', ships);
+          this.dashboardModel.naus = ships.map(ship => new Nau(
+            ship.id,
+            ship.nom,
+            ship.velocitat,
+            ship.imatge_url,
+            ship.descripcio,
+            true,
+            new Date(),
+            ship.punts_requerits
+          ));
+        },
+        error: (error) => {
+          console.error('Error cargando naves:', error);
+          this.dashboardModel.error = 'Error carregant les naus';
+        }
+      });
+
+      // Luego cargar las estadísticas
+      this.gameService.getUserStats(this.dashboardModel.usuari.id).subscribe({
+        next: (statsResponse) => {
+          if (statsResponse?.success && statsResponse?.estadistiques) {
+            const stats = statsResponse.estadistiques;
+            this.dashboardModel.stats.punts_totals = stats.general?.punts_totals || 0;
+            this.dashboardModel.stats.millor_puntuacio = stats.partides?.millor_puntuacio || 0;
+            this.dashboardModel.stats.total_partides = stats.partides?.total_partides || 0;
+            this.dashboardModel.stats.temps_total_jugat = stats.partides?.temps_total_jugat || 0;
+            
+            if (stats.general?.nivell_actual) {
+              const nivellActual = stats.general.nivell_actual;
+              this.dashboardModel.usuari.nivell = new Nivell(
+                nivellActual.nivell.toString(),
+                nivellActual.nom,
+                nivellActual.imatge,
+                stats.general.punts_totals
+              );
+            }
+            
+            console.log('Estadísticas cargadas:', this.dashboardModel.stats);
+          }
+        },
+        error: (error) => {
+          console.error('Error cargando estadísticas:', error);
+          this.dashboardModel.error = 'Error carregant les estadístiques';
+        }
+      });
+    } catch (error) {
+      console.error('Error general:', error);
+      this.dashboardModel.error = 'Error carregant les dades del joc';
+    }
   }
 
-  private checkSavedGame(): void {
-    this.gameService.checkSavedGame(this.userData?.id).subscribe({
-      next: (hasSaved) => this.hasSavedGame = hasSaved,
-      error: (error) => console.error('Error checking saved game:', error)
-    });
-  }
-
-  isShipAvailable(ship: Ship): boolean {
-    const userPoints = this.userData?.punts_totals || 0;
-    return userPoints >= ship.punts_requerits;
-  }
-
-  selectShip(ship: Ship): void {
-    if (this.isShipAvailable(ship)) {
-      this.selectedShip = ship;
+  onShipSelect(nau: Nau): void {
+    if (this.dashboardModel.isNauDisponible(nau)) {
+      this.dashboardModel.nauSeleccionada = nau;
     }
   }
 
   onStartGame(): void {
-    if (this.selectedShip) {
+    if (this.dashboardModel.canPlay()) {
       this.router.navigate(['/game'], {
-        state: { ship: this.selectedShip, user: this.userData }
+        state: {
+          nau: this.dashboardModel.nauSeleccionada,
+          usuari: this.dashboardModel.usuari
+        }
       });
     }
   }
 
   onRestoreGame(): void {
-    if (this.hasSavedGame) {
-      this.router.navigate(['/game'], {
+    if (this.dashboardModel.hasSavedGame) {
+      this.router.navigate(['/game'], { 
         state: { 
           restore: true,
-          user: this.userData 
+          usuari: this.dashboardModel.usuari 
         }
       });
     }
   }
 
   onResetPoints(): void {
-    if (confirm('Estàs segur que vols reiniciar els teus punts a 0? Aquesta acció no es pot desfer.')) {
-      this.loading = true;
-      this.gameService.resetUserPoints(this.userData.id).subscribe({
-        next: () => {
-          this.userData.punts_totals = 0;
-          this.stats.punts_totals = 0;
-          this.loadShips(); // Recargar naves ya que pueden cambiar las disponibles
-          this.loading = false;
-          alert('Els teus punts han estat reiniciats correctament.');
-        },
-        error: (error) => {
-          console.error('Error resetting points:', error);
-          this.error = 'Error reiniciant els punts';
-          this.loading = false;
-        }
-      });
+    if (!confirm('Estàs segur que vols reiniciar els teus punts a 0? Aquesta acció no es pot desfer.')) {
+      return;
     }
+
+    this.dashboardModel.loading = true;
+    this.gameService.resetUserPoints(this.dashboardModel.usuari.id).subscribe({
+      next: () => this.handleResetPointsSuccess(),
+      error: (error) => this.handleResetPointsError(error)
+    });
+  }
+
+  private handleResetPointsSuccess(): void {
+    this.dashboardModel.usuari.punts_totals = 0;
+    this.dashboardModel.stats.punts_totals = 0;
+    this.initializeDashboard();
+    alert('Els teus punts han estat reiniciats correctament.');
+  }
+
+  private handleResetPointsError(error: any): void {
+    console.error('Error resetting points:', error);
+    this.dashboardModel.error = 'Error reiniciant els punts';
+    this.dashboardModel.loading = false;
   }
 
   onViewStats(): void {
     this.router.navigate(['/estadistiques'], {
       state: {
-        usuari: this.userData,
-        stats: this.stats
+        usuari: this.dashboardModel.usuari,
+        stats: this.dashboardModel.stats
       }
     });
   }
@@ -172,9 +204,6 @@ export class DashboardComponent implements OnInit {
   }
 
   formatTime(seconds: number): string {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return this.dashboardModel.formatTime(seconds);
   }
 }

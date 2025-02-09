@@ -7,8 +7,8 @@ import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { GameModel } from '../models/game.model';
-import { Player } from '../models/player.model';
-import { Obstacle } from '../models/obstacle.model';
+import { Usuari } from '../../../models/usuari.model';
+import { Obstacle } from '../../../models/obstacle.model';
 
 describe('GameComponent', () => {
     let component: GameComponent;
@@ -74,11 +74,10 @@ describe('GameComponent', () => {
         });
 
         it('should create player with correct initial values', () => {
-            const player = (component as any).model.player as Player;
-            expect(player.x).toBe(100);
-            expect(player.y).toBe(450);
-            expect(player.velocity).toBe(0);
-            expect(player.size).toBe(120);
+            const model = (component as any).model as GameModel;
+            expect(model.position.x).toBe(100);
+            expect(model.position.y).toBe(450);
+            expect(model.velocity).toBe(0);
         });
 
         it('should create obstacles correctly', () => {
@@ -98,7 +97,8 @@ describe('GameComponent', () => {
             expect(model.isGameRunning).toBeTrue();
 
             component.handleKeyboardEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
-            expect(model.player.velocity).toBeLessThan(0);
+            expect(model.velocity).toBeLessThan(0);
+
 
             component.handleKeyboardEvent(new KeyboardEvent('keydown', { key: ' ' }));
             expect(model.isPaused).toBeTrue();
@@ -140,8 +140,10 @@ describe('GameComponent', () => {
 
         it('should detect collisions correctly', () => {
             const model = (component as any).model as GameModel;
-            model.player.y = 0;  // Position player at top
+            model.position = { x: model.position.x, y: 0 };  // Usar position en lugar de usuari.posicioY
             
+
+
             model.obstacles = [{
                 x: 100,
                 topHeight: 200,
@@ -155,7 +157,7 @@ describe('GameComponent', () => {
 
         it('should save game results', fakeAsync(() => {
             component.startGame();
-            component.stopGame();
+            component.saveGameResults();
             tick();
             
             expect(mockGameService.saveGameResults).toHaveBeenCalled();

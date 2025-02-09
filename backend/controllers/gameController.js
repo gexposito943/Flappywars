@@ -10,6 +10,7 @@ export const saveGame = async (req, res) => {
       obstacles_superats,
       posicioX,
       posicioY,
+      obstacles,  // Array de obstáculos con sus posiciones
       completada = true
     } = req.body;
     
@@ -26,14 +27,32 @@ export const saveGame = async (req, res) => {
 
       const partidaId = result.insertId;
 
-      // Guardar posicio actual jugador
+      // Guardar posición actual jugador
       await db.query(`
         INSERT INTO partida_usuari_nau 
         (partida_id, usuari_id, nau_id, posicioX, posicioY)
         VALUES (?, ?, ?, ?, ?)
       `, [partidaId, userId, nau_utilitzada, posicioX, posicioY]);
 
-      // Actualizar punts totals usuari
+      // Guardar obstáculos
+      if (obstacles && obstacles.length > 0) {
+        // Obtener el ID del obstáculo por defecto
+        const [defaultObstacle] = await db.query('SELECT id FROM obstacles LIMIT 1');
+        const obstacleId = defaultObstacle[0].id;
+
+        // Insertar cada obstáculo
+        const obstacleValues = obstacles.map(obs => 
+          [partidaId, obstacleId, obs.posicioX, obs.posicioY]
+        );
+
+        await db.query(`
+          INSERT INTO obstacles_partides 
+          (partida_id, obstacle_id, posicioX, posicioY)
+          VALUES ?
+        `, [obstacleValues]);
+      }
+
+      // Actualizar puntos del usuario
       await db.query(`
         UPDATE usuaris 
         SET punts_totals = punts_totals + ?
@@ -56,10 +75,10 @@ export const saveGame = async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Error el guardar la partida:', error);
+    console.error('Error al guardar la partida:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Error el guardar la partida',
+      message: 'Error al guardar la partida',
       error: error.message 
     });
   }
@@ -121,6 +140,7 @@ export const loadGame = async (req, res) => {
     const { partidaId } = req.params;
     const userId = req.user.userId;
 
+    // Obtener datos básicos de la partida y posición del jugador
     const [partida] = await db.query(`
       SELECT 
         p.*,
@@ -141,6 +161,17 @@ export const loadGame = async (req, res) => {
       });
     }
 
+    // Obtener obstáculos de la partida
+    const [obstacles] = await db.query(`
+      SELECT 
+        op.posicioX,
+        op.posicioY,
+        o.imatge_url
+      FROM obstacles_partides op
+      JOIN obstacles o ON op.obstacle_id = o.id
+      WHERE op.partida_id = ?
+    `, [partidaId]);
+
     res.json({
       success: true,
       partida: {
@@ -153,15 +184,20 @@ export const loadGame = async (req, res) => {
         posicio: {
           x: partida[0].posicioX,
           y: partida[0].posicioY
-        }
+        },
+        obstacles: obstacles.map(obs => ({
+          posicioX: obs.posicioX,
+          posicioY: obs.posicioY,
+          imatge: obs.imatge_url
+        }))
       }
     });
 
   } catch (error) {
-    console.error('Error el carregar la  partida:', error);
+    console.error('Error al carregar la partida:', error);
     res.status(500).json({
       success: false,
-      message: 'Error el carregar la partida',
+      message: 'Error al carregar la partida',
       error: error.message
     });
   }

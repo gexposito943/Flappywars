@@ -53,22 +53,50 @@ const API_ROUTES = {
 };
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class RegistreService {
-  private apiUrl = 'http://localhost:3000/api/v1';
-  private tokenKey = 'auth_token';
-  private userDataKey = 'user_data';
-  private token: string | null = null;
+  private readonly TOKEN_KEY = 'auth_token';
+  private readonly USER_KEY = 'user_data';
+  private readonly apiUrl = 'http://localhost:3000/api/v1';
 
-  constructor(
-    private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) {
-    if (this.isInBrowser()) {
-      const token = this.getToken();
-      console.log('Token inicial:', token);
+  constructor(@Inject(PLATFORM_ID) private platformId: Object, private http: HttpClient) {}
+
+  private get isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
+  }
+
+  login(response: any): void {
+    if (this.isBrowser && response.token && response.user) {
+      localStorage.setItem(this.TOKEN_KEY, response.token);
+      localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
     }
+  }
+
+  getToken(): string | null {
+    if (this.isBrowser) {
+      return localStorage.getItem(this.TOKEN_KEY);
+    }
+    return null;
+  }
+
+  getUserData(): any {
+    if (this.isBrowser) {
+      const data = localStorage.getItem(this.USER_KEY);
+      return data ? JSON.parse(data) : null;
+    }
+    return null;
+  }
+
+  logout(): void {
+    if (this.isBrowser) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
+    }
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken();
   }
 
   register(nom_usuari: string, email: string, contrasenya: string): Observable<any> {
@@ -90,16 +118,12 @@ export class RegistreService {
     }).pipe(
       tap(response => {
         if (response.success && response.token) {
-          this.setToken(response.token);
-          if (response.user) {
-            this.setUserData(response.user);
-          }
+          this.login(response);
         }
       }),
       catchError(error => {
         console.error('Error en validateUser:', error);
-        this.setToken(null);
-        this.setUserData(null);
+        this.logout();
         return throwError(() => error);
       })
     );
@@ -122,34 +146,6 @@ export class RegistreService {
     }
   }
 
-  getUserData(): Omit<Usuari, 'contrasenya'> | null {
-    if (isPlatformBrowser(this.platformId)) {
-      const userData = localStorage.getItem(this.userDataKey);
-      return userData ? JSON.parse(userData) : null;
-    }
-    return null;
-  }
-
-  getToken(): string | null {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem(this.tokenKey);
-    }
-    return this.token;
-  }
-
-  logout(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem(this.tokenKey);
-      localStorage.removeItem(this.userDataKey);
-    }
-    this.token = null;
-  }
-
-  isLoggedIn(): boolean {
-    const token = this.getToken();
-    return !!token && this.isValidJWT(token);
-  }
-
   checkEmailExists(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/check-email`, { email });
   }
@@ -158,30 +154,12 @@ export class RegistreService {
     return this.http.post(`${this.apiUrl}/check-username`, { nom_usuari });
   }
 
-  private isInBrowser(): boolean {
-    return isPlatformBrowser(this.platformId);
-  }
-
-  setToken(token: string | null): void {
-    if (isPlatformBrowser(this.platformId)) {
-      if (token) {
-        localStorage.setItem(this.tokenKey, token);
-      } else {
-        localStorage.removeItem(this.tokenKey);
-      }
-    }
-    this.token = token;
-  }
-
   getUserId(): string | null {
     const userData = this.getUserData();
     return userData ? userData.id : null;
   }
 
-  setUserData(userData: Omit<Usuari, 'contrasenya'> | null): void {
-    if (isPlatformBrowser(this.platformId) && userData) {
-      localStorage.setItem(this.userDataKey, JSON.stringify(userData));
-      console.log('Dades desades:', userData);
-    }
+  setUserData(userData: any): void {
+    localStorage.setItem(this.USER_KEY, JSON.stringify(userData));
   }
 }

@@ -32,8 +32,9 @@ export const registerUsers = async (req, res) => {
 
         // Obte la nau inicial (X-Wing)
         const [naus] = await db.execute(
-            'SELECT id FROM naus WHERE nom = "X-Wing" AND disponible = true LIMIT 1'
+            'SELECT id FROM naus WHERE nom = "X-Wing" AND punts_requerits = 0 LIMIT 1'
         );
+
 
         if (!naus.length) {
             return res.status(500).json({
@@ -73,18 +74,26 @@ export const registerUsers = async (req, res) => {
 
 export const loginUser = async (req, res) => {
     try {
-        const { email, contrasenya } = req.body;
-
-        if (!email || !contrasenya) {
-            return res.status(400).json({
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ 
                 success: false,
-                message: 'Es requereixen email i contrasenya'
+                errors: errors.array() 
             });
         }
 
-        // Buscar usuari amb informació de la nau
+        const { email, contrasenya } = req.body;
+
+        // Obtener usuario con estadísticas
         const [users] = await db.query(`
-            SELECT u.*, n.nom as nom_nau, n.imatge_url as nau_imatge 
+            SELECT 
+                u.*,
+                n.nom as nom_nau,
+                n.imatge_url as nau_imatge,
+                (SELECT MAX(puntuacio) FROM partides WHERE usuari_id = u.id) as millor_puntuacio,
+                (SELECT COUNT(*) FROM partides WHERE usuari_id = u.id) as total_partides,
+                (SELECT SUM(duracio_segons) FROM partides WHERE usuari_id = u.id) as temps_total_jugat,
+                (SELECT SUM(obstacles_superats) FROM partides WHERE usuari_id = u.id) as total_obstacles
             FROM usuaris u
             LEFT JOIN naus n ON u.nau_actual = n.id
             WHERE u.email = ?
@@ -101,22 +110,16 @@ export const loginUser = async (req, res) => {
 
         const validPassword = await bcrypt.compare(contrasenya, user.contrasenya);
         if (!validPassword) {
-            await db.query(
-                'UPDATE usuaris SET intents_login = intents_login + 1 WHERE id = ?',
-                [user.id]
-            );
-            
             return res.status(401).json({
                 success: false,
                 message: 'Credencials incorrectes'
             });
         }
 
-        await db.query(
-            'UPDATE usuaris SET ultim_acces = CURRENT_TIMESTAMP, intents_login = 0 WHERE id = ?',
-            [user.id]
-        );
+        // Actualizar último acceso
+        await db.query('UPDATE usuaris SET ultim_acces = NOW() WHERE id = ?', [user.id]);
 
+        // Generar token
         const token = jwt.sign(
             { 
                 userId: user.id,
@@ -128,8 +131,7 @@ export const loginUser = async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Login correcte',
-            token,
+            token: token,
             user: {
                 id: user.id,
                 nom_usuari: user.nom_usuari,
@@ -145,7 +147,13 @@ export const loginUser = async (req, res) => {
                     id: user.nau_actual,
                     nom: user.nom_nau,
                     imatge_url: user.nau_imatge
-                } : null
+                } : null,
+                estadistiques: {
+                    millor_puntuacio: user.millor_puntuacio || 0,
+                    total_partides: user.total_partides || 0,
+                    temps_total_jugat: user.temps_total_jugat || 0,
+                    total_obstacles: user.total_obstacles || 0
+                }
             }
         });
 

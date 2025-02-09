@@ -1,13 +1,5 @@
-import { Usuari } from './usuari.model';
-import { Nau } from './nau.model';
-import { Partida } from './partida.model';
-
-interface UserStats {
-    millor_puntuacio: number;
-    total_partides: number;
-    temps_total_jugat: number;
-    punts_totals: number;
-}
+import { Usuari, Nau, Partida, Estadistica } from '../../../models';
+import { UserStats } from '../../../interfaces/stats.interface';
 
 interface Achievement {
     id: number;
@@ -16,74 +8,42 @@ interface Achievement {
 }
 
 export class DashboardModel {
-    private _usuari: Usuari;
-    private _naus: Nau[];
-    private _partides: Partida[];
-    private _nauSeleccionada: Nau | null;
-    private _loading: boolean;
-    private _error: string | null;
-    private _hasSavedGame: boolean;
-    private _achievements: Achievement[];
-    private _stats: UserStats;
+    private _usuari: Usuari = new Usuari();
+    private _naus: Nau[] = [];
+    private _nauSeleccionada: Nau | null = null;
+    private _loading: boolean = false;
+    private _error: string | null = null;
+    private _hasSavedGame: boolean = false;
+    private _stats: Estadistica = new Estadistica();
+    private _achievements: Achievement[] = [];
 
     constructor() {
-        this._usuari = new Usuari();
-        this._naus = [];
-        this._partides = [];
-        this._nauSeleccionada = null;
-        this._loading = false;
-        this._error = null;
-        this._hasSavedGame = false;
-        this._achievements = [];
-        this._stats = {
-            millor_puntuacio: 0,
-            total_partides: 0,
-            temps_total_jugat: 0,
-            punts_totals: 0
-        };
+        this._stats = new Estadistica();
     }
 
     // Getters
     get usuari(): Usuari { return this._usuari; }
     get naus(): Nau[] { return this._naus; }
-    get partides(): Partida[] { return this._partides; }
     get nauSeleccionada(): Nau | null { return this._nauSeleccionada; }
     get loading(): boolean { return this._loading; }
     get error(): string | null { return this._error; }
     get hasSavedGame(): boolean { return this._hasSavedGame; }
+    get stats(): Estadistica { return this._stats; }
     get achievements(): Achievement[] { return this._achievements; }
-    get stats(): UserStats { return this._stats; }
 
     // Setters
     set usuari(value: Usuari) { this._usuari = value; }
     set naus(value: Nau[]) { this._naus = value; }
-    set partides(value: Partida[]) { this._partides = value; }
     set nauSeleccionada(value: Nau | null) { this._nauSeleccionada = value; }
     set loading(value: boolean) { this._loading = value; }
     set error(value: string | null) { this._error = value; }
     set hasSavedGame(value: boolean) { this._hasSavedGame = value; }
+    set stats(value: Estadistica) { this._stats = value; }
     set achievements(value: Achievement[]) { this._achievements = value; }
-    set stats(value: UserStats) { this._stats = value; }
 
     // Métodos de utilidad
-    getMillorPuntuacio(): number {
-        return Math.max(...this._partides.map(p => p.puntuacio), 0);
-    }
-
-    getTotalPartides(): number {
-        return this._partides.length;
-    }
-
-    getTempsTotal(): number {
-        return this._partides.reduce((total, p) => total + p.duracio_segons, 0);
-    }
-
     isNauDisponible(nau: Nau): boolean {
-        console.log(this._usuari.punts_totals,nau);
-      
-        // Para las demás naves, se mantiene la lógica de puntos
-        return this._usuari.punts_totals >= nau.velocitat * 1000;
-        
+        return this._usuari.punts_totals >= nau.punts_requerits;
     }
 
     formatTime(seconds: number): string {
@@ -96,17 +56,11 @@ export class DashboardModel {
     clear(): void {
         this._usuari = new Usuari();
         this._naus = [];
-        this._partides = [];
         this._nauSeleccionada = null;
         this._error = null;
         this._hasSavedGame = false;
+        this._stats = new Estadistica();
         this._achievements = [];
-        this._stats = {
-            millor_puntuacio: 0,
-            total_partides: 0,
-            temps_total_jugat: 0,
-            punts_totals: 0
-        };
     }
 
     canPlay(): boolean {

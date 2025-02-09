@@ -95,10 +95,10 @@ INSERT INTO naus (id, nom, velocitat, descripcio, imatge_url, punts_requerits) V
 
 -- Inserts de niveles
 INSERT INTO nivells (id, nom, imatge_url, punts_requerits) VALUES
-(UUID(), 'Pilot Novell', '/assets/images/nivells/novell.png', 0),
-(UUID(), 'As Espacial', '/assets/images/nivells/as.png', 1000),
-(UUID(), 'Mestre Jedi', '/assets/images/nivells/jedi.png', 300);
+(UUID(), 'Pilot Novell', 'assets/images/nivells/novell.png', 0),
+(UUID(), 'As Espacial', 'assets/images/nivells/as.png', 1000),
+(UUID(), 'Mestre Jedi', 'assets/images/nivells/jedi.png', 300);
 
 -- Inserts de obstáculos
 INSERT INTO obstacles (id, imatge_url) VALUES
-(UUID(), '/assets/images/obstacles/asteroide.png'),
+(UUID(), 'assets/images/obstacles/asteroide.png'),

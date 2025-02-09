@@ -6,7 +6,8 @@ export class Nau {
         private _imatge_url: string = '',
         private _descripcio: string = '',
         private _disponible: boolean = true,
-        private _data_creacio: Date = new Date()
+        private _data_creacio: Date = new Date(),
+        private _punts_requerits: number = 0
     ) {}
 
     // Getters
@@ -17,6 +18,7 @@ export class Nau {
     get descripcio(): string { return this._descripcio; }
     get disponible(): boolean { return this._disponible; }
     get data_creacio(): Date { return this._data_creacio; }
+    get punts_requerits(): number { return this._punts_requerits; }
 
     // Setters
     set id(value: string) { this._id = value; }
@@ -26,4 +28,5 @@ export class Nau {
     set descripcio(value: string) { this._descripcio = value; }
     set disponible(value: boolean) { this._disponible = value; }
     set data_creacio(value: Date) { this._data_creacio = value; }
+    set punts_requerits(value: number) { this._punts_requerits = value; }
 } 

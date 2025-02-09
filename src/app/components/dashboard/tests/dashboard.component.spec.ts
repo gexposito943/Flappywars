@@ -6,8 +6,8 @@ import { RegistreService } from '../../../services/registre.service';
 import { GameService } from '../../../services/game.service';
 import { ShipService } from '../../../services/ship.service';
 import { of } from 'rxjs';
-import { Nau } from '../models/nau.model';
-import { Usuari } from '../models/usuari.model';
+import { Nau } from '../../../models/nau.model';
+import { Usuari } from '../../../models/usuari.model';
 
 describe('DashboardComponent', () => {
     let component: DashboardComponent;
@@ -59,7 +59,7 @@ describe('DashboardComponent', () => {
             total_partides: 5,
             temps_total_jugat: 300,
             punts_totals: 1000
-        }));
+        } as any));
         mockShipService.getShips.and.returnValue(of(mockShips as any));
 
         await TestBed.configureTestingModule({

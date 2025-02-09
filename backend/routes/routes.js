@@ -9,7 +9,8 @@ import {
 } from "../controllers/statsController.js";
 import { 
   saveGame, 
-  getGameHistory
+  getGameHistory,
+  loadGame
 } from "../controllers/gameController.js";
 import {
   getShips,
@@ -22,26 +23,33 @@ const router = express.Router();
 // Middleware para sanear datos
 router.use(sanitizeData);
 
-// Rutas públicas
+// Rutas públicas (sin autenticación)
 router.post("/register", registerUsers);
 router.post("/login", loginUser);
+router.get("/stats/global", getGlobalStats);
+router.get('/ships', getShips);  // Hacer pública la ruta de naves
+router.get('/naus/default', async (req, res) => {
+    // ... código existente ...
+});
+router.get('/obstacles/default', async (req, res) => {
+    // ... código existente ...
+});
 
 // Rutas protegidas (requieren autenticación)
 router.use(authenticateToken);
 
 // Rutas de estadísticas
-router.get("/stats/user", getUserStats);
+router.get("/stats/:userId?", getUserStats);
 router.post("/stats/update", updateStats);
-router.get("/stats/global", getGlobalStats);
 
-// Rutas de naves
-router.get("/ships", getShips);
+// Rutas de naves del usuario
 router.get("/user/ship", getUserShip);
 router.put("/user/ship", updateUserShip);
 
 // Rutas de partidas
 router.post("/game/save", saveGame);
 router.get("/game/history", getGameHistory);
+router.get("/game/load/:partidaId", loadGame);
 
 // Logging para debug
 router.use((req, res, next) => {

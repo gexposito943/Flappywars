@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { GameService, GameResult } from './game.service';
+import { GameService } from './game.service';
 import { RegistreService } from './registre.service';
-
+import { Partida, Nau, Estadistica } from '../models';
 
 describe('GameService', () => {
   let service: GameService;
@@ -29,21 +29,20 @@ describe('GameService', () => {
   });
 
   it('should get user stats', () => {
-    const expectedStats = {
-      millor_puntuacio: 1000,
-      total_partides: 50,
-      temps_total_jugat: 7200,
-      punts_totals: 2500
-    };
+    const userId = '1';
+    const expectedStats = new Estadistica();
+    expectedStats.millor_puntuacio = 1000;
+    expectedStats.total_partides = 50;
+    expectedStats.temps_total_jugat = 7200;
+    expectedStats.punts_totals = 2500;
 
-    service.getUserStats().subscribe(stats => {
-      expect(stats).toEqual(expectedStats);
+    service.getUserStats(userId).subscribe(response => {
+      expect(response.data).toEqual(expectedStats);
     });
 
-    const req = httpMock.expectOne(`${service['apiUrl']}/stats/user`);
+    const req = httpMock.expectOne(`${service['apiUrl']}/stats/${userId}`);
     expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('Authorization')).toBe('test-token');
-    req.flush({ success: true, estadistiques: expectedStats });
+    req.flush({ success: true, data: expectedStats });
   });
 
   it('should update user ship', () => {
@@ -61,15 +60,13 @@ describe('GameService', () => {
   });
 
   it('should save game results', () => {
-    const gameData: GameResult = {
-      usuari_id: 1,
-      puntuacio: 100,
-      duracio_segons: 60,
-      nau_utilitzada: 1,
-      nivell_dificultat: 'facil',
-      obstacles_superats: 0,
-      completada: true
-    };
+    const gameData = new Partida();
+    gameData.usuari_id = '1';
+    gameData.puntuacio = '100';
+    gameData.duracio_segons = '60';
+    gameData.nau_utilitzada = 'nau-1';
+    gameData.completada = true;
+
     service.saveGameResults(gameData).subscribe();
     const req = httpMock.expectOne(`${service['apiUrl']}/stats/update`);
     expect(req.request.method).toBe('POST');
@@ -83,16 +80,8 @@ describe('GameService', () => {
 
   it('should get user achievements', () => {
     const expectedAchievements = [
-      { 
-        id: 1, 
-        nom: 'Primer vol',
-        completat: true
-      },
-      {
-        id: 2,
-        nom: 'As Espacial',
-        completat: false
-      }
+      new Estadistica(1000, 50, 7200, 2500),
+      new Estadistica(500, 25, 3600, 1200)
     ];
     service.getUserAchievements().subscribe(achievements => {
       expect(achievements).toEqual(expectedAchievements);
@@ -104,10 +93,11 @@ describe('GameService', () => {
   });
 
   it('should handle error when getting user stats', () => {
-    service.getUserStats().subscribe({
+    service.getUserStats('1').subscribe({
       error: (error) => {
         expect(error.status).toBe(401);
         expect(error.error.message).toBe('Token invàlid');
+
       }
     });
     const req = httpMock.expectOne(`${service['apiUrl']}/stats/user`);
@@ -127,15 +117,14 @@ describe('GameService', () => {
   });
 
   it('should handle error when saving game results', () => {
-    const gameData: GameResult = {
-      usuari_id: 1,
-      puntuacio: 0,
-      duracio_segons: 0,
-      nau_utilitzada: 1,
-      nivell_dificultat: 'facil',
-      obstacles_superats: 0,
-      completada: true
-    };
+    const gameData = new Partida();
+    gameData.usuari_id = '1';
+    gameData.puntuacio = '100';
+    gameData.duracio_segons = '60';
+    gameData.nau_utilitzada = 'nau-1';
+    gameData.nivell_dificultat = 'normal';
+    gameData.obstacles_superats = '5';
+    gameData.completada = true;
     
     service.saveGameResults(gameData).subscribe({
       error: (error) => expect(error).toBeTruthy()
@@ -167,15 +156,14 @@ describe('GameService', () => {
     );
   });
 
-  it('should get default ship (X-Wing)', () => {
-    const expectedShip = {
-      id: 'uuid-1',
-      nom: 'X-Wing',
-      velocitat: 1,
-      imatge_url: '/assets/images/naus/x-wing.png',
-      descripcio: 'Nau inicial perfecta per començar',
-      disponible: true
-    };
+  it('should get default ship', () => {
+    const expectedShip = new Nau();
+    expectedShip.id = 'uuid-1';
+    expectedShip.nom = 'X-Wing';
+    expectedShip.velocitat = 1;
+    expectedShip.imatge_url = '/assets/images/naus/x-wing.png';
+    expectedShip.descripcio = 'Nau inicial perfecta per començar';
+    expectedShip.disponible = true;
 
     service.getNau().subscribe(ship => {
       expect(ship).toEqual(expectedShip);

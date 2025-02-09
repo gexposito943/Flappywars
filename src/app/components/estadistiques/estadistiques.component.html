@@ -1,36 +1,40 @@
 <div class="estadistiques-container">
   <h1>Estadístiques Globals</h1>
 
-  <div class="loading-error" *ngIf="loading || error">
-    <p *ngIf="loading">Carregant estadístiques...</p>
-    <p *ngIf="error">Error carregant les estadístiques</p>
+  <table *ngIf="!model.loading && !model.error && model.estadistiques.length > 0">
+    <thead>
+      <tr>
+        <th>Posició</th>
+        <th>Jugador</th>
+        <th>Punts Totals</th>
+        <th>Millor Puntuació</th>
+        <th>Temps Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let stat of model.estadistiques">
+        <td>{{ stat.posicio }}</td>
+        <td>{{ stat.username }}</td>
+        <td>{{ stat.punts_totals }}</td>
+        <td>{{ stat.millor_puntuacio }}</td>
+        <td>{{ formatTime(stat.temps_total_jugat || 0) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="model.loading" class="loading">
+    Carregant estadístiques...
   </div>
 
-  <div class="stats-table" *ngIf="!loading && !error">
-    <div class="stats-header">
-      <div class="header-cell">Posició</div>
-      <div class="header-cell">Jugador</div>
-      <div class="header-cell">Punts Totals</div>
-      <div class="header-cell">Millor Puntuació</div>
-      <div class="header-cell">Temps Total</div>
-    </div>
-
-    <div class="stats-content">
-      <div class="stats-row" *ngFor="let stat of estadistiques; let i = index">
-        <div class="stats-cell">{{ i + 1 }}</div>
-        <div class="stats-cell">{{ stat.usuari.nom_usuari }}</div>
-        <div class="stats-cell">{{ stat.usuari.punts_totals | number }}</div>
-        <div class="stats-cell">{{ stat.millor_puntuacio | number }}</div>
-        <div class="stats-cell">{{ formatTime(stat.temps_total_jugat) }}</div>
-      </div>
-
-      <div class="no-stats" *ngIf="estadistiques.length === 0">
-        No hi ha estadístiques disponibles
-      </div>
-    </div>
+  <div *ngIf="!model.loading && model.error" class="error">
+    Error carregant les estadístiques
   </div>
 
-  <button class="return-button" (click)="returnToDashboard()">
-    Tornar al Dashboard
+  <div *ngIf="!model.loading && !model.error && model.estadistiques.length === 0" class="no-data">
+    No hi ha estadístiques disponibles
+  </div>
+
+  <button class="btn-return" (click)="returnToDashboard()">
+    TORNAR AL DASHBOARD
   </button>
 </div>

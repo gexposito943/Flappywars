@@ -7,7 +7,7 @@ export const getShips = async (req, res) => {
         id,
         nom,
         velocitat,
-        imatge_url,
+        CONCAT('assets', SUBSTRING(imatge_url, LOCATE('/images', imatge_url))) as imatge_url,
         descripcio,
         punts_requerits
       FROM naus

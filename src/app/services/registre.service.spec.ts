@@ -6,12 +6,12 @@ interface AuthResponse {
   success: boolean;
   token: string;
   user: {
-    id: string;  // Cambiado a string para UUID
+    id: string;  
     nom_usuari: string;
     email: string;
     nivell: number;
     punts_totals: number;
-    nau_actual: string | null;  // Cambiado a string | null para UUID
+    nau_actual: string | null;  
     data_registre: string;
     ultim_acces: string | null;
     estat: 'actiu' | 'inactiu' | 'bloquejat';
@@ -215,8 +215,9 @@ describe('RegistreService', () => {
   });
   it('should save and set token correctly', () => {
     const token = 'test-token';
-    service.setToken(token);
+    service.login({ token });
     expect(service.getToken()).toBe(token);
+
   });
   it('should persist user data between page reloads', () => {
     const mockUserData = {

@@ -4,86 +4,30 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { RegistreService } from './registre.service';
-
-export interface UserStats {
-  millor_puntuacio: number;
-  total_partides: number;
-  temps_total_jugat: number;
-  punts_totals: number;
-}
-
-export interface Achievement {
-  id: number;
-  nom: string;
-  completat: boolean;
-}
-
-export interface GameData {
-  puntuacio: number;
-  temps_jugat: number;
-  nau_id: number;
-}
-
-export interface Ship {
-  id: number;
-  name: string;
-}
-
-export interface GameResult {
-  usuari_id: number;
-  puntuacio: number;
-  duracio_segons: number;
-  nau_utilitzada: number;
-  nivell_dificultat: string;
-  obstacles_superats: number;
-  completada: boolean;
-}
-
-interface GlobalStats {
-  username: string;
-  punts_totals: number;
-  millor_puntuacio: number;
-  total_partides: number;
-  temps_total_jugat: number;
-}
-
-export interface Nau {
-  id: string;
-  nom: string;
-  velocitat: number;
-  imatge_url: string;
-  descripcio: string;
-  disponible: boolean;
-}
-
-export interface Obstacle {
-  id: string;
-  imatge_url: string;
-}
+import { UserStats, ApiResponse, GlobalStats } from '../interfaces/stats.interface';
+import { ApiResponse as ApiResponseModel } from '../interfaces/api.interface';
+import { Estadistica as EstadisticaModel } from '../models/estadistica.model';;
+import { Estadistica, Partida, Nau, Obstacle } from '../models';
+import { ShipService } from './ship.service';
+import { Ship } from './ship.service';
 
 @Injectable({
   providedIn: 'root'
 })
+
 export class GameService {
   private apiUrl = 'http://localhost:3000/api/v1';
 
   constructor(
     private http: HttpClient,
+    private shipService: ShipService,
     private registreService: RegistreService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   private getHeaders(): HttpHeaders {
-    if (isPlatformBrowser(this.platformId)) {
-      const token = this.registreService.getToken();
-      return new HttpHeaders({
-        'Content-Type': 'application/json',
-        'Authorization': token || ''
-      });
-    }
-    return new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
+    const token = this.registreService.getToken();
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
   private handleError<T>(operation = 'operation', result?: T) {
@@ -104,47 +48,12 @@ export class GameService {
     };
   }
 
-  getUserStats(): Observable<UserStats> {
-    if (!isPlatformBrowser(this.platformId)) {
-      return of({
-        millor_puntuacio: 0,
-        total_partides: 0,
-        temps_total_jugat: 0,
-        punts_totals: 0
-      });
-    }
-
-    return this.http.get<any>(
-      `${this.apiUrl}/stats/user`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      map(response => response.estadistiques),
-      tap(stats => {
-        const userData = this.registreService.getUserData();
-        if (userData && stats.punts_totals !== undefined) {
-          userData.punts_totals = stats.punts_totals;
-          this.registreService.setUserData(userData);
-        }
-      }),
-      catchError(error => {
-        console.error('Error al obtener estadísticas:', error);
-        return of({
-          millor_puntuacio: 0,
-          total_partides: 0,
-          temps_total_jugat: 0,
-          punts_totals: 0
-        });
-      })
-    );
+  getUserStats(userId: string): Observable<ApiResponseModel<EstadisticaModel>> {
+    return this.http.get<ApiResponseModel<EstadisticaModel>>(`${this.apiUrl}/stats/${userId}`);
   }
 
   getAvailableShips(): Observable<Ship[]> {
-    return this.http.get<Ship[]>(
-      `${this.apiUrl}/ships`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      catchError(error => throwError(() => error))
-    );
+    return this.shipService.getShips();
   }
 
   updateUserShip(shipId: number): Observable<{success: boolean}> {
@@ -157,42 +66,44 @@ export class GameService {
     );
   }
 
-  getUserAchievements(): Observable<Achievement[]> {
+  getUserAchievements(): Observable<Estadistica[]> {
     if (!isPlatformBrowser(this.platformId)) {
       return of([]);
     }
     
-    return this.http.get<Achievement[]>(
+    return this.http.get<Estadistica[]>(
       `${this.apiUrl}/achievements`, 
       { headers: this.getHeaders() }
     ).pipe(
       catchError(error => throwError(() => error))
     );
+
   }
 
-  saveGameResults(gameData: GameResult): Observable<any> {
+  saveGameResults(gameData: Partida): Observable<any> {
+    const payload = {
+      puntuacio: gameData.puntuacio,
+      duracio_segons: gameData.duracio_segons,
+      nau_utilitzada: gameData.nau_utilitzada,
+      obstacles_superats: gameData.obstacles_superats,
+      posicioX: gameData.posicioX,
+      posicioY: gameData.posicioY,
+      obstacles: gameData.obstacles,
+      completada: gameData.completada
+    };
+
     return this.http.post<any>(
-      `${this.apiUrl}/stats/update`,
-      {
-        puntuacio: gameData.puntuacio,
-        temps_jugat: gameData.duracio_segons
-      },
+      `${this.apiUrl}/game/save`,
+      payload,
       { headers: this.getHeaders() }
     ).pipe(
       tap(response => {
-        if (response.success && response.estadistiques) {
-          const userData = this.registreService.getUserData();
-          if (userData) {
-            userData.punts_totals = response.estadistiques.punts_totals;
-            this.registreService.setUserData(userData);
-          }
+        if (response.success) {
+          // Guardar ID de partida para posible restauración
+          localStorage.setItem('lastGameId', response.partidaId);
         }
       }),
-      map(response => response.estadistiques),
-      catchError(error => {
-        console.error('Error al guardar resultados:', error);
-        return throwError(() => error);
-      })
+      catchError(this.handleError('saveGameResults'))
     );
   }
 
@@ -231,16 +142,18 @@ export class GameService {
     return of({ success: false, message: 'No hi ha partida guardada' });
   }
 
-  getGlobalStats(): Observable<GlobalStats[]> {
-    return this.http.get<GlobalStats[]>(
-      `${this.apiUrl}/stats/global`,
-      { headers: this.getHeaders() }
+  getGlobalStats(): Observable<ApiResponseModel<GlobalStats[]>> {
+    return this.http.get<ApiResponseModel<GlobalStats[]>>(
+        `${this.apiUrl}/stats/global`
     ).pipe(
-      map(stats => stats.sort((a, b) => b.punts_totals - a.punts_totals)),
-      catchError(error => {
-        console.error('Error obteniendo estadísticas globales:', error);
-        return of([]);
-      })
+        map(response => ({
+            success: response.success,
+            ranking: response.ranking || []
+        })),
+        catchError(error => {
+            console.error('Error obteniendo estadísticas globales:', error);
+            return of({ success: false, ranking: [] });
+        })
     );
   }
 
@@ -262,15 +175,54 @@ export class GameService {
     );
   }
 
-  resetUserPoints(userId: string): Observable<any> {
-    return this.http.post(
-        `${this.apiUrl}/users/${userId}/reset-points`, 
-        {},
-        { headers: this.getHeaders() }
-    );
+  resetUserPoints(userId: string): Observable<ApiResponseModel<void>> {
+    return this.http.post<ApiResponseModel<void>>(`${this.apiUrl}/users/${userId}/reset-points`, {});
   }
 
   checkSavedGame(userId: string): Observable<boolean> {
     return this.http.get<boolean>(`${this.apiUrl}/users/${userId}/saved-game`);
+  }
+
+  savePartida(partida: Partida): Observable<ApiResponseModel<Partida>> {
+    return this.http.post<ApiResponseModel<Partida>>(`${this.apiUrl}/partides`, partida);
+  }
+
+  loadSavedGame(partidaId: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}/game/load/${partidaId}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(this.handleError('loadSavedGame'))
+    );
+  }
+
+  getLastSavedGameId(): string | null {
+    return localStorage.getItem('lastGameId');
+  }
+
+  clearLastSavedGame(): void {
+    localStorage.removeItem('lastGameId');
+  }
+
+  getDefaultShip(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/naus/default`).pipe(
+        catchError(error => {
+            console.error('Error en getDefaultShip:', error);
+            return throwError(() => error);
+        })
+    );
+  }
+
+  getDefaultObstacle(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/obstacles/default`).pipe(
+        catchError(error => {
+            console.error('Error en getDefaultObstacle:', error);
+            return throwError(() => error);
+        })
+    );
+  }
+
+  getUserShip() {
+    return this.http.get<any>(`${this.apiUrl}/user/ship`);
   }
 }
