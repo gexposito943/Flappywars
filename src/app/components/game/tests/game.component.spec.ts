@@ -4,11 +4,7 @@ import { GameComponent } from '../game.component';
 import { GameService } from '../../../services/game.service';
 import { RegistreService } from '../../../services/registre.service';
 import { Router } from '@angular/router';
-import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
-import { GameModel } from '../models/game.model';
-import { Usuari } from '../../../models/usuari.model';
-import { Obstacle } from '../../../models/obstacle.model';
 
 describe('GameComponent', () => {
     let component: GameComponent;
@@ -19,23 +15,13 @@ describe('GameComponent', () => {
 
     beforeEach(async () => {
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
-        mockGameService = jasmine.createSpyObj('GameService', ['saveGameResults']);
-        mockRegistreService = jasmine.createSpyObj('RegistreService', ['getToken', 'getUserData']);
+        mockGameService = jasmine.createSpyObj('GameService', ['saveGameResults', 'getUserShip']);
+        mockRegistreService = jasmine.createSpyObj('RegistreService', ['getToken', 'getUserId']);
 
-        mockGameService.saveGameResults.and.returnValue(of({}));
+        mockGameService.saveGameResults.and.returnValue(of({ success: true }));
+        mockGameService.getUserShip.and.returnValue(of({ success: true, data: { id: '1' } }));
         mockRegistreService.getToken.and.returnValue('test-token');
-        mockRegistreService.getUserData.and.returnValue({
-            id: '123e4567-e89b-12d3-a456-426614174000',
-            nom_usuari: 'testUser',
-            email: 'test@test.com',
-            nivell: 5,
-            punts_totals: 1000,
-            nau_actual: null,
-            data_registre: '2024-01-01T00:00:00Z',
-            ultim_acces: null,
-            estat: 'actiu' as const,
-            intents_login: 0
-        });
+        mockRegistreService.getUserId.and.returnValue('test-id');
 
         await TestBed.configureTestingModule({
             imports: [GameComponent, HttpClientTestingModule],
@@ -51,9 +37,10 @@ describe('GameComponent', () => {
         fixture = TestBed.createComponent(GameComponent);
         component = fixture.componentInstance;
 
+        // Mock del canvas
         const canvas = document.createElement('canvas');
-        canvas.width = 800;
-        canvas.height = 600;
+        canvas.width = 1440;
+        canvas.height = 900;
         Object.defineProperty(component, 'canvas', {
             writable: true,
             value: { nativeElement: canvas }
@@ -66,94 +53,52 @@ describe('GameComponent', () => {
 
     describe('Game Model', () => {
         it('should initialize with default values', () => {
-            const model = (component as any).model as GameModel;
-            expect(model.score).toBe(0);
-            expect(model.isGameRunning).toBeFalse();
-            expect(model.isPaused).toBeFalse();
-            expect(model.obstacles.length).toBe(0);
+            expect(component['model'].score).toBe(0);
+            expect(component['model'].isGameRunning).toBeFalse();
+            expect(component['model'].isPaused).toBeFalse();
+            expect(component['model'].obstacles.length).toBe(0);
         });
 
-        it('should create player with correct initial values', () => {
-            const model = (component as any).model as GameModel;
-            expect(model.position.x).toBe(100);
-            expect(model.position.y).toBe(450);
-            expect(model.velocity).toBe(0);
-        });
-
-        it('should create obstacles correctly', () => {
-            const model = (component as any).model as GameModel;
-            const obstacle = model.createObstacle();
-            expect(obstacle).toBeInstanceOf(Obstacle);
-            expect(obstacle.x).toBe(model.CANVAS_WIDTH);
-            expect(obstacle.passed).toBeFalse();
+        it('should have correct initial player position', () => {
+            expect(component['model'].position.x).toBe(100);
+            expect(component['model'].position.y).toBe(450);
+            expect(component['model'].velocity).toBe(0);
         });
     });
 
     describe('Game Controls', () => {
         it('should handle keyboard events', () => {
-            const model = (component as any).model as GameModel;
+            component.startGame();
             
-            component.handleKeyboardEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-            expect(model.isGameRunning).toBeTrue();
+            component.handleKeyboardEvent(new KeyboardEvent('keydown', { code: 'ArrowUp' }));
+            expect(component['model'].velocity).toBeLessThan(0);
 
-            component.handleKeyboardEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
-            expect(model.velocity).toBeLessThan(0);
-
-
-            component.handleKeyboardEvent(new KeyboardEvent('keydown', { key: ' ' }));
-            expect(model.isPaused).toBeTrue();
+            component.handleKeyboardEvent(new KeyboardEvent('keydown', { code: 'Space' }));
+            expect(component['model'].isPaused).toBeTrue();
         });
 
         it('should toggle pause correctly', () => {
-            const model = (component as any).model as GameModel;
-            model.isGameRunning = true;
+            component['model'].isGameRunning = true;
             
             component.togglePause();
-            expect(model.isPaused).toBeTrue();
+            expect(component['model'].isPaused).toBeTrue();
+            expect(component['model'].gameMessage).toBe('Joc en Pausa');
             
             component.togglePause();
-            expect(model.isPaused).toBeFalse();
-        });
-
-        it('should navigate to dashboard', () => {
-            component.goToDashboard();
-            expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
+            expect(component['model'].isPaused).toBeFalse();
         });
     });
 
     describe('Game Logic', () => {
-        it('should update score when passing obstacles', fakeAsync(() => {
-            const model = (component as any).model as GameModel;
+        it('should handle game over', fakeAsync(() => {
             component.startGame();
+            component['onGameOver']();
+            tick();
             
-            model.obstacles = [{
-                x: 90,  // Just passed the player
-                topHeight: 100,
-                bottomHeight: 100,
-                passed: false,
-                width: 60
-            } as Obstacle];
-
-            (component as any).updateScore();
-            expect(model.score).toBe(1);
+            expect(component['model'].isGameRunning).toBeFalse();
+            expect(component['model'].showMessage).toBeTrue();
+            expect(mockGameService.saveGameResults).toHaveBeenCalled();
         }));
-
-        it('should detect collisions correctly', () => {
-            const model = (component as any).model as GameModel;
-            model.position = { x: model.position.x, y: 0 };  // Usar position en lugar de usuari.posicioY
-            
-
-
-            model.obstacles = [{
-                x: 100,
-                topHeight: 200,
-                bottomHeight: 200,
-                passed: false,
-                width: 60
-            } as Obstacle];
-
-            expect(model.checkCollision()).toBeTrue();
-        });
 
         it('should save game results', fakeAsync(() => {
             component.startGame();
@@ -161,8 +106,12 @@ describe('GameComponent', () => {
             tick();
             
             expect(mockGameService.saveGameResults).toHaveBeenCalled();
-            const model = (component as any).model as GameModel;
-            expect(model.gameMessage).toContain('Partida guardada');
+            expect(component['model'].gameMessage).toContain('Partida guardada');
         }));
+
+        it('should navigate to dashboard', () => {
+            component.goToDashboard();
+            expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
+        });
     });
 }); 

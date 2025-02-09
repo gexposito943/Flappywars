@@ -4,7 +4,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { RegistreService } from './registre.service';
-import { UserStats, ApiResponse, GlobalStats } from '../interfaces/stats.interface';
+import { UserStats,GlobalStats } from '../interfaces/stats.interface';
 import { ApiResponse as ApiResponseModel } from '../interfaces/api.interface';
 import { Estadistica as EstadisticaModel } from '../models/estadistica.model';;
 import { Estadistica, Partida, Nau, Obstacle } from '../models';
@@ -25,6 +25,56 @@ export class GameService {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
+  // GESTIÓ DE PARTIDES
+  saveGameResults(gameData: Partida): Observable<any> {
+    const payload = this.mapPartidaToPayload(gameData);
+    return this.http.post<any>(
+      `${this.apiUrl}/game/save`,
+      payload,
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(response => this.saveGameId(response)),
+      catchError(this.handleError('saveGameResults'))
+    );
+  }
+
+  loadSavedGame(partidaId: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}/game/load/${partidaId}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(this.handleError('loadSavedGame'))
+    );
+  }
+
+  // GESTIÓ DE NAUS
+  getUserShip(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/user/ship`);
+  }
+
+  getDefaultShip(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/naus/default`).pipe(
+      catchError(this.handleError('getDefaultShip'))
+    );
+  }
+
+  // GESTIÓ D'ESTADÍSTIQUES
+  getUserStats(userId: string): Observable<ApiResponseModel<EstadisticaModel>> {
+    return this.http.get<ApiResponseModel<EstadisticaModel>>(
+      `${this.apiUrl}/stats/${userId}`
+    );
+  }
+
+  getGlobalStats(): Observable<ApiResponseModel<GlobalStats[]>> {
+    return this.http.get<ApiResponseModel<GlobalStats[]>>(
+      `${this.apiUrl}/stats/global`
+    ).pipe(
+      map(response => this.mapGlobalStats(response)),
+      catchError(this.handleError('getGlobalStats', { success: false, ranking: [] }))
+    );
+  }
+
+  // Mètodes privats d'ajuda
   private getHeaders(): HttpHeaders {
     const token = this.registreService.getToken();
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
@@ -33,23 +83,8 @@ export class GameService {
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: HttpErrorResponse): Observable<T> => {
       console.error(`${operation} failed:`, error);
-
-      if (error.status === 404) {
-        console.warn(`${operation}: API endpoint not found, using default values`);
-        return of(result as T);
-      }
-
-      console.error(`${operation} error details:`, {
-        status: error.status,
-        message: error.message,
-        url: error.url
-      });
       return of(result as T);
     };
-  }
-
-  getUserStats(userId: string): Observable<ApiResponseModel<EstadisticaModel>> {
-    return this.http.get<ApiResponseModel<EstadisticaModel>>(`${this.apiUrl}/stats/${userId}`);
   }
 
   getAvailableShips(): Observable<Ship[]> {
@@ -78,33 +113,6 @@ export class GameService {
       catchError(error => throwError(() => error))
     );
 
-  }
-
-  saveGameResults(gameData: Partida): Observable<any> {
-    const payload = {
-      puntuacio: gameData.puntuacio,
-      duracio_segons: gameData.duracio_segons,
-      nau_utilitzada: gameData.nau_utilitzada,
-      obstacles_superats: gameData.obstacles_superats,
-      posicioX: gameData.posicioX,
-      posicioY: gameData.posicioY,
-      obstacles: gameData.obstacles,
-      completada: gameData.completada
-    };
-
-    return this.http.post<any>(
-      `${this.apiUrl}/game/save`,
-      payload,
-      { headers: this.getHeaders() }
-    ).pipe(
-      tap(response => {
-        if (response.success) {
-          // Guardar ID de partida para posible restauración
-          localStorage.setItem('lastGameId', response.partidaId);
-        }
-      }),
-      catchError(this.handleError('saveGameResults'))
-    );
   }
 
   updateUserStats(stats: UserStats): Observable<UserStats> {
@@ -142,21 +150,6 @@ export class GameService {
     return of({ success: false, message: 'No hi ha partida guardada' });
   }
 
-  getGlobalStats(): Observable<ApiResponseModel<GlobalStats[]>> {
-    return this.http.get<ApiResponseModel<GlobalStats[]>>(
-        `${this.apiUrl}/stats/global`
-    ).pipe(
-        map(response => ({
-            success: response.success,
-            ranking: response.ranking || []
-        })),
-        catchError(error => {
-            console.error('Error obteniendo estadísticas globales:', error);
-            return of({ success: false, ranking: [] });
-        })
-    );
-  }
-
   getNau(): Observable<Nau> {
     return this.http.get<Nau>(
       `${this.apiUrl}/naus/default`,
@@ -187,30 +180,12 @@ export class GameService {
     return this.http.post<ApiResponseModel<Partida>>(`${this.apiUrl}/partides`, partida);
   }
 
-  loadSavedGame(partidaId: string): Observable<any> {
-    return this.http.get<any>(
-      `${this.apiUrl}/game/load/${partidaId}`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      catchError(this.handleError('loadSavedGame'))
-    );
-  }
-
   getLastSavedGameId(): string | null {
     return localStorage.getItem('lastGameId');
   }
 
   clearLastSavedGame(): void {
     localStorage.removeItem('lastGameId');
-  }
-
-  getDefaultShip(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/naus/default`).pipe(
-        catchError(error => {
-            console.error('Error en getDefaultShip:', error);
-            return throwError(() => error);
-        })
-    );
   }
 
   getDefaultObstacle(): Observable<any> {
@@ -222,7 +197,29 @@ export class GameService {
     );
   }
 
-  getUserShip() {
-    return this.http.get<any>(`${this.apiUrl}/user/ship`);
+  private mapPartidaToPayload(gameData: Partida) {
+    return {
+      puntuacio: gameData.puntuacio,
+      duracio_segons: gameData.duracio_segons,
+      nau_utilitzada: gameData.nau_utilitzada,
+      obstacles_superats: gameData.obstacles_superats,
+      posicioX: gameData.posicioX,
+      posicioY: gameData.posicioY,
+      obstacles: gameData.obstacles,
+      completada: gameData.completada
+    };
+  }
+
+  private saveGameId(response: any): void {
+    if (response.success && response.partidaId) {
+      localStorage.setItem('lastGameId', response.partidaId);
+    }
+  }
+
+  private mapGlobalStats(response: ApiResponseModel<GlobalStats[]>) {
+    return {
+      success: response.success,
+      ranking: response.ranking || []
+    };
   }
 }

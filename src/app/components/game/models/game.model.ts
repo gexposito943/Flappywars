@@ -2,33 +2,34 @@ import { Usuari } from '../../../models/usuari.model';
 import { Obstacle } from '../../../models/obstacle.model';
 
 export class GameModel {
-    // Estado del juego
+    // Estat del joc
     private _usuari: Usuari;
     private _score: number = 0;
     private _isRunning: boolean = false;
     private _isPaused: boolean = false;
-    private _message: string = 'Presiona ENTER para empezar';
+    private _message: string = 'Prem ENTER per començar';
     private _showMessage: boolean = true;
 
-    // Posición y física
+    // Posició i física
     private _position = { x: 100, y: 450 };
     private _velocity: number = 0;
     private _obstacles: Obstacle[] = [];
 
-    // Constantes
-    readonly GRAVITY: number = 0.5;
-    readonly JUMP_FORCE: number = -10;
+    // Constants del joc
     readonly CANVAS_WIDTH: number = 1440;
     readonly CANVAS_HEIGHT: number = 900;
     readonly PLAYER_SIZE: number = 120;
-    readonly OBSTACLE_SPEED: number = 5;
+    readonly GRAVITY: number = 0.5;
+    readonly JUMP_FORCE: number = -10;
+    readonly OBSTACLE_SPEED: number = 8;
     readonly OBSTACLE_GAP: number = 700;
+    readonly COLLISION_MARGIN: number = 20;
 
     constructor() {
         this._usuari = new Usuari();
     }
 
-    // Getters
+    // Getters i Setters bàsics
     get usuari() { return this._usuari; }
     get score() { return this._score; }
     get isGameRunning() { return this._isRunning; }
@@ -36,10 +37,9 @@ export class GameModel {
     get gameMessage() { return this._message; }
     get showMessage() { return this._showMessage; }
     get position() { return this._position; }
-    get obstacles() { return this._obstacles; }
     get velocity() { return this._velocity; }
+    get obstacles() { return this._obstacles; }
 
-    // Setters
     set usuari(value: Usuari) { this._usuari = value; }
     set score(value: number) { this._score = value; }
     set isGameRunning(value: boolean) { this._isRunning = value; }
@@ -50,37 +50,59 @@ export class GameModel {
     set velocity(value: number) { this._velocity = value; }
     set obstacles(value: Obstacle[]) { this._obstacles = value; }
 
-    /**
-     * Crea un nou obstacle amb altura aleatòria
-     */
-    createObstacle(): Obstacle {
-        return new Obstacle(this.CANVAS_WIDTH);
+    //Actualitza la física del joc
+    updatePhysics(): void {
+        this.velocity += this.GRAVITY;
+        this.position = {
+            x: this.position.x,
+            y: this.position.y + this.velocity
+        };
     }
 
-    /**
-     * Comprova si hi ha col·lisió entre el jugador i els obstacles
-     */
+    //Fa saltar la nau
+    jump(): void {
+        this.velocity = this.JUMP_FORCE;
+    }
+
+
+    //Comprova si hi ha col·lisió amb els obstacles
+
     checkCollision(): boolean {
         return this._obstacles.some(obstacle => {
-            // Reducir el área de colisión usando un margen
-            const collisionMargin = 20; // Margen de tolerancia
-            
             const inXRange = 
-                this._position.x + collisionMargin < obstacle.x + obstacle.width && 
-                this._position.x + this.PLAYER_SIZE - collisionMargin > obstacle.x;
+                this._position.x + this.COLLISION_MARGIN < obstacle.x + obstacle.width && 
+                this._position.x + this.PLAYER_SIZE - this.COLLISION_MARGIN > obstacle.x;
             
-            const hitTop = this._position.y + collisionMargin < obstacle.topHeight;
+            const hitTop = this._position.y + this.COLLISION_MARGIN < obstacle.topHeight;
             const hitBottom = 
-                this._position.y + this.PLAYER_SIZE - collisionMargin > 
+                this._position.y + this.PLAYER_SIZE - this.COLLISION_MARGIN > 
                 this.CANVAS_HEIGHT - obstacle.bottomHeight;
             
             return inXRange && (hitTop || hitBottom);
         });
     }
 
-    /**
-     * Reinicia l'estat del joc als valors inicials
-     */
+    //Actualitza els obstacles (moviment i puntuació)
+    updateObstacles(): void {
+        // Moure obstacles
+        this._obstacles = this._obstacles.map(obs => {
+            obs.x -= this.OBSTACLE_SPEED;
+            if (!obs.passed && obs.x + obs.width < this._position.x) {
+                obs.passed = true;
+                this._score += 1;
+            }
+            return obs;
+        });
+        this._obstacles = this._obstacles.filter(obs => obs.x > -obs.width);
+        // Crear nous obstacles si cal
+        if (this._obstacles.length === 0 || 
+            this._obstacles[this._obstacles.length - 1].x < this.CANVAS_WIDTH - this.OBSTACLE_GAP) {
+            this._obstacles.push(new Obstacle(this.CANVAS_WIDTH));
+        }
+    }
+
+    //Reinicia l'estat del joc
+    
     reset(): void {
         this._score = 0;
         this._position = { x: 100, y: 450 };
