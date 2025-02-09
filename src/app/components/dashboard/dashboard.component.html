@@ -1,20 +1,20 @@
 <div class="game-container">
     <!-- Header -->
-    <div class="header" *ngIf="dashboardModel.usuari">
-        <h1>Benvingut, {{ dashboardModel.usuari.nom_usuari }}!</h1>
+    <div class="header" *ngIf="model.usuari">
+        <h1>Benvingut, {{ model.usuari.nom_usuari }}!</h1>
         <div class="user-info">
             <div class="level-info">
-                <img [src]="dashboardModel.usuari.nivell.imatge_url" 
-                     [alt]="dashboardModel.usuari.nivell.nom"
+                <img [src]="model.usuari.nivell.imatge_url" 
+                     [alt]="model.usuari.nivell.nom"
                      class="level-image">
                 <div class="level-text">
-                    <div class="level-badge">Nivell: {{ dashboardModel.usuari.nivell.nom }}</div>
-                    <div class="points-badge">Punts: {{ dashboardModel.usuari.punts_totals }}</div>
+                    <div class="level-badge">Nivell: {{ model.usuari.nivell.nom }}</div>
+                    <div class="points-badge">Punts: {{ model.usuari.punts_totals }}</div>
                 </div>
             </div>
         </div>
         <div class="header-buttons">
-            <button class="btn restore" [disabled]="!dashboardModel.hasSavedGame">
+            <button class="btn restore" [disabled]="!model.hasSavedGame">
                 Restaurar Partida
             </button>
             <button class="btn reset" (click)="onResetPoints()">
@@ -32,15 +32,15 @@
     <div class="stats-container">
         <div class="stat-card">
             <h3>MILLOR PUNTUACIÓ</h3>
-            <p>{{ dashboardModel.stats.millor_puntuacio }}</p>
+            <p>{{ model.stats.millor_puntuacio }}</p>
         </div>
         <div class="stat-card">
             <h3>TOTAL PARTIDES</h3>
-            <p>{{ dashboardModel.stats.total_partides }}</p>
+            <p>{{ model.stats.total_partides }}</p>
         </div>
         <div class="stat-card">
             <h3>TEMPS TOTAL JUGAT</h3>
-            <p>{{ formatTime(dashboardModel.stats.temps_total_jugat) }}</p>
+            <p>{{ formatTime(model.stats.temps_total_jugat) }}</p>
         </div>
     </div>
 
@@ -48,45 +48,45 @@
     <div class="ship-selection">
         <div class="selection-left">
             <button class="play-button" 
-                    [disabled]="!dashboardModel.nauSeleccionada"
+                    [disabled]="!model.nauSeleccionada"
                     (click)="onStartGame()">
-                {{ dashboardModel.nauSeleccionada ? 'Jugar' : 'Selecciona una nau' }}
+                {{ model.nauSeleccionada ? 'Jugar' : 'Selecciona una nau' }}
             </button>
 
-            <p class="selection-message" *ngIf="!dashboardModel.nauSeleccionada">
+            <p class="selection-message" *ngIf="!model.nauSeleccionada">
                 Has de seleccionar una nau abans de començar
             </p>
         </div>
 
         <div class="ships-container">
             <div class="ship-card" 
-                 *ngFor="let nau of dashboardModel.naus"
-                 [class.locked]="!dashboardModel.isNauDisponible(nau)"
-                 [class.selected]="nau === dashboardModel.nauSeleccionada">
+                 *ngFor="let nau of model.naus"
+                 [class.locked]="!model.isNauDisponible(nau)"
+                 [class.selected]="nau === model.nauSeleccionada">
                 <img [src]="nau.imatge_url" [alt]="nau.nom">
                 <h3>{{ nau.nom }}</h3>
                 <p>{{ nau.descripcio }}</p>
                 <div class="ship-stats">
                     <span>Velocitat: {{ nau.velocitat }}</span>
                 </div>
-                <div *ngIf="!dashboardModel.isNauDisponible(nau)" class="points-needed">
+                <div *ngIf="!model.isNauDisponible(nau)" class="points-needed">
                     Punts necessaris: {{ nau.punts_requerits }}
                 </div>
                 <button (click)="onShipSelect(nau)" 
-                        [disabled]="!dashboardModel.isNauDisponible(nau)">
-                    {{ dashboardModel.isNauDisponible(nau) ? 'Seleccionar' : 'Bloquejada' }}
+                        [disabled]="!model.isNauDisponible(nau)">
+                    {{ model.isNauDisponible(nau) ? 'Seleccionar' : 'Bloquejada' }}
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Loading State -->
-    <div class="loading-overlay" *ngIf="dashboardModel.loading">
+    <div class="loading-overlay" *ngIf="model.loading">
         <div class="spinner"></div>
     </div>
 
     <!-- Error Message -->
-    <div class="error-message" *ngIf="dashboardModel.error">
-        {{ dashboardModel.error }}
+    <div class="error-message" *ngIf="model.error">
+        {{ model.error }}
     </div>
 </div>

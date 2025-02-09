@@ -5,10 +5,7 @@ import { GameService } from '../../services/game.service';
 import { EstadistiquesModel } from './models/estadistiques.model';
 import { GlobalStats } from '../../interfaces/stats.interface';
 import { ApiResponse } from '../../interfaces/api.interface';
-import { Estadistica } from '../../models/estadistica.model';
 
-import { catchError, finalize } from 'rxjs/operators';
-import { of } from 'rxjs';
 
 
 @Component({
