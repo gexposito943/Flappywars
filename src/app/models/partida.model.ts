@@ -3,7 +3,7 @@ export class Partida {
     usuari_id: string = '';
     puntuacio: number = 0;
     duracio_segons: number = 0;
-    nau_utilitzada: string = 'ea92e685-e5fa-11ef-81b0-0421aec5a2c';
+    nau_utilitzada: string = '';
     obstacles_superats: number = 0;
     completada: number = 0;
     posicioX: number = 0;

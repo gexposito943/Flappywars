@@ -101,12 +101,11 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
     const partida = new Partida();
     const gameTime = Math.floor((Date.now() - this.gameStartTime) / 1000);
 
-    // Log para debug
-    console.log('Iniciando guardado de partida');
+    console.log('Inician guardat de la partida');
 
     this.gameService.getUserShip().subscribe({
       next: (shipResponse) => {
-        console.log('Respuesta nave:', shipResponse); // Log para debug
+        console.log('Respuesta nave:', shipResponse); 
 
         if (!shipResponse?.success || !shipResponse?.data?.id) {
           console.error('No se pudo obtener la nave, intentando obtener nave por defecto');

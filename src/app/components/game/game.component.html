@@ -19,6 +19,9 @@
 
   <!-- Mensaje de Game Over -->
   <div class="game-message" *ngIf="model.showMessage && !model.isPaused">
-    <h2>{{ model.gameMessage }}</h2>
+    <div class="menu-content">
+      <h2>{{ model.gameMessage }}</h2>
+      <button (click)="goToDashboard()" class="dashboard-button">Tornar el Dashboard</button>
+    </div>
   </div>
 </div>
