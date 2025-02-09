@@ -86,28 +86,32 @@ describe('DashboardComponent', () => {
         expect(mockShipService.getShips).toHaveBeenCalled();
         expect(mockRegistreService.getUserData).toHaveBeenCalled();
         expect(mockGameService.getUserStats).toHaveBeenCalled();
-        expect(component.dashboardModel.naus.length).toBe(2);
+        expect(component.model.naus.length).toBe(2);
     }));
+
 
     it('should select ship when available', () => {
         const nau = new Nau();
         Object.assign(nau, mockShips[0]);
         component.onShipSelect(nau);
-        expect(component.dashboardModel.nauSeleccionada).toBe(nau);
+        expect(component.model.nauSeleccionada).toBe(nau);
     });
+
 
     it('should navigate to game when play button is clicked', () => {
         const nau = new Nau();
         Object.assign(nau, mockShips[0]);
-        component.dashboardModel.nauSeleccionada = nau;
+        component.model.nauSeleccionada = nau;
         
+
         component.onStartGame();
         
         expect(mockRouter.navigate).toHaveBeenCalledWith(['/game'], {
             state: {
-                nau: component.dashboardModel.nauSeleccionada,
-                usuari: component.dashboardModel.usuari
+                nau: component.model.nauSeleccionada,
+                usuari: component.model.usuari
             }
+
         });
     });
 

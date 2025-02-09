@@ -66,22 +66,26 @@ describe('EstadistiquesComponent', () => {
         tick();
         fixture.detectChanges();
         expect(mockGameService.getGlobalStats).toHaveBeenCalled();
-        expect(component.estadistiques.length).toBe(2); 
+        expect(component.model.estadistiques.length).toBe(2); 
     }));
 
     it('should sort statistics by total points', fakeAsync(() => {
         tick();
         fixture.detectChanges();
-        const stats = component.estadistiques;
-        expect(stats[0].usuari.punts_totals).toBeGreaterThan(stats[1].usuari.punts_totals);
+        const stats = component.model.estadistiques;
+        expect(stats[0].punts_totals).toBeGreaterThan(stats[1].punts_totals);
     }));
+
+
 
     it('should filter out inactive users', fakeAsync(() => {
         tick();
         fixture.detectChanges();
-        const inactiveUser = component.estadistiques.find(stat => 
-            stat.usuari.nom_usuari === 'Player3'
+        const inactiveUser = component.model.estadistiques.find(stat => 
+            stat.username === 'Player3'
         );
+
+
         expect(inactiveUser).toBeUndefined();
     }));
 
@@ -99,8 +103,9 @@ describe('EstadistiquesComponent', () => {
     }));
 
     it('should show loading state initially', () => {
-        component['_loading'] = true;
+        component.model.loading = true;
         fixture.detectChanges();
+
 
         const loadingElement = fixture.debugElement.query(By.css('.loading-error'));
         expect(loadingElement).toBeTruthy();
@@ -108,8 +113,9 @@ describe('EstadistiquesComponent', () => {
     });
 
     it('should show error state when there is an error', () => {
-        component['_error'] = true;
+        component.model.error = true;
         fixture.detectChanges();
+
 
         const errorElement = fixture.debugElement.query(By.css('.loading-error'));
         expect(errorElement).toBeTruthy();
@@ -129,7 +135,7 @@ describe('EstadistiquesComponent', () => {
     });
 
     it('should show message when no statistics are available', fakeAsync(() => {
-        mockGameService.getGlobalStats.and.returnValue(of([]));
+        mockGameService.getGlobalStats.and.returnValue(of({ success: false, ranking: [] } as any));
         component.ngOnInit();
         tick();
         fixture.detectChanges();
