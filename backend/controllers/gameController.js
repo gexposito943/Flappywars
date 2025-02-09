@@ -3,6 +3,13 @@ import { pool as db } from "../database.js";
 export const saveGame = async (req, res) => {
   try {
     const userId = req.user.userId;
+    
+    // Log para debug
+    console.log('Datos recibidos:', {
+      userId,
+      body: req.body
+    });
+
     const { 
       puntuacio,          
       duracio_segons,      
@@ -10,22 +17,51 @@ export const saveGame = async (req, res) => {
       obstacles_superats,
       posicioX,
       posicioY,
-      obstacles,  // Array de obstáculos con sus posiciones
+      obstacles,
       completada = true
     } = req.body;
+
+    // Validar que tenemos todos los datos necesarios
+    if (!nau_utilitzada) {
+      throw new Error('Falta el ID de la nave');
+    }
+
+    // Verificar que la nave existe
+    const [nau] = await db.query(
+      'SELECT id FROM naus WHERE id = ?',
+      [nau_utilitzada]
+    );
+
+    if (nau.length === 0) {
+      throw new Error(`La nave con ID ${nau_utilitzada} no existe`);
+    }
     
-    // Iniciar transicio
     await db.query('START TRANSACTION');
 
     try {
-      // Insertar partida
-      const [result] = await db.query(`
-        INSERT INTO partides 
-        (usuari_id, puntuacio, duracio_segons, nau_utilitzada, obstacles_superats, completada)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `, [userId, puntuacio, duracio_segons, nau_utilitzada, obstacles_superats, completada]);
+      console.log('Insertando partida con datos:', {
+        userId,
+        puntuacio,
+        duracio_segons,
+        nau_utilitzada,
+        obstacles_superats,
+        completada
+      });
 
-      const partidaId = result.insertId;
+      // Generar UUID para la partida
+      const [uuidResult] = await db.query('SELECT UUID() as uuid');
+      const partidaId = uuidResult[0].uuid;
+
+      // Insertar partida con UUID específico
+      await db.query(`
+        INSERT INTO partides 
+        (id, usuari_id, puntuacio, duracio_segons, nau_utilitzada, 
+         obstacles_superats, completada)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, [partidaId, userId, puntuacio, duracio_segons, nau_utilitzada, 
+          obstacles_superats, completada]);
+
+      console.log('Partida insertada con ID:', partidaId);
 
       // Guardar posición actual jugador
       await db.query(`
@@ -34,13 +70,11 @@ export const saveGame = async (req, res) => {
         VALUES (?, ?, ?, ?, ?)
       `, [partidaId, userId, nau_utilitzada, posicioX, posicioY]);
 
-      // Guardar obstáculos
+      // Guardar obstáculos si existen
       if (obstacles && obstacles.length > 0) {
-        // Obtener el ID del obstáculo por defecto
         const [defaultObstacle] = await db.query('SELECT id FROM obstacles LIMIT 1');
         const obstacleId = defaultObstacle[0].id;
 
-        // Insertar cada obstáculo
         const obstacleValues = obstacles.map(obs => 
           [partidaId, obstacleId, obs.posicioX, obs.posicioY]
         );
@@ -52,14 +86,19 @@ export const saveGame = async (req, res) => {
         `, [obstacleValues]);
       }
 
-      // Actualizar puntos del usuario
+      // Actualizar estadísticas
       await db.query(`
-        UPDATE usuaris 
-        SET punts_totals = punts_totals + ?
+        UPDATE usuaris u
+        SET 
+          punts_totals = punts_totals + ?,
+          nivell = (
+            SELECT MAX(punts_requerits)
+            FROM nivells
+            WHERE punts_requerits <= (u.punts_totals + ?)
+          )
         WHERE id = ?
-      `, [puntuacio, userId]);
+      `, [puntuacio, puntuacio, userId]);
 
-      // Confirmar transaccio
       await db.query('COMMIT');
       
       res.json({ 
@@ -69,13 +108,13 @@ export const saveGame = async (req, res) => {
       });
 
     } catch (error) {
-      // Revertir transaccio si hi ha error
+      console.error('Error en la transacción:', error);
       await db.query('ROLLBACK');
       throw error;
     }
 
   } catch (error) {
-    console.error('Error al guardar la partida:', error);
+    console.error('Error detallado:', error);
     res.status(500).json({ 
       success: false,
       message: 'Error al guardar la partida',

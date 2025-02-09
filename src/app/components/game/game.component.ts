@@ -5,6 +5,8 @@ import { GameService } from '../../services/game.service';
 import { RegistreService } from '../../services/registre.service';
 import { BaseGame } from './models/base-game.model';
 import { Partida } from '../../models/partida.model';
+import { UserStats } from '../../interfaces/stats.interface';
+
 
 @Component({
   selector: 'app-game',
@@ -91,8 +93,6 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
   //Gestiona el final de la partida
   protected override onGameOver(): void {
     this.model.isGameRunning = false;
-    this.model.gameMessage = 'Game Over\nPrem ENTER per tornar a jugar';
-    this.model.showMessage = true;
     this.saveGameResults(true);
   }
 
@@ -101,40 +101,89 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
     const partida = new Partida();
     const gameTime = Math.floor((Date.now() - this.gameStartTime) / 1000);
 
+    // Log para debug
+    console.log('Iniciando guardado de partida');
+
     this.gameService.getUserShip().subscribe({
       next: (shipResponse) => {
-        partida.nau_utilitzada = shipResponse?.success && shipResponse?.data?.id ? 
-          shipResponse.data.id : '1';
-        partida.usuari_id = this.registreService.getUserId() || '0';
-        partida.puntuacio = this.model.score;
-        partida.duracio_segons = gameTime;
-        partida.obstacles_superats = this.model.score;
-        partida.completada = completed ? 1 : 0;
-        partida.posicioX = this.model.position.x;
-        partida.posicioY = this.model.position.y;
-        partida.obstacles = this.model.obstacles.map(obs => ({
-          posicioX: obs.x,
-          posicioY: obs.topHeight
-        }));
+        console.log('Respuesta nave:', shipResponse); // Log para debug
 
-        this.gameService.saveGameResults(partida).subscribe({
-          next: (response) => {
-            if (response.success) {
-              this.model.gameMessage = completed ? 
-                `Game Over! Puntuació: ${this.model.score}` : 
-                'Partida guardada! Prem Espai per continuar';
-              this.model.showMessage = true;
+        if (!shipResponse?.success || !shipResponse?.data?.id) {
+          console.error('No se pudo obtener la nave, intentando obtener nave por defecto');
+          this.gameService.getDefaultShip().subscribe({
+            next: (defaultShip) => {
+              if (defaultShip?.success && defaultShip?.data?.id) {
+                this.savePartida(defaultShip.data.id, completed, gameTime);
+              }
             }
-          },
-          error: (error) => console.error('Error al guardar la partida:', error)
-        });
+          });
+          return;
+        }
+
+        this.savePartida(shipResponse.data.id, completed, gameTime);
       },
-      error: (error) => console.error('Error al obtenir la nau:', error)
+      error: (error) => console.error('Error al obtener la nave:', error)
+    });
+  }
+
+  private savePartida(shipId: string, completed: boolean, gameTime: number): void {
+    const partida = new Partida();
+    
+    partida.usuari_id = this.registreService.getUserId() || '';
+    partida.nau_utilitzada = shipId;
+    partida.puntuacio = this.model.score;
+    partida.duracio_segons = gameTime;
+    partida.obstacles_superats = this.model.score;
+    partida.completada = completed ? 1 : 0;
+    partida.posicioX = Math.round(this.model.position.x);
+    partida.posicioY = Math.round(this.model.position.y);
+    
+    // Log para debug
+    console.log('Datos a guardar:', partida);
+
+    this.gameService.saveGameResults(partida).subscribe({
+      next: (response) => {
+        console.log('Respuesta guardado:', response); // Log para debug
+        if (response.success) {
+          if (!completed) {
+            this.model.gameMessage = 'Partida guardada correctament';
+            this.model.showMessage = true;
+            setTimeout(() => this.goToDashboard(), 2000);
+          } else {
+            this.model.gameMessage = `Game Over! Puntuació: ${this.model.score}`;
+            this.model.showMessage = true;
+          }
+        }
+      },
+      error: (error) => {
+        console.error('Error al guardar la partida:', error);
+        this.model.gameMessage = 'Error al guardar la partida';
+        this.model.showMessage = true;
+      }
+    });
+  }
+
+  // Método para actualizar estadísticas
+  private updateUserStats(partida: Partida): void {
+    const stats: UserStats = {
+      puntuacio: partida.puntuacio,
+      temps_jugat: partida.duracio_segons,
+      obstacles_superats: partida.obstacles_superats,
+      millor_puntuacio: partida.puntuacio,
+      total_partides: 1,
+      temps_total_jugat: partida.duracio_segons,
+      punts_totals: partida.puntuacio,
+      nivell: 1
+    };
+
+    this.gameService.updateUserStats(stats).subscribe({
+      next: (response) => console.log('Estadísticas actualizadas:', response),
+      error: (error) => console.error('Error al actualizar estadísticas:', error)
     });
   }
 
   //Navega al dashboard
-  goToDashboard(): void {
+  public goToDashboard(): void {
     this.router.navigate(['/dashboard']);
   }
 

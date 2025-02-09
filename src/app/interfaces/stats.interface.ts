@@ -18,11 +18,14 @@ export interface UserData {
 }
 
 export interface UserStats {
+  puntuacio: number;
+  temps_jugat: number;
+  obstacles_superats: number;
   millor_puntuacio: number;
   total_partides: number;
   temps_total_jugat: number;
   punts_totals: number;
-  nivell: Nivell;
+  nivell: number;
 }
 
 export interface ApiResponse {
