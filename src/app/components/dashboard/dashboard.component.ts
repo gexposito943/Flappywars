@@ -32,47 +32,64 @@ export class DashboardComponent implements OnInit {
     this.model.loading = true;
     
     // Cargar datos del usuario
-    this.model.usuari = this.registreService.getUserData();
+    const userData = this.registreService.getUserData();
+    if (!userData) {
+        this.model.error = 'No se encontraron datos del usuario';
+        this.model.loading = false;
+        return;
+    }
+    
+    this.model.usuari = userData;
 
     // Cargar naves disponibles
     this.shipService.getShips().subscribe({
-      next: (ships) => {
-        this.model.naus = ships;
-        this.cargarEstadisticas();
-      },
-      error: (error) => {
-        console.error('Error cargando naves:', error);
-        this.model.error = 'Error cargando naves';
-        this.model.loading = false;
-      }
+        next: (ships) => {
+            this.model.naus = ships;
+            if (this.model.usuari?.id) {  // Verificar que existe id
+                this.cargarEstadisticas();
+            } else {
+                this.model.loading = false;
+            }
+        },
+        error: (error) => {
+            console.error('Error cargando naves:', error);
+            this.model.error = 'Error cargando naves';
+            this.model.loading = false;
+        }
     });
   }
 
   // Cargar estadísticas del usuario
   private cargarEstadisticas(): void {
+    if (!this.model.usuari?.id) {
+        this.model.loading = false;
+        return;
+    }
+
     this.gameService.getUserStats(this.model.usuari.id).subscribe({
-      next: (response) => {
-        if (response?.success && response?.estadistiques) {
-          const stats = response.estadistiques;
-          
-          // Actualizar los puntos del usuario
-          this.model.usuari.punts_totals = stats.general?.punts_totals || 0;
-          
-          // Actualizar las estadísticas
-          this.model.stats = {
-            punts_totals: stats.general?.punts_totals || 0,
-            millor_puntuacio: stats.partides?.millor_puntuacio || 0,
-            total_partides: stats.partides?.total_partides || 0,
-            temps_total_jugat: stats.partides?.temps_total_jugat || 0
-          };
+        next: (response) => {
+            if (response?.success && response?.estadistiques) {
+                const stats = response.estadistiques;
+                
+                // Actualizar nivel y puntos del usuario
+                this.model.usuari.nivell = stats.general.nivell_actual;
+                this.model.usuari.punts_totals = stats.general.punts_totals;
+                
+                // Actualizar estadísticas
+                this.model.stats = {
+                    punts_totals: stats.general.punts_totals,
+                    millor_puntuacio: stats.partides?.millor_puntuacio || 0,
+                    total_partides: stats.partides?.total_partides || 0,
+                    temps_total_jugat: stats.partides?.temps_total_jugat || 0
+                };
+            }
+            this.model.loading = false;
+        },
+        error: (error) => {
+            console.error('Error cargando estadísticas:', error);
+            this.model.error = 'Error cargando estadísticas';
+            this.model.loading = false;
         }
-        this.model.loading = false;
-      },
-      error: (error) => {
-        console.error('Error cargando estadísticas:', error);
-        this.model.error = 'Error cargando estadísticas';
-        this.model.loading = false;
-      }
     });
   }
 

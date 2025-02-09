@@ -8,24 +8,19 @@ interface Achievement {
 }
 
 export class DashboardModel {
-    // Datos básicos
     usuari: any = null;
     naus: any[] = [];
     nauSeleccionada: any = null;
-    
-    // Estados
     loading: boolean = false;
     error: string | null = null;
+    hasSavedGame: boolean = false;
     
-    // Estadísticas
     stats = {
         punts_totals: 0,
         millor_puntuacio: 0,
         total_partides: 0,
         temps_total_jugat: 0
     };
-
-    hasSavedGame: boolean = false;
 
     private _achievements: Achievement[] = [];
 

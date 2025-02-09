@@ -89,9 +89,9 @@ CREATE TABLE partida_usuari_nau (
 
 -- Inserts de prueba con punts_requerits en lugar de disponible
 INSERT INTO naus (id, nom, velocitat, descripcio, imatge_url, punts_requerits) VALUES
-(UUID(), 'X-Wing', 1, 'Nau inicial perfecta per començar', '/assets/images/naus/x-wing.png', 0),
-(UUID(), 'TIE Fighter', 2, 'Nau ràpida de l''Imperi', '/assets/images/naus/tie-fighter.png', 500),
-(UUID(), 'Millennium Falcon', 3, 'La nau més ràpida', '/assets/images/naus/millennium-falcon.png', 1000);
+(UUID(), 'X-Wing', 1, 'Nau inicial perfecta per començar', 'assets/images/naus/x-wing.png', 0),
+(UUID(), 'TIE Fighter', 2, 'Nau ràpida de l''Imperi', 'assets/images/naus/tie-fighter.png', 500),
+(UUID(), 'Millennium Falcon', 3, 'La nau més ràpida', 'assets/images/naus/millennium-falcon.png', 1000);
 
 -- Inserts de niveles
 INSERT INTO nivells (id, nom, imatge_url, punts_requerits) VALUES
