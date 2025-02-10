@@ -1,27 +1,81 @@
-# Flappywars
+# 🚀 Projecte
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.4.
+## 📌 Requisits previs
 
-## Development server
+Abans de començar, assegura't de tenir instal·lats els següents programes:
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- [Git](https://git-scm.com/downloads) 📂
+- [Node.js](https://nodejs.org/) (inclou npm) 🛠️
+- [Angular CLI](https://angular.io/cli) ⚡
+- [MySQL Workbench](https://dev.mysql.com/downloads/workbench/) 🗄️
+- [Visual Studio Code](https://code.visualstudio.com/) ✨
 
-## Code scaffolding
+## 📥 Instal·lació i configuració
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+### 1️⃣ Clonar el repositori
 
-## Build
+Obre una terminal i executa:
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+```sh
+cd desktop
+git clone https://github.com/gexposito943/Flappywars.git
+```
 
-## Running unit tests
+### 2️⃣ Obrir el projecte a Visual Studio Code
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Per obrir el projecte en **Visual Studio Code**, executa la següent ordre en la terminal dins del directori del projecte:
 
-## Running end-to-end tests
+```sh
+code .
+```
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+Això obrirà automàticament l'editor amb tots els arxius carregats.
 
-## Further help
+### 3️⃣ Instal·lar dependències
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+```sh
+npm install
+```
+
+### 4️⃣ Iniciar el backend
+
+```sh
+cd backend
+npm run dev
+```
+
+Si el backend s'ha iniciat correctament, haurien d'aparèixer els següents missatges a la terminal:
+
+```sh
+✅ Connexió exitosa a flappywars_db
+✅ Connexio a la base de dades correcte
+
+🚀 Servidor iniciat correctament:
+   - Port: 3000
+   - Mode: development
+   - Base de dades: Connectada
+   - Assets: naus, nivells, obstacles
+```
+
+El servidor backend s'executarà en mode desenvolupament i estarà preparat per rebre peticions.
+
+### 5️⃣ Iniciar el frontend
+
+Obre una nova terminal i executa:
+
+```sh
+ng serve
+```
+
+Aquest comandament posarà en marxa l'aplicació frontend, que estarà disponible a `http://localhost:4200/`.
+
+### 6️⃣ Configurar la base de dades
+
+1. Obre **MySQL Workbench** 🗄️.
+2. Crea una nova base de dades.
+3. Copia el fitxer SQL que es troba a la carpeta `database/`.
+4. Executa el script SQL a MySQL Workbench per importar la base de dades.
+
+## ✅ Ús
+
+Un cop completats tots els passos anteriors, el projecte estarà en funcionament i llest per ser utilitzat! 🚀
