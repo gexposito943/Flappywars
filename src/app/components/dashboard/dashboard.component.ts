@@ -27,39 +27,39 @@ export class DashboardComponent implements OnInit {
     this.cargarDatos();
   }
 
-  // Cargar datos iniciales
+  // Cargar dades inicials
   private cargarDatos(): void {
     this.model.loading = true;
     
-    // Cargar datos del usuario
+    // Cargar dades de l'usuari
     const userData = this.registreService.getUserData();
     if (!userData) {
-        this.model.error = 'No se encontraron datos del usuario';
+        this.model.error = 'No s\'han trobat dades de l\'usuari';
         this.model.loading = false;
         return;
     }
     
     this.model.usuari = userData;
 
-    // Cargar naves disponibles
+    // Cargar naus disponibles
     this.shipService.getShips().subscribe({
         next: (ships) => {
             this.model.naus = ships;
-            if (this.model.usuari?.id) {  // Verificar que existe id
+            if (this.model.usuari?.id) {  
                 this.cargarEstadisticas();
             } else {
                 this.model.loading = false;
             }
         },
         error: (error) => {
-            console.error('Error cargando naves:', error);
-            this.model.error = 'Error cargando naves';
+            console.error('Error carregant naus:', error);
+            this.model.error = 'Error carregant naus';
             this.model.loading = false;
         }
     });
   }
 
-  // Cargar estadísticas del usuario
+  // Cargar estadístiques de l'usuari
   private cargarEstadisticas(): void {
     if (!this.model.usuari?.id) {
         this.model.loading = false;
@@ -71,11 +71,11 @@ export class DashboardComponent implements OnInit {
             if (response?.success && response?.estadistiques) {
                 const stats = response.estadistiques;
                 
-                // Actualizar nivel y puntos del usuario
+                // Actualitzar nivell i punts de l'usuari
                 this.model.usuari.nivell = stats.general.nivell_actual;
                 this.model.usuari.punts_totals = stats.general.punts_totals;
                 
-                // Actualizar estadísticas
+                // Actualitzar estadístiques
                 this.model.stats = {
                     punts_totals: stats.general.punts_totals,
                     millor_puntuacio: stats.partides?.millor_puntuacio || 0,
@@ -86,14 +86,14 @@ export class DashboardComponent implements OnInit {
             this.model.loading = false;
         },
         error: (error) => {
-            console.error('Error cargando estadísticas:', error);
-            this.model.error = 'Error cargando estadísticas';
+            console.error('Error carregant estadístiques:', error);
+            this.model.error = 'Error carregant estadístiques';
             this.model.loading = false;
         }
     });
   }
 
-  // Acciones del usuario
+  // Accions de l'usuari
   onShipSelect(nau: any): void {
     if (this.model.isNauDisponible(nau)) {
       this.model.nauSeleccionada = nau;
@@ -121,16 +121,16 @@ export class DashboardComponent implements OnInit {
   }
 
   onResetPoints(): void {
-    if (confirm('¿Seguro que quieres reiniciar tus puntos a 0?')) {
+    if (confirm('¿Segur que vols reiniciar els teus punts a 0?')) {
       this.gameService.resetUserPoints(this.model.usuari.id).subscribe({
         next: () => {
           this.model.stats.punts_totals = 0;
           this.model.usuari.punts_totals = 0;
-          alert('Puntos reiniciados correctamente');
+          alert('Punts reiniciats correctament');
         },
         error: (error) => {
           console.error('Error:', error);
-          alert('Error al reiniciar los puntos');
+          alert('Error al reiniciar punts');
         }
       });
     }
@@ -141,7 +141,7 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
-  // Helper para formatear tiempo
+  // Helper per formatejar temps
   formatTime(seconds: number): string {
     return this.model.formatTime(seconds);
   }

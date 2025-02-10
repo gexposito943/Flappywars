@@ -37,7 +37,7 @@ export class ShipService {
       { headers: this.getHeaders() }
     ).pipe(
       map(response => {
-        console.log('Respuesta naves:', response);
+        console.log('Resposta naus:', response);
         return response.naus;
       })
     );

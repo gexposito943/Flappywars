@@ -62,10 +62,11 @@ describe('GameService', () => {
   it('should save game results', () => {
     const gameData = new Partida();
     gameData.usuari_id = '1';
-    gameData.puntuacio = '100';
-    gameData.duracio_segons = '60';
+    gameData.puntuacio = 100;
+    gameData.duracio_segons = 60;
     gameData.nau_utilitzada = 'nau-1';
-    gameData.completada = true;
+    gameData.obstacles_superats = 5;
+    gameData.completada = 1;
 
     service.saveGameResults(gameData).subscribe();
     const req = httpMock.expectOne(`${service['apiUrl']}/stats/update`);
@@ -119,12 +120,11 @@ describe('GameService', () => {
   it('should handle error when saving game results', () => {
     const gameData = new Partida();
     gameData.usuari_id = '1';
-    gameData.puntuacio = '100';
-    gameData.duracio_segons = '60';
+    gameData.puntuacio = 100;
+    gameData.duracio_segons = 60;
     gameData.nau_utilitzada = 'nau-1';
-    gameData.nivell_dificultat = 'normal';
-    gameData.obstacles_superats = '5';
-    gameData.completada = true;
+    gameData.obstacles_superats = 5;
+    gameData.completada = 1;
     
     service.saveGameResults(gameData).subscribe({
       error: (error) => expect(error).toBeTruthy()

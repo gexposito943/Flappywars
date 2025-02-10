@@ -159,7 +159,7 @@ export class GameService {
       { headers: this.getHeaders() }
     ).pipe(
       catchError(error => {
-        console.error('Error al actualizar estadísticas:', error);
+        console.error('Error el actualitzar estadístiques:', error);
         return throwError(() => error);
       })
     );

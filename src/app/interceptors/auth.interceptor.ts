@@ -11,14 +11,14 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   const token = registreService.getToken();
   
   if (token) {
-    // Asegurarse de que el token está limpio y es válido
+    // Assegurar-se que el token està net i és vàlid
     const cleanToken = token.trim();
     
     if (!cleanToken || cleanToken === 'undefined' || cleanToken === 'null') {
-      console.log('Token inválido detectado');
+      console.log('Token invàlid detectat');
       registreService.logout();
       router.navigate(['/']);
-      return throwError(() => new Error('Token inválido'));
+      return throwError(() => new Error('Token invàlid'));
     }
 
     req = req.clone({
@@ -28,7 +28,7 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
       }
     });
 
-    console.log('Token enviado:', cleanToken);
+    console.log('Token enviat:', cleanToken);
   }
 
   return next(req).pipe(
@@ -40,22 +40,22 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
       });
 
       if (error.status === 403) {
-        // Solo hacer logout si el token está expirado o es inválido
+        // Solo fer logout si el token està expirat o és invàlid
         const response = error.error;
-        console.log('Respuesta del servidor:', response);
+        console.log('Resposta del servidor:', response);
 
         if (response?.message?.includes('expired') || 
             response?.message?.includes('invalid')) {
-          console.log('Token expirado o inválido, haciendo logout');
+          console.log('Token expirat o invàlid, fent logout');
           registreService.logout();
           router.navigate(['/']);
         } else {
-          console.log('Error 403 pero no relacionado con el token');
+          console.log('Error 403 però no relacionat amb el token');
         }
       }
 
       if (error.status === 403 && error.error?.details === 'jwt malformed') {
-        console.log('Token malformado detectado, haciendo logout');
+        console.log('Token malformat detectat, fent logout');
         registreService.logout();
         router.navigate(['/']);
       }

@@ -4,7 +4,7 @@
 
       <!-- Sign In Form -->
       <form (ngSubmit)="handleSignIn()" class="sign-in-form">
-        <h2 class="title" id="signin-title">Accede a la Galaxia</h2>
+        <h2 class="title" id="signin-title">Accedeix a la Galaxia</h2>
         <div class="input-field-2">
           <label for="signin-email" class="visually-hidden">Email</label>
           <input type="email" 
@@ -16,7 +16,7 @@
         </div>
         
         <div class="input-field-2">
-          <label for="signin-password" class="visually-hidden">Contraseña</label>
+          <label for="signin-password" class="visually-hidden">Contrasenya</label>
           <input type="password"
                  id="signin-password"
                  [(ngModel)]="loginCredentials.password"
@@ -29,13 +29,13 @@
                 class="btn-login solid"
                 [disabled]="!loginCredentials.validate().isValid"
                 aria-label="Iniciar sesion"> 
-          Unirse a la Fuerza
+          Entrenar-te a la Força
         </button>
       </form>
 
       <!-- Sign Up Form -->
       <form (ngSubmit)="onSubmit()" class="sign-up-form">
-        <h2 class="title" id="signup-title">Únete a la Rebelión</h2>
+        <h2 class="title" id="signup-title">Úneix-te a la Rebel·lió</h2>
         
         <div class="input-field">
           <input type="text"
@@ -93,7 +93,7 @@
         </div>
         
         <button type="submit" class="btn-login">
-          Comenzar el Entrenamiento
+          Començar l'Entrenament
         </button>
       </form>
     </div>
@@ -105,13 +105,13 @@
       <div class="content">
         <h1 class="service-title">Star Wars: The Force Runner</h1>
         <br>
-        <p>¡Que la Fuerza te acompañe en esta aventura!</p>
+        <p>¡Que la Força t'acompanya en aquesta aventura!</p>
         <br>
         <button class="btn transparent" 
                 id="sign-up-btn" 
                 #signUpBtn
                 aria-label="Canviar a formulari de registre">
-          Unirse a la Rebelión
+          Uneix-te a la Rebel·lió
         </button>
       </div>
     </div>
@@ -121,13 +121,13 @@
       <div class="content">
         <h1>Star Wars: The Force Runner</h1>
         <br>
-        <p>Tu viaje por la galaxia está a punto de comenzar</p>
+        <p>El teu viatge per la galaxia està a punt de començar</p>
         <br>
         <button class="btn transparent" 
                 id="sign-in-btn" 
                 #signInBtn
                 aria-label="Canviar a formulari d'inici de sessió">
-          Acceder a la Galaxia
+          Accedeix a la Galaxia
         </button> 
       </div>
     </div>

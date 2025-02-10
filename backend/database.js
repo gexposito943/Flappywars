@@ -13,15 +13,15 @@ export const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  // Nuevas opciones para mejor manejo de fechas y UUIDs
+  // Noves opcions per a un millor maneig de dates i UUIDs
   timezone: 'Z',
   dateStrings: true
 });
 
-// Función para verificar la conexión y la estructura de la base de datos
+// Funció per verificar la connexió i la estructura de la base de dades
 async function connectToDatabase() {
   try {
-    // Verificar conexión básica
+    // Verificar connexió bàsica
     const [result] = await pool.query('SELECT 1');
     console.log('✅ Connexió exitosa a flappywars_db');
 
@@ -51,7 +51,7 @@ async function connectToDatabase() {
       return false;
     }
 
-    // Verificar datos básicos necesarios
+    // Verificar dades bàsiques necessàries
     const [defaultShip] = await pool.query(
       "SELECT id FROM naus WHERE nom = 'X-Wing' AND punts_requerits = 0"
     );
@@ -78,7 +78,7 @@ async function connectToDatabase() {
   }
 }
 
-// Función para ejecutar queries dentro de una transacción
+// Funció per executar queries dins d'una transacció
 export async function withTransaction(callback) {
   const connection = await pool.getConnection();
   try {

@@ -23,18 +23,18 @@ app.use(cors({
 app.use(express.json());
 app.use(logRequest);
 
-// Configuración de rutas estáticas
+// Configuracio de rutes estàtiques
 const ASSETS_PATH = path.join(__dirname, 'public/assets');
 app.use('/public/assets', express.static(ASSETS_PATH));
 
-// Rutas de assets organizadas por tipo
+// Rutes d'assets organitzades per tipus
 const assetRoutes = {
   naus: '/public/assets/images/naus',
   nivells: '/public/assets/images/nivells',
   obstacles: '/public/assets/images/obstacles'
 };
 
-// Ruta para verificar assets
+// Ruta per verificar assets
 app.get('/api/v1/assets/verify', (req, res) => {
   const assetStatus = {};
   
@@ -43,7 +43,7 @@ app.get('/api/v1/assets/verify', (req, res) => {
     assetStatus[key] = {
       path: fullPath,
       route: route,
-      exists: true // Aquí podrías añadir una verificación real si lo necesitas
+      exists: true 
     };
   }
 
@@ -55,19 +55,19 @@ app.get('/api/v1/assets/verify', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-// Inicialización de la base de datos
+// Inicialització de la base de dades
 async function initializeServer() {
   try {
     const dbConnected = await connectToDatabase();
     if (!dbConnected) {
-      console.error('❌ Error fatal: No es va poder connectar a la base de dades');
+      console.error('❌ Error fatal: No s\'ha pogut connectar a la base de dades');
       process.exit(1);
     }
 
-    // Rutas API
+    // Rutes API
     app.use('/api/v1', routes);
 
-    // Manejador de errores global
+    // Manejador d'errors global
     app.use((err, req, res, next) => {
       console.error('Error no controlat:', err);
       res.status(500).json({

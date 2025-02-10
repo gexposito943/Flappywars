@@ -6,10 +6,6 @@ import { RegistreService } from '../../services/registre.service';
 import { User } from './models/user.model';
 import { userLogin } from './models/userLogin.model';
 
-/**
- * Component que mostra el formulari de registre i login
- * Delega la lògica al controlador i només gestiona la UI
- */
 @Component({
   selector: 'etiqueta-formulari',
   standalone: true,

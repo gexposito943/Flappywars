@@ -5,7 +5,7 @@ import { pool as db } from "../database.js";
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const MAX_LOGIN_ATTEMPTS = 5; // Número máximo de intentos fallidos
+const MAX_LOGIN_ATTEMPTS = 5; // Número màxim d'intents fallits
 
 if (!JWT_SECRET) {
   console.error("ERROR: JWT_SECRET no está definida en las variables de entorno");
@@ -27,7 +27,7 @@ export const authenticateToken = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Verificar estado del usuario
+    // Verificar estat de l'usuari
     const [user] = await db.query(`
       SELECT id, estat, intents_login, ultim_acces 
       FROM usuaris 
@@ -48,7 +48,7 @@ export const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Actualizar último acceso
+    // Actualitzar últim accés
     await db.query(`
       UPDATE usuaris 
       SET ultim_acces = CURRENT_TIMESTAMP 
@@ -71,7 +71,7 @@ export const authenticateToken = async (req, res, next) => {
   }
 };
 
-// Nuevo middleware para verificar intentos de login
+// Nou middleware per verificar intents de login
 export const checkLoginAttempts = async (req, res, next) => {
   const { email } = req.body;
   

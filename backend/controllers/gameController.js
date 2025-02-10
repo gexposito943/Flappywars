@@ -4,8 +4,8 @@ export const saveGame = async (req, res) => {
   try {
     const userId = req.user.userId;
     
-    // Log para debug
-    console.log('Datos recibidos:', {
+    // Log per el debug
+    console.log('Dades rebudes:', {
       userId,
       body: req.body
     });
@@ -21,25 +21,25 @@ export const saveGame = async (req, res) => {
       completada = true
     } = req.body;
 
-    // Validar que tenemos todos los datos necesarios
+    // Validar que tenim tots els dades necessarises
     if (!nau_utilitzada) {
-      throw new Error('Falta el ID de la nave');
+      throw new Error('Falta el ID de la nau');
     }
 
-    // Verificar que la nave existe
+    // Verificar que la nau existeix
     const [nau] = await db.query(
       'SELECT id FROM naus WHERE id = ?',
       [nau_utilitzada]
     );
 
     if (nau.length === 0) {
-      throw new Error(`La nave con ID ${nau_utilitzada} no existe`);
+      throw new Error(`La nau amb ID ${nau_utilitzada} no existeix`);
     }
     
     await db.query('START TRANSACTION');
 
     try {
-      console.log('Insertando partida con datos:', {
+      console.log('Insertant partida amb dades:', {
         userId,
         puntuacio,
         duracio_segons,
@@ -48,11 +48,11 @@ export const saveGame = async (req, res) => {
         completada
       });
 
-      // Generar UUID para la partida
+      // Generar UUID per la partida
       const [uuidResult] = await db.query('SELECT UUID() as uuid');
       const partidaId = uuidResult[0].uuid;
 
-      // Insertar partida con UUID específico
+      // Insertar partida amb UUID específic
       await db.query(`
         INSERT INTO partides 
         (id, usuari_id, puntuacio, duracio_segons, nau_utilitzada, 
@@ -63,14 +63,14 @@ export const saveGame = async (req, res) => {
 
       console.log('Partida insertada con ID:', partidaId);
 
-      // Guardar posición actual jugador
+      // Guardar posició actual jugador
       await db.query(`
         INSERT INTO partida_usuari_nau 
         (partida_id, usuari_id, nau_id, posicioX, posicioY)
         VALUES (?, ?, ?, ?, ?)
       `, [partidaId, userId, nau_utilitzada, posicioX, posicioY]);
 
-      // Guardar obstáculos si existen
+      // Guardar obstacles si existeixen
       if (obstacles && obstacles.length > 0) {
         const [defaultObstacle] = await db.query('SELECT id FROM obstacles LIMIT 1');
         const obstacleId = defaultObstacle[0].id;
@@ -86,7 +86,7 @@ export const saveGame = async (req, res) => {
         `, [obstacleValues]);
       }
 
-      // Actualizar estadísticas
+      // Actualitzar estadístiques
       await db.query(`
         UPDATE usuaris u
         SET 
@@ -114,7 +114,7 @@ export const saveGame = async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Error detallado:', error);
+    console.error('Error detallat:', error);
     res.status(500).json({ 
       success: false,
       message: 'Error al guardar la partida',
@@ -179,7 +179,7 @@ export const loadGame = async (req, res) => {
     const { partidaId } = req.params;
     const userId = req.user.userId;
 
-    // Obtener datos básicos de la partida y posición del jugador
+    // Obtener dades bàsiques de la partida i posició del jugador
     const [partida] = await db.query(`
       SELECT 
         p.*,
@@ -200,7 +200,7 @@ export const loadGame = async (req, res) => {
       });
     }
 
-    // Obtener obstáculos de la partida
+    // Obtener obstacles de la partida
     const [obstacles] = await db.query(`
       SELECT 
         op.posicioX,

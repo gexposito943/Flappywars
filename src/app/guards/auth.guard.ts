@@ -25,7 +25,7 @@ export class AuthGuard implements CanActivate {
     console.log('AuthGuard check - isLoggedIn:', isLoggedIn);
 
     if (!isLoggedIn || !token || token === 'undefined' || token === 'null') {
-      console.log('Token inválido o expirado, redirigiendo al login');
+      console.log('Token invàlid o expirat, redirigint al login');
       this.registreService.logout();
       this.router.navigate(['/']);
       return false;

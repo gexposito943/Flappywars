@@ -4,7 +4,7 @@ export const getUserStats = async (req, res) => {
   try {
     const userId =  req.params.userId || req.user.userId;
     
-    // Obtener estadísticas generales del usuario
+    // Obtenir estadístiques generals de l'usuari
     const [userStats] = await db.query(`
       SELECT 
         u.punts_totals,
@@ -25,7 +25,7 @@ export const getUserStats = async (req, res) => {
       GROUP BY u.id, u.punts_totals, u.nivell, n.nom, n.imatge_url, nau.nom, nau.imatge_url
     `, [userId]);
 
-    // Obtener últimas 5 partidas
+    // Obtenir últimes 5 partides
     const [ultimesPartides] = await db.query(`
       SELECT 
         p.*,
@@ -38,7 +38,7 @@ export const getUserStats = async (req, res) => {
       LIMIT 5
     `, [userId]);
 
-    // Obtener siguiente nivel
+    // Obtenir següent nivell
     const [nextLevel] = await db.query(`
       SELECT *
       FROM nivells
@@ -106,7 +106,7 @@ export const updateStats = async (req, res) => {
     await db.query('START TRANSACTION');
 
     try {
-      // Actualizar puntos totales y verificar nivel
+      // Actualitzar punts totals i verificar nivell
       const [userUpdate] = await db.query(`
         UPDATE usuaris 
         SET 
@@ -119,7 +119,7 @@ export const updateStats = async (req, res) => {
         WHERE id = ?
       `, [puntuacio, puntuacio, userId]);
 
-      // Obtener estadísticas actualizadas
+      // Obtenir estadístiques actualitzades
       const [updatedStats] = await db.query(`
         SELECT 
           u.*,

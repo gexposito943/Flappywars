@@ -129,7 +129,7 @@ describe('ShipService', () => {
       const names = ships.map(ship => ship.nom);
       const uniqueNames = new Set(names);
       expect(uniqueNames.size).toBe(ships.length);
-      //verifica que los nombres no están vacíos
+      //verifica que els noms no estàn buits
       names.forEach(name => {
         expect(name.length).toBeGreaterThan(0);
       });

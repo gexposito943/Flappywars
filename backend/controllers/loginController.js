@@ -84,7 +84,7 @@ export const loginUser = async (req, res) => {
 
         const { email, contrasenya } = req.body;
 
-        // Obtener usuario con estadísticas
+        // Obtenir usuari amb estadístiques 
         const [users] = await db.query(`
             SELECT 
                 u.*,
@@ -116,7 +116,7 @@ export const loginUser = async (req, res) => {
             });
         }
 
-        // Actualizar último acceso
+        // Actualitzar últim accés
         await db.query('UPDATE usuaris SET ultim_acces = NOW() WHERE id = ?', [user.id]);
 
         // Generar token

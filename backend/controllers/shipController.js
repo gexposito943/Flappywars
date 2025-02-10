@@ -119,7 +119,7 @@ export const updateUserShip = async (req, res) => {
       });
     }
 
-    // Verificar si el usuario cumple los requisitos de punto 
+    // Verificar si l'usuari compleix els requisits de punts
     if (shipData[0].punts_requerits && shipData[0].punts_totals < shipData[0].punts_requerits) {
       return res.status(403).json({
         success: false,
@@ -144,10 +144,10 @@ export const updateUserShip = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error al actualitzar nau del usuari:', error);
+    console.error('Error al actualitzar nau de l\'usuari:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Error al actualitzar la nau del usuari',
+      message: 'Error al actualitzar la nau de l\'usuari',
       error: error.message 
     });
   }

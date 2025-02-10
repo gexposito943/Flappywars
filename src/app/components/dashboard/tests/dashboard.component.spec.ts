@@ -7,7 +7,7 @@ import { GameService } from '../../../services/game.service';
 import { ShipService } from '../../../services/ship.service';
 import { of } from 'rxjs';
 import { Nau } from '../../../models/nau.model';
-import { Usuari } from '../../../models/usuari.model';
+
 
 describe('DashboardComponent', () => {
     let component: DashboardComponent;

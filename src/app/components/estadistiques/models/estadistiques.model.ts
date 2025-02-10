@@ -1,6 +1,4 @@
-import { Estadistica, Usuari } from '../../../models';
 import { GlobalStats } from '../../../interfaces/stats.interface';
-
 export class EstadistiquesModel {
     private _estadistiques: GlobalStats[] = [];
     private _loading: boolean = false;

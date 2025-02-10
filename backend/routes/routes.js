@@ -21,16 +21,16 @@ import {
 
 const router = express.Router();
 
-// Middleware para sanear datos
+// Middleware per senejar dades de les peticions
 router.use(sanitizeData);
 
-// Rutas públicas (sin autenticación)
+// Rutes públiques (sense autenticació)
 router.post("/register", registerUsers);
 router.post("/login", loginUser);
 router.get("/stats/global", getGlobalStats);
 router.get('/ships', getShips);
 
-// Ruta para nave por defecto
+// Ruta per la nau per defecte
 router.get('/ships/default', async (req, res) => {
   try {
     const [defaultShip] = await db.query(`
@@ -38,7 +38,7 @@ router.get('/ships/default', async (req, res) => {
     `);
 
     if (defaultShip.length === 0) {
-      throw new Error('No se encontró la nave por defecto');
+      throw new Error('No s\'ha trobat la nau per defecte');
     }
 
     res.json({
@@ -48,30 +48,30 @@ router.get('/ships/default', async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error al obtener la nave por defecto',
+      message: 'Error al obtenir la nau per defecte',
       error: error.message
     });
   }
 });
 
-// Rutas protegidas (requieren autenticación)
+// Rutes protegides (requereixen autenticació)
 router.use(authenticateToken);
 
-// Rutas de estadísticas
+// Rutes de estadístiques
 router.get("/stats/:userId?", getUserStats);
 router.post("/stats/update", updateStats);
 
-// Rutas de naves del usuario
+// Rutes de naus de l'usuari
 router.get("/user/ship/:userId", getUserShip);
 router.get("/user/ship", getUserShip);
 router.put("/user/ship", updateUserShip);
 
-// Rutas de partidas
+// Rutes de partides
 router.post("/game/save", saveGame);
 router.get("/game/history", getGameHistory);
 router.get("/game/load/:partidaId", loadGame);
 
-// Logging para debug
+// Logging per debug
 router.use((req, res, next) => {
   console.log(`Route accessed: ${req.method} ${req.originalUrl}`);
   console.log('Request body:', req.body);

@@ -1,6 +1,3 @@
-import { Usuari, Nau, Partida, Estadistica } from '../../../models';
-import { UserStats } from '../../../interfaces/stats.interface';
-
 interface Achievement {
     id: number;
     nom: string;
@@ -24,7 +21,7 @@ export class DashboardModel {
 
     private _achievements: Achievement[] = [];
 
-    // Métodos simples
+    // Mètodes simples
     isNauDisponible(nau: any): boolean {
         return this.usuari?.punts_totals >= nau.punts_requerits;
     }
@@ -40,7 +37,7 @@ export class DashboardModel {
         return this.nauSeleccionada !== null;
     }
 
-    // Métodos adicionales
+    // Mètodes addicionals
     getPlayButtonText(): string {
         return this.canPlay() ? 'Jugar' : 'Selecciona una nau';
     }
