@@ -1,4 +1,5 @@
-<div class="container" #container role="main">
+<div class="container" #container role="main" [class.sign-up-mode]="isSignUpMode" 
+     aria-label="Formulari amb fons espacial de Star Wars">
   <div class="forms-container">
     <div class="signin-signup">
 
@@ -9,6 +10,7 @@
           <label for="signin-email" class="visually-hidden">Email</label>
           <input type="email" 
                  id="signin-email"
+                 tabindex="1"
                  [(ngModel)]="loginCredentials.email"
                  name="email"
                  placeholder="Email"
@@ -19,6 +21,7 @@
           <label for="signin-password" class="visually-hidden">Contrasenya</label>
           <input type="password"
                  id="signin-password"
+                 tabindex="2"
                  [(ngModel)]="loginCredentials.password"
                  name="password"
                  placeholder="Contraseña"
@@ -26,6 +29,7 @@
         </div>
 
         <button type="submit" 
+                tabindex="3"
                 class="btn-login solid"
                 [disabled]="!loginCredentials.validate().isValid"
                 aria-label="Iniciar sesion"> 
@@ -101,7 +105,8 @@
 
   <div class="panels-container">
     <!-- Left Panel -->
-    <div class="panel left-panel" role="complementary">
+    <div class="panel left-panel" role="complementary" 
+         aria-label="Panell esquerre amb informació de benvinguda">
       <div class="content">
         <h1 class="service-title">Star Wars: The Force Runner</h1>
         <br>
@@ -147,3 +152,4 @@
     La contrasenya és obligatòria
   </div>
 </div>
+

@@ -32,7 +32,12 @@ input {
 }
 
 .error-message {
-  color: red;
+  color: #ff3333;
+  font-weight: 500;
+  background-color: #ffebee;
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #ff3333;
   font-size: 0.9rem;
   margin-top: 10px;
   text-align: left;
@@ -98,7 +103,7 @@ form.sign-in-form {
   font-family: 'Montserrat', sans-serif;
   font-size: 2.2rem;
   color: #FFD700;
-  text-shadow: 0 0 10px rgba(255, 232, 31, 0.5);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
   margin-bottom: 10px;
 }
 
@@ -125,13 +130,13 @@ form.sign-in-form {
   line-height: 1;
   font-weight: 600;
   font-size: 1.1rem;
-  color: #333;
+  color: #333333;
   width: calc(100% - -290px);
 }
 
 .input-field input::placeholder,
 .input-field-2 input::placeholder {
-  color: #aaa;
+  color: #666666;
   font-weight: 500;
 }
 
@@ -212,6 +217,8 @@ form.sign-in-form {
   right: 48%;
   transform: translateY(-50%);
   background: url('/assets/images/fons.jpg') no-repeat center center;
+  background-color: rgba(0, 0, 0, 0.6);
+  background-blend-mode: overlay;
   background-size: cover;
   transition: 1.8s ease-in-out;
   z-index: 6;
@@ -478,6 +485,27 @@ form.sign-in-form {
   color: #ff0000;
   font-size: 0.8em;
   margin-top: 5px;
+}
+
+input:focus {
+  outline: 2px solid #FFD700;
+  outline-offset: 2px;
+}
+
+button[disabled] {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+}
+
+.btn-login {
+  background-color: #FFD700;
+  color: #000000;
+  font-weight: 600;
+}
+
+.btn-login:hover {
+  background-color: #c0a404;
 }
 
 
