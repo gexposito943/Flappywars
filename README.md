@@ -78,13 +78,14 @@ Aquest comandament posarà en marxa l'aplicació frontend, que estarà disponibl
 
 ### Configurar l'arxiu .env.
 Dins de la carpeta del Backend crearem l'arxiu .env amb les següents dades:
+
+```bash
   DB_HOST=el teu host
   DB_USER= el teu usuari
   DB_PASSWORD= la teva contrasenya
   DB_DATABASE= el teu nom de la base de dades
-
   JWT_SECRET= el teu token.
-
+```
 ## ✅ Ús
 
 Un cop completats tots els passos anteriors, el projecte estarà en funcionament i llest per ser utilitzat! 🚀
