@@ -76,6 +76,15 @@ Aquest comandament posarà en marxa l'aplicació frontend, que estarà disponibl
 3. Copia el fitxer SQL que es troba a la carpeta `database/`.
 4. Executa el script SQL a MySQL Workbench per importar la base de dades.
 
+### Configurar l'arxiu .env.
+Dins de la carpeta del Backend crearem l'arxiu .env amb les següents dades:
+  DB_HOST=el teu host
+  DB_USER= el teu usuari
+  DB_PASSWORD= la teva contrasenya
+  DB_DATABASE= el teu nom de la base de dades
+
+  JWT_SECRET= el teu token.
+
 ## ✅ Ús
 
 Un cop completats tots els passos anteriors, el projecte estarà en funcionament i llest per ser utilitzat! 🚀
