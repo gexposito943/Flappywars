@@ -64,7 +64,7 @@ router.post("/stats/update", updateStats);
 // Rutes de naus de l'usuari
 router.get("/user/ship/:userId", getUserShip);
 router.get("/user/ship", getUserShip);
-router.put("/user/ship", updateUserShip);
+router.put("/user/ship/:userId", updateUserShip);
 
 // Rutes de partides
 router.post("/game/save", saveGame);

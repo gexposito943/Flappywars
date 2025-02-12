@@ -27,7 +27,6 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
         'Content-Type': 'application/json'
       }
     });
-
     console.log('Token enviat:', cleanToken);
   }
 

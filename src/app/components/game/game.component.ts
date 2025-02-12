@@ -6,7 +6,7 @@ import { RegistreService } from '../../services/registre.service';
 import { BaseGame } from './models/base-game.model';
 import { Partida } from '../../models/partida.model';
 import { UserStats } from '../../interfaces/stats.interface';
-
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-game',
@@ -20,6 +20,7 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
   private canvas!: ElementRef<HTMLCanvasElement>;
   
   private gameStartTime: number = 0;
+  private currentShip: any = null;
 
   constructor(
     private router: Router,
@@ -37,8 +38,25 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
       if (!context) return;
 
       this.initRenderer(context);
-      await this.assets.loadAll();
-      this.startGame();
+
+      try {
+        // Primero cargamos la nave actual
+        const shipResponse = await firstValueFrom(this.gameService.getUserShip());
+        console.log('Nave cargada en el juego:', shipResponse);
+        
+        if (shipResponse?.nau) {
+          this.currentShip = shipResponse.nau;
+          // Actualizar la imagen de la nave
+          await this.assets.updateShipImage(this.currentShip.imatge_url);
+        }
+
+        // Luego cargamos el resto de assets
+        await this.assets.loadAll();
+        this.startGame();
+
+      } catch (error) {
+        console.error('Error al inicializar el juego:', error);
+      }
     }
   }
 
@@ -101,13 +119,14 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
     const partida = new Partida();
     const gameTime = Math.floor((Date.now() - this.gameStartTime) / 1000);
 
-    console.log('Inician guardat de la partida');
+    console.log('Iniciando guardado de la partida');
 
     this.gameService.getUserShip().subscribe({
       next: (shipResponse) => {
         console.log('Respuesta nave:', shipResponse); 
 
-        if (!shipResponse?.success || !shipResponse?.data?.id) {
+        // La respuesta viene como { success: true, nau: {...} }
+        if (!shipResponse?.nau?.id) {
           console.error('No se pudo obtener la nave, intentando obtener nave por defecto');
           this.gameService.getDefaultShip().subscribe({
             next: (defaultShip) => {
@@ -119,7 +138,7 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
           return;
         }
 
-        this.savePartida(shipResponse.data.id, completed, gameTime);
+        this.savePartida(shipResponse.nau.id, completed, gameTime);
       },
       error: (error) => console.error('Error al obtener la nave:', error)
     });

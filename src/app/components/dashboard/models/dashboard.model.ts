@@ -21,9 +21,16 @@ export class DashboardModel {
 
     private _achievements: Achievement[] = [];
 
-    // Mètodes simples
+    // Simplificamos la lógica de disponibilidad
     isNauDisponible(nau: any): boolean {
-        return this.usuari?.punts_totals >= nau.punts_requerits;
+        console.log('Verificando nave:', {
+            nau,
+            puntsUsuari: this.usuari?.punts_totals,
+            puntsRequerits: nau.punts_requerits
+        });
+
+        // Si no tiene puntos requeridos o el usuario tiene suficientes puntos
+        return !nau.punts_requerits || this.usuari?.punts_totals >= nau.punts_requerits;
     }
 
     formatTime(seconds: number): string {

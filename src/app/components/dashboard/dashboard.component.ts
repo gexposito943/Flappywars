@@ -41,10 +41,11 @@ export class DashboardComponent implements OnInit {
     
     this.model.usuari = userData;
 
-    // Cargar naus disponibles
+    // Cargar naus disponibles y la nave actual
     this.shipService.getShips().subscribe({
         next: (ships) => {
             this.model.naus = ships;
+            this.loadCurrentShip(); // Cargar la nave actual después de cargar todas las naves
             if (this.model.usuari?.id) {  
                 this.cargarEstadisticas();
             } else {
@@ -95,19 +96,65 @@ export class DashboardComponent implements OnInit {
 
   // Accions de l'usuari
   onShipSelect(nau: any): void {
+    console.log('Intentando seleccionar nave:', nau);
+    
     if (this.model.isNauDisponible(nau)) {
-      this.model.nauSeleccionada = nau;
+        console.log('Nave disponible, actualizando selección');
+        this.model.nauSeleccionada = nau;
+        
+        this.shipService.updateUserShip(this.model.usuari.id, nau.id).subscribe({
+            next: (response) => {
+                console.log('Nave actualizada en el backend:', response);
+                // Actualizar la UI para mostrar la nave seleccionada
+                this.loadCurrentShip();
+            },
+            error: (error) => {
+                console.error('Error al actualizar la nave:', error);
+                // Mostrar mensaje de error al usuario
+                this.model.error = 'Error al actualizar la nave';
+            }
+        });
+    } else {
+        console.log('Nave no disponible');
     }
   }
 
-  onStartGame(): void {
-    if (this.model.canPlay()) {
-      this.router.navigate(['/game'], {
-        state: {
-          nau: this.model.nauSeleccionada,
-          usuari: this.model.usuari
+  // Añadir método para cargar la nave actual
+  private loadCurrentShip(): void {
+    this.gameService.getUserShip().subscribe({
+        next: (response) => {
+            console.log('Nave actual cargada:', response);
+            if (response?.nau) {
+                this.model.nauSeleccionada = this.model.naus.find(
+                    n => n.id === response.nau.id
+                ) || null;
+            }
+        },
+        error: (error) => {
+            console.error('Error al cargar la nave actual:', error);
         }
-      });
+    });
+  }
+
+  onStartGame(): void {
+    if (this.model.canPlay() && this.model.nauSeleccionada) {
+        console.log('Iniciando juego con nave:', this.model.nauSeleccionada);
+        
+        // Asegurarnos de que la nave está actualizada en el backend antes de empezar
+        this.shipService.updateUserShip(this.model.usuari.id, this.model.nauSeleccionada.id).subscribe({
+            next: () => {
+                this.router.navigate(['/game'], {
+                    state: {
+                        nau: this.model.nauSeleccionada,
+                        usuari: this.model.usuari
+                    }
+                });
+            },
+            error: (error) => {
+                console.error('Error al actualizar la nave antes de jugar:', error);
+                this.model.error = 'Error al iniciar el juego';
+            }
+        });
     }
   }
 

@@ -11,6 +11,28 @@ import { Estadistica, Partida, Nau, Obstacle } from '../models';
 import { ShipService } from './ship.service';
 import { Ship } from './ship.service';
 
+interface ShipResponse {
+  success: boolean;
+  nau: {
+    id: string;
+    nom: string;
+    velocitat: number;
+    imatge_url: string;
+    descripcio: string;
+  };
+}
+
+interface DefaultShipResponse {
+  success: boolean;
+  data: {
+    id: string;
+    nom: string;
+    velocitat: number;
+    imatge_url: string;
+    descripcio: string;
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -62,12 +84,12 @@ export class GameService {
   }
 
   // GESTIÓ DE NAUS
-  getUserShip(): Observable<any> {
+  getUserShip(): Observable<ShipResponse> {
     const userId = this.registreService.getUserId();
     
     console.log('Obteniendo nave para usuario:', userId);
     
-    return this.http.get<any>(
+    return this.http.get<ShipResponse>(
       `${this.apiUrl}/user/ship/${userId}`,
       { headers: this.getHeaders() }
     ).pipe(
@@ -76,16 +98,18 @@ export class GameService {
       }),
       catchError(error => {
         console.error('Error getUserShip:', error);
-        return this.http.get<any>(
-          `${this.apiUrl}/ships/default`,
-          { headers: this.getHeaders() }
+        return this.getDefaultShip().pipe(
+          map(defaultShip => ({
+            success: defaultShip.success,
+            nau: defaultShip.data // Convertir la respuesta al formato esperado
+          }))
         );
       })
     );
   }
 
-  getDefaultShip(): Observable<any> {
-    return this.http.get<any>(
+  getDefaultShip(): Observable<DefaultShipResponse> {
+    return this.http.get<DefaultShipResponse>(
       `${this.apiUrl}/ships/default`,
       { headers: this.getHeaders() }
     ).pipe(

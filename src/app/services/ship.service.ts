@@ -38,21 +38,26 @@ export class ShipService {
     ).pipe(
       map(response => {
         console.log('Resposta naus:', response);
-        return response.naus;
+        // Ordenar naves por puntos requeridos (menor a mayor)
+        return response.naus.sort((a, b) => 
+          (a.punts_requerits || 0) - (b.punts_requerits || 0)
+        );
       })
     );
   }
 
   getUserShip(userId: number): Observable<Ship> {
-    return this.http.get<Ship>(
-      `${this.apiUrl}/users/${userId}/ship`,
+    return this.http.get<{success: boolean, nau: Ship}>(
+      `${this.apiUrl}/user/ship/${userId}`,
       { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.nau)
     );
   }
 
   updateUserShip(userId: number, shipId: number): Observable<any> {
     return this.http.put(
-      `${this.apiUrl}/users/${userId}/ship`,
+      `${this.apiUrl}/user/ship/${userId}`,
       { shipId },
       { headers: this.getHeaders() }
     );
