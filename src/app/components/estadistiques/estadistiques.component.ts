@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { GameService } from '../../services/game.service';
 import { EstadistiquesModel } from './models/estadistiques.model';
-import { GlobalStats } from '../../interfaces/stats.interface';
-import { ApiResponse } from '../../interfaces/api.interface';
+import { GlobalStats } from '../../interfaces/base-stats.interface';
+import { ApiResponse } from '../../interfaces/api-response.interface';
 
 
 

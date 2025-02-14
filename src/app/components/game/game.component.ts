@@ -5,7 +5,7 @@ import { GameService } from '../../services/game.service';
 import { RegistreService } from '../../services/registre.service';
 import { BaseGame } from './models/base-game.model';
 import { Partida } from '../../models/partida.model';
-import { UserStats } from '../../interfaces/stats.interface';
+import { UserStats } from '../../interfaces/base-stats.interface';
 import { firstValueFrom } from 'rxjs';
 
 @Component({

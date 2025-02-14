@@ -46,7 +46,7 @@ export class ShipService {
     );
   }
 
-  getUserShip(userId: number): Observable<Ship> {
+  getUserShip(userId: string): Observable<Ship> {
     return this.http.get<{success: boolean, nau: Ship}>(
       `${this.apiUrl}/user/ship/${userId}`,
       { headers: this.getHeaders() }
@@ -55,7 +55,7 @@ export class ShipService {
     );
   }
 
-  updateUserShip(userId: number, shipId: number): Observable<any> {
+  updateUserShip(userId: string, shipId: string): Observable<any> {
     return this.http.put(
       `${this.apiUrl}/user/ship/${userId}`,
       { shipId },

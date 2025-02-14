@@ -1,4 +1,4 @@
-import { GlobalStats } from '../../../interfaces/stats.interface';
+import { GlobalStats } from '../../../interfaces/base-stats.interface';
 export class EstadistiquesModel {
     private _estadistiques: GlobalStats[] = [];
     private _loading: boolean = false;
