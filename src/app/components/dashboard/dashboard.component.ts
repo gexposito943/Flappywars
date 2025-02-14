@@ -168,18 +168,14 @@ export class DashboardComponent implements OnInit {
   }
 
   onResetPoints(): void {
-    if (confirm('¿Segur que vols reiniciar els teus punts a 0?')) {
-      this.gameService.resetUserPoints(this.model.usuari.id).subscribe({
-        next: () => {
-          this.model.stats.punts_totals = 0;
-          this.model.usuari.punts_totals = 0;
-          alert('Punts reiniciats correctament');
-        },
-        error: (error) => {
-          console.error('Error:', error);
-          alert('Error al reiniciar punts');
-        }
-      });
+    if (confirm('Segur que vols reiniciar els teus punts a 0?')) {
+        this.gameService.resetUserPoints(this.model.usuari.id).subscribe({
+            next: () => {
+                this.model.resetAllPoints();
+                alert('Punts reiniciats correctament');
+            },
+            error: () => alert('Error al reiniciar punts')
+        });
     }
   }
 

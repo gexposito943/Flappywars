@@ -1,10 +1,12 @@
+import { BaseStatsModel } from '../../../models/base-stats.model';
+
 interface Achievement {
     id: number;
     nom: string;
     completat: boolean;
 }
 
-export class DashboardModel {
+export class DashboardModel extends BaseStatsModel {
     usuari: any = null;
     naus: any[] = [];
     nauSeleccionada: any = null;
@@ -56,5 +58,10 @@ export class DashboardModel {
     getAchievementProgress(): number {
         if (this._achievements.length === 0) return 0;
         return (this.getCompletedAchievements().length / this._achievements.length) * 100;
+    }
+
+    resetAllPoints(): void {
+        this.resetStats(this.stats);
+        this.resetStats(this.usuari);
     }
 } 

@@ -159,6 +159,7 @@ export const updateStats = async (req, res) => {
     });
   }
 };
+
 export const getGlobalStats = async (req, res) => {
   try {
     const [globalStats] = await db.query(`
@@ -188,5 +189,65 @@ export const getGlobalStats = async (req, res) => {
       message: 'Error al obtenir les estadístiques globals'
     });
   }
+};
+
+export const resetUserStats = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        
+        await db.query('START TRANSACTION');
+
+        try {
+            // Reutilitzem la mateixa estructura SQL però posant els punts a 0
+            const [userUpdate] = await db.query(`
+                UPDATE usuaris 
+                SET 
+                    punts_totals = 0,
+                    nivell = (
+                        SELECT MIN(punts_requerits)
+                        FROM nivells
+                    )
+                WHERE id = ?
+            `, [userId]);
+
+            // Reutilitzem la consulta per obtenir les estadístiques actualitzades
+            const [updatedStats] = await db.query(`
+                SELECT 
+                    u.*,
+                    n.nom as nivell_nom,
+                    n.imatge_url as nivell_imatge
+                FROM usuaris u
+                LEFT JOIN nivells n ON u.nivell = n.punts_requerits
+                WHERE u.id = ?
+            `, [userId]);
+
+            await db.query('COMMIT');
+
+            res.json({
+                success: true,
+                message: 'Punts reiniciats correctament',
+                estadistiques: {
+                    punts_totals: 0,
+                    nivell: {
+                        nivell: updatedStats[0].nivell,
+                        nom: updatedStats[0].nivell_nom,
+                        imatge: updatedStats[0].nivell_imatge
+                    }
+                }
+            });
+
+        } catch (error) {
+            await db.query('ROLLBACK');
+            throw error;
+        }
+
+    } catch (error) {
+        console.error('Error al reiniciar punts:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Error al reiniciar els punts',
+            error: error.message 
+        });
+    }
 };
 

@@ -6,7 +6,8 @@ import { authenticateToken } from "../middlewares/auth.js";
 import { 
   getUserStats, 
   updateStats,
-  getGlobalStats
+  getGlobalStats,
+  resetUserStats
 } from "../controllers/statsController.js";
 import { 
   saveGame, 
@@ -60,6 +61,7 @@ router.use(authenticateToken);
 // Rutes de estadístiques
 router.get("/stats/:userId?", getUserStats);
 router.post("/stats/update", updateStats);
+router.post("/stats/:userId/reset", resetUserStats);
 
 // Rutes de naus de l'usuari
 router.get("/user/ship/:userId", getUserShip);

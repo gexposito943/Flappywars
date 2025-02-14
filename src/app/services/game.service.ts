@@ -230,7 +230,16 @@ export class GameService {
   }
 
   resetUserPoints(userId: string): Observable<ApiResponseModel<void>> {
-    return this.http.post<ApiResponseModel<void>>(`${this.apiUrl}/users/${userId}/reset-points`, {});
+    return this.http.post<ApiResponseModel<void>>(
+        `${this.apiUrl}/stats/${userId}/reset`,
+        {},
+        { headers: this.getHeaders() }
+    ).pipe(
+        catchError(error => {
+            console.error('Error al reiniciar punts:', error);
+            return throwError(() => error);
+        })
+    );
   }
 
   checkSavedGame(userId: string): Observable<boolean> {

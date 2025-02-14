@@ -50,4 +50,8 @@ export interface GlobalStats {
   total_partides: number;
   millor_puntuacio: number;
   temps_total_jugat: number;
+}
+
+export interface IResetableStats {
+    punts_totals: number;
 } 
