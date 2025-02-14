@@ -1,3 +1,4 @@
+
 export class Nau {
     constructor(
         private _id: string = '',

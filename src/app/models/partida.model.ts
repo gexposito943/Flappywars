@@ -1,3 +1,4 @@
+
 export class Partida {
     id?: string;
     usuari_id: string = '';
@@ -21,4 +22,14 @@ export class Partida {
 
     set data_creacio(value: Date) { this._data_creacio = value; }
     set data_modificacio(value: Date) { this._data_modificacio = value; }
+
+    actualitzarPosicio(x: number, y: number): void {
+        this.posicioX = x;
+        this.posicioY = y;
+    }
+
+    finalitzarPartida(): void {
+        this.completada = 1;
+        this._data_modificacio = new Date();
+    }
 } 

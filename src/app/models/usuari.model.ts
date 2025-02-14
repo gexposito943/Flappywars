@@ -1,5 +1,4 @@
 import { Nivell } from './nivell.model';
-
 export class Usuari {
     private _estadistiques = {
         millor_puntuacio: 0,
@@ -46,5 +45,14 @@ export class Usuari {
     set nau_actual(value: string | null) { this._nau_actual = value; }
     set estadistiques(value: { millor_puntuacio: number, total_partides: number, temps_total_jugat: number }) {
         this._estadistiques = value;
+    }
+
+    // Sugerencia: Añadir métodos de utilidad
+    incrementarPunts(punts: number): void {
+        this._punts_totals += punts;
+    }
+
+    actualitzarAcces(): void {
+        this._ultim_acces = new Date();
     }
 } 

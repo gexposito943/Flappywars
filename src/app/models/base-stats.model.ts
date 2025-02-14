@@ -1,3 +1,5 @@
+//Model base per gestionar les estadístiques del joc.
+ 
 import { IResetableStats } from '../interfaces/base-stats.interface';
 
 export class BaseStatsModel {

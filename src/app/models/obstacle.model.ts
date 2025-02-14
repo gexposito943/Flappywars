@@ -1,3 +1,4 @@
+
 export class Obstacle {
     x: number;
     width: number = 180;
@@ -21,4 +22,12 @@ export class Obstacle {
     get imatge_url(): string { return this._imatge_url; }
 
     set imatge_url(value: string) { this._imatge_url = value; }
+
+    updatePosition(speed: number): void {
+        this.x -= speed;
+    }
+
+    isOffscreen(): boolean {
+        return this.x + this.width < 0;
+    }
 } 

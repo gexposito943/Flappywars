@@ -40,17 +40,13 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
       this.initRenderer(context);
 
       try {
-        // Primero cargamos la nave actual
+      
         const shipResponse = await firstValueFrom(this.gameService.getUserShip());
         console.log('Nave cargada en el juego:', shipResponse);
-        
         if (shipResponse?.nau) {
           this.currentShip = shipResponse.nau;
-          // Actualizar la imagen de la nave
           await this.assets.updateShipImage(this.currentShip.imatge_url);
         }
-
-        // Luego cargamos el resto de assets
         await this.assets.loadAll();
         this.startGame();
 
@@ -60,14 +56,10 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
     }
   }
 
-  
-  //Neteja els recursos en destruir el component
   ngOnDestroy() {
     this.stopGameLoop();
   }
 
-  
-  // Gestiona els events del teclat
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     switch(event.code) {
@@ -124,8 +116,6 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
     this.gameService.getUserShip().subscribe({
       next: (shipResponse) => {
         console.log('Respuesta nave:', shipResponse); 
-
-        // La respuesta viene como { success: true, nau: {...} }
         if (!shipResponse?.nau?.id) {
           console.error('No se pudo obtener la nave, intentando obtener nave por defecto');
           this.gameService.getDefaultShip().subscribe({
@@ -137,7 +127,6 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
           });
           return;
         }
-
         this.savePartida(shipResponse.nau.id, completed, gameTime);
       },
       error: (error) => console.error('Error al obtener la nave:', error)
@@ -158,7 +147,6 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
     
     // Log para debug
     console.log('Datos a guardar:', partida);
-
     this.gameService.saveGameResults(partida).subscribe({
       next: (response) => {
         console.log('Respuesta guardado:', response); // Log para debug

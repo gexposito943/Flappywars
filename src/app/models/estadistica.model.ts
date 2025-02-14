@@ -1,3 +1,4 @@
+
 export class Estadistica {
     constructor(
         private _millor_puntuacio: number = 0,
