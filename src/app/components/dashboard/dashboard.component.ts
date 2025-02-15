@@ -164,4 +164,8 @@ export class DashboardComponent implements OnInit {
       console.error('Error al carregar la nau actual:', error);
     }
   }
+
+  onViewProfile(): void {
+    this.router.navigate(['/profile']);
+  }
 }
