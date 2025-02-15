@@ -48,28 +48,35 @@ export class PerfilComponent implements OnInit {
   onSave(): void {
     if (!this.model.userData?.id || !this.model.editedUserData) return;
 
-    this.model.setLoading(true);
-    this.registreService.updateUserProfile(
-      this.model.userData.id,
-      {
+    const updateData: any = {
         nom_usuari: this.model.editedUserData.nom_usuari,
         email: this.model.editedUserData.email
-      }
+    };
+
+    if (this.model.editedUserData.canviarContrasenya && this.model.editedUserData.contrasenya) {
+        updateData.contrasenya = this.model.editedUserData.contrasenya;
+    }
+
+    this.model.setLoading(true);
+    this.registreService.updateUserProfile(
+        this.model.userData.id,
+        updateData
     ).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.model.saveChanges(this.model.editedUserData!);
-          this.registreService.setUserData(this.model.userData);
-          alert('Perfil actualitzat correctament');
+        next: (response) => {
+            if (response.success && response.user) {
+                this.registreService.setUserData(response.user);
+                this.model.saveChanges(response.user);
+                alert('Perfil actualitzat correctament');
+                this.router.navigate(['/dashboard']);
+            }
+        },
+        error: (error) => {
+            console.error('Error actualitzant el perfil:', error);
+            this.model.setError('Error actualitzant el perfil');
+        },
+        complete: () => {
+            this.model.setLoading(false);
         }
-      },
-      error: (error) => {
-        console.error('Error actualitzant el perfil:', error);
-        this.model.setError('Error actualitzant el perfil');
-      },
-      complete: () => {
-        this.model.setLoading(false);
-      }
     });
   }
 
@@ -78,6 +85,9 @@ export class PerfilComponent implements OnInit {
   }
 
   onBack(): void {
-    this.router.navigate(['/dashboard']);
+    const currentUserData = this.registreService.getUserData();
+    if (currentUserData) {
+        this.router.navigate(['/dashboard']);
+    }
   }
 }

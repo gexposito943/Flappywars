@@ -2,19 +2,23 @@ import { Usuari } from '../../../models/usuari.model';
 
 export class PerfilModel {
     private _userData: Usuari | null = null;
-    private _editedUserData: Usuari | null = null;
+    private _editedUserData: {
+        nom_usuari: string;
+        email: string;
+        contrasenya?: string;
+        canviarContrasenya: boolean;
+        idioma: 'catala' | 'castella';
+    } | null = null;
     private _isEditing: boolean = false;
     private _loading: boolean = false;
     private _error: string | null = null;
-
-    constructor() {}
 
     // Getters
     get userData(): Usuari | null {
         return this._userData;
     }
 
-    get editedUserData(): Usuari | null {
+    get editedUserData() {
         return this._editedUserData;
     }
 
@@ -30,10 +34,15 @@ export class PerfilModel {
         return this._error;
     }
 
-    // Setters y métodos
+    // Métodos
     setUserData(userData: Usuari): void {
         this._userData = userData;
-        this._editedUserData = Object.assign(new Usuari(), userData);
+        this._editedUserData = {
+            nom_usuari: userData.nom_usuari,
+            email: userData.email,
+            canviarContrasenya: false,
+            idioma: 'catala'
+        };
     }
 
     startEditing(): void {
@@ -42,12 +51,13 @@ export class PerfilModel {
 
     cancelEditing(): void {
         this._isEditing = false;
-        this._editedUserData = Object.assign(new Usuari(), this._userData!);
-    }
-
-    updateEditedData(data: Partial<Usuari>): void {
-        if (this._editedUserData) {
-            this._editedUserData = Object.assign(new Usuari(), this._editedUserData, data);
+        if (this._userData) {
+            this._editedUserData = {
+                nom_usuari: this._userData.nom_usuari,
+                email: this._userData.email,
+                canviarContrasenya: false,
+                idioma: 'catala'
+            };
         }
     }
 
@@ -59,14 +69,48 @@ export class PerfilModel {
         this._error = error;
     }
 
-    hasUnsavedChanges(): boolean {
-        if (!this._userData || !this._editedUserData) return false;
-        return JSON.stringify(this._userData) !== JSON.stringify(this._editedUserData);
+    getUpdatedData() {
+        if (!this._editedUserData) return null;
+        
+        const updateData: any = {
+            nom_usuari: this._editedUserData.nom_usuari,
+            email: this._editedUserData.email,
+            idioma: this._editedUserData.idioma
+        };
+
+        if (this._editedUserData.canviarContrasenya && this._editedUserData.contrasenya) {
+            updateData.contrasenya = this._editedUserData.contrasenya;
+        }
+
+        return updateData;
     }
 
-    saveChanges(updatedData: Usuari): void {
-        this._userData = updatedData;
-        this._editedUserData = Object.assign(new Usuari(), updatedData);
+    saveChanges(updatedData: {
+        nom_usuari: string;
+        email: string;
+        contrasenya?: string;
+        idioma: 'catala' | 'castella';
+    }): void {
+        if (this._userData) {
+            this._userData.nom_usuari = updatedData.nom_usuari;
+            this._userData.email = updatedData.email;
+            this._editedUserData = {
+                ...updatedData,
+                canviarContrasenya: false
+            };
+        }
         this._isEditing = false;
+    }
+
+    updateEditedData(data: Partial<{
+        nom_usuari: string;
+        email: string;
+        contrasenya?: string;
+        canviarContrasenya: boolean;
+        idioma: 'catala' | 'castella';
+    }>): void {
+        if (this._editedUserData) {
+            this._editedUserData = { ...this._editedUserData, ...data };
+        }
     }
 }

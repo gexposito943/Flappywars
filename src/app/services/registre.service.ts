@@ -4,8 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { throwError } from 'rxjs';
-import { ApiResponse } from '../interfaces/api-response.interface';
-import { Usuari } from '../models/usuari.model';
 
 interface Nau {
   id: string;
@@ -17,10 +15,35 @@ interface Nau {
   data_creacio: string;
 }
 
+interface Usuari {
+  id: string;
+  nom_usuari: string;
+  email: string;
+  contrasenya: string;
+  nivell: number;
+  punts_totals: number;
+  data_registre: string;
+  ultim_acces: string | null;
+  estat: 'actiu' | 'inactiu' | 'bloquejat';
+  intents_login: number;
+  nau_actual: string | null;
+  nau?: {
+    id: string;
+    nom: string;
+    imatge_url: string;
+  };
+}
+
 interface AuthResponse {
   success: boolean;
   token: string;
   user: Omit<Usuari, 'contrasenya'>;
+}
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  user?: any;
 }
 
 const API_ROUTES = {
@@ -143,13 +166,25 @@ export class RegistreService {
   }
 
   setUserData(userData: any): void {
-    localStorage.setItem(this.USER_KEY, JSON.stringify(userData));
+    if (this.isBrowser) {
+        // Mantener la estructura completa del usuario
+        const currentData = this.getUserData();
+        const updatedData = {
+            ...currentData,
+            ...userData,
+            estadistiques: userData.estadistiques || currentData?.estadistiques,
+            nau: userData.nau || currentData?.nau
+        };
+        localStorage.setItem(this.USER_KEY, JSON.stringify(updatedData));
+    }
   }
 
-  updateUserProfile(userId: string, userData: Partial<Usuari>): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(
-      `${this.apiUrl}${API_ROUTES.USUARI.PERFIL}/${userId}`, 
-      userData
-    );
+  updateUserProfile(userId: string, data: {
+    nom_usuari?: string;
+    email?: string;
+    contrasenya?: string;
+    idioma?: 'catala' | 'castella';
+  }): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(`${this.apiUrl}/usuaris/${userId}`, data);
   }
 }

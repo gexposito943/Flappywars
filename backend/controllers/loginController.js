@@ -173,3 +173,90 @@ export const loginUser = async (req, res) => {
         });
     }
 };
+
+export const updateUserProfile = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { nom_usuari, email, contrasenya } = req.body;
+        
+        // Verificar que el usuario existe
+        const [user] = await db.query('SELECT * FROM usuaris WHERE id = ?', [userId]);
+        
+        if (user.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuari no trobat"
+            });
+        }
+
+        // Preparar la consulta de actualización
+        let updateQuery = 'UPDATE usuaris SET ';
+        const updateValues = [];
+        
+        if (nom_usuari) {
+            updateQuery += 'nom_usuari = ?, ';
+            updateValues.push(nom_usuari);
+        }
+        
+        if (email) {
+            updateQuery += 'email = ?, ';
+            updateValues.push(email);
+        }
+        
+        if (contrasenya) {
+            const hashedPassword = await bcrypt.hash(contrasenya, 10);
+            updateQuery += 'contrasenya = ?, ';
+            updateValues.push(hashedPassword);
+        }
+        
+        // Eliminar la última coma y añadir la condición WHERE
+        updateQuery = updateQuery.slice(0, -2) + ' WHERE id = ?';
+        updateValues.push(userId);
+
+        await db.query(updateQuery, updateValues);
+
+        // Obtener los datos actualizados del usuario
+        const [updatedUser] = await db.query(`
+            SELECT 
+                u.*,
+                n.nom as nom_nau,
+                n.imatge_url as nau_imatge,
+                (SELECT MAX(puntuacio) FROM partides WHERE usuari_id = u.id) as millor_puntuacio,
+                (SELECT COUNT(*) FROM partides WHERE usuari_id = u.id) as total_partides,
+                (SELECT SUM(duracio_segons) FROM partides WHERE usuari_id = u.id) as temps_total_jugat,
+                (SELECT SUM(obstacles_superats) FROM partides WHERE usuari_id = u.id) as total_obstacles
+            FROM usuaris u
+            LEFT JOIN naus n ON u.nau_actual = n.id
+            WHERE u.id = ?
+        `, [userId]);
+
+        // Eliminar la contraseña antes de enviar
+        delete updatedUser[0].contrasenya;
+
+        res.json({
+            success: true,
+            message: "Perfil actualitzat correctament",
+            user: {
+                ...updatedUser[0],
+                nau: updatedUser[0].nau_actual ? {
+                    id: updatedUser[0].nau_actual,
+                    nom: updatedUser[0].nom_nau,
+                    imatge_url: updatedUser[0].nau_imatge
+                } : null,
+                estadistiques: {
+                    millor_puntuacio: updatedUser[0].millor_puntuacio || 0,
+                    total_partides: updatedUser[0].total_partides || 0,
+                    temps_total_jugat: updatedUser[0].temps_total_jugat || 0,
+                    total_obstacles: updatedUser[0].total_obstacles || 0
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error actualizando perfil:', error);
+        res.status(500).json({
+            success: false,
+            message: "Error actualitzant el perfil"
+        });
+    }
+};

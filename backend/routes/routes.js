@@ -1,7 +1,7 @@
 import express from "express";
 import { pool as db } from "../database.js";
 import { sanitizeData } from "../middlewares/sanitizeData.js";
-import { registerUsers, loginUser } from "../controllers/loginController.js";
+import { registerUsers, loginUser, updateUserProfile } from "../controllers/loginController.js";
 import { authenticateToken } from "../middlewares/auth.js";
 import { 
   getUserStats, 
@@ -72,6 +72,9 @@ router.put("/user/ship/:userId", updateUserShip);
 router.post("/game/save", saveGame);
 router.get("/game/history", getGameHistory);
 router.get("/game/load/:partidaId", loadGame);
+
+// Añadir esta ruta en la sección de rutas protegidas
+router.put("/usuaris/:userId", updateUserProfile);
 
 // Logging per debug
 router.use((req, res, next) => {

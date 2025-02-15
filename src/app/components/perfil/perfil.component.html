@@ -12,10 +12,6 @@
         <img src="/assets/images/ranawars.png" 
              alt="Perfil"
              class="profile-image">
-        <div class="level-info">
-          <span class="level-name">{{ model.userData.nivell.nom }}</span>
-          <span class="total-points">{{ model.userData.punts_totals }} punts</span>
-        </div>
       </div>
 
       <div class="perfil-details">
@@ -37,6 +33,50 @@
             [(ngModel)]="model.editedUserData!.email"
             [readonly]="!model.isEditing"
           >
+        </div>
+
+        <div class="form-group" *ngIf="model.isEditing">
+          <label>Nova Contrasenya:</label>
+          <input 
+            type="password" 
+            name="contrasenya"
+            [(ngModel)]="model.editedUserData!.contrasenya"
+          >
+        </div>
+
+        <div class="form-group checkbox-group" *ngIf="model.isEditing">
+          <label>
+            <input 
+              type="checkbox" 
+              name="canviarContrasenya"
+              [(ngModel)]="model.editedUserData!.canviarContrasenya"
+            >
+            Vull canviar la contrasenya
+          </label>
+        </div>
+
+        <div class="form-group radio-group" *ngIf="model.isEditing">
+          <label>Idioma:</label>
+          <div class="radio-options">
+            <label>
+              <input 
+                type="radio" 
+                name="idioma"
+                value="catala"
+                [(ngModel)]="model.editedUserData!.idioma"
+              >
+              Català
+            </label>
+            <label>
+              <input 
+                type="radio" 
+                name="idioma"
+                value="castella"
+                [(ngModel)]="model.editedUserData!.idioma"
+              >
+              Castellà
+            </label>
+          </div>
         </div>
 
         <div class="form-group">
