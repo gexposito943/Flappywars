@@ -113,6 +113,10 @@
     <div class="error-message" *ngIf="model.error">
       {{ model.error }}
     </div>
+
+    <div class="success-message" *ngIf="model.success">
+      {{ model.success }}
+    </div>
   </div>
 
   <div class="loading-overlay" *ngIf="model.loading">

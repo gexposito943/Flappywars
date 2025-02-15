@@ -48,6 +48,15 @@ export class PerfilComponent implements OnInit {
   onSave(): void {
     if (!this.model.userData?.id || !this.model.editedUserData) return;
 
+    // Limpiar mensajes anteriores
+    this.model.setError(null);
+    this.model.setSuccess(null);
+
+    if (this.model.editedUserData.contrasenya && !this.model.editedUserData.canviarContrasenya) {
+        this.model.setError('Has d\'activar la casella "Vull canviar la contrasenya" per canviar-la');
+        return;
+    }
+
     const updateData: any = {
         nom_usuari: this.model.editedUserData.nom_usuari,
         email: this.model.editedUserData.email
@@ -66,8 +75,10 @@ export class PerfilComponent implements OnInit {
             if (response.success && response.user) {
                 this.registreService.setUserData(response.user);
                 this.model.saveChanges(response.user);
-                alert('Perfil actualitzat correctament');
-                this.router.navigate(['/dashboard']);
+                this.model.setSuccess('Perfil actualitzat correctament');
+                setTimeout(() => {
+                    this.router.navigate(['/dashboard']);
+                }, 2000);
             }
         },
         error: (error) => {

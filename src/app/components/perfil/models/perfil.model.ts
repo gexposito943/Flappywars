@@ -12,6 +12,7 @@ export class PerfilModel {
     private _isEditing: boolean = false;
     private _loading: boolean = false;
     private _error: string | null = null;
+    private _success: string | null = null;
 
     // Getters
     get userData(): Usuari | null {
@@ -32,6 +33,10 @@ export class PerfilModel {
 
     get error(): string | null {
         return this._error;
+    }
+
+    get success(): string | null {
+        return this._success;
     }
 
     // Métodos
@@ -111,6 +116,15 @@ export class PerfilModel {
     }>): void {
         if (this._editedUserData) {
             this._editedUserData = { ...this._editedUserData, ...data };
+        }
+    }
+
+    setSuccess(success: string | null): void {
+        this._success = success;
+        if (success) {
+            setTimeout(() => {
+                this._success = null;
+            }, 3000);
         }
     }
 }
