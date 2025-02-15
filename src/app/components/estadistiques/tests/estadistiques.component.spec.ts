@@ -76,15 +76,12 @@ describe('EstadistiquesComponent', () => {
         expect(stats[0].punts_totals).toBeGreaterThan(stats[1].punts_totals);
     }));
 
-
-
     it('should filter out inactive users', fakeAsync(() => {
         tick();
         fixture.detectChanges();
         const inactiveUser = component.model.estadistiques.find(stat => 
             stat.username === 'Player3'
         );
-
 
         expect(inactiveUser).toBeUndefined();
     }));
@@ -106,7 +103,6 @@ describe('EstadistiquesComponent', () => {
         component.model.loading = true;
         fixture.detectChanges();
 
-
         const loadingElement = fixture.debugElement.query(By.css('.loading-error'));
         expect(loadingElement).toBeTruthy();
         expect(loadingElement.nativeElement.textContent).toContain('Carregant estadístiques');
@@ -115,7 +111,6 @@ describe('EstadistiquesComponent', () => {
     it('should show error state when there is an error', () => {
         component.model.error = true;
         fixture.detectChanges();
-
 
         const errorElement = fixture.debugElement.query(By.css('.loading-error'));
         expect(errorElement).toBeTruthy();
@@ -143,6 +138,60 @@ describe('EstadistiquesComponent', () => {
         const noStatsElement = fixture.debugElement.query(By.css('.no-stats'));
         expect(noStatsElement).toBeTruthy();
         expect(noStatsElement.nativeElement.textContent.trim())
+            .toBe('No hi ha estadístiques disponibles');
+    }));
+
+    it('should filter players by search term', fakeAsync(() => {
+        tick();
+        fixture.detectChanges();
+        
+        component.searchTerm = 'Player2';
+        component.filterEstadistiques();
+        fixture.detectChanges();
+
+        const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
+        expect(rows.length).toBe(1);
+        expect(rows[0].query(By.css('td:nth-child(2)')).nativeElement.textContent.trim())
+            .toBe('Player2');
+    }));
+
+    it('should show all players when search term is empty', fakeAsync(() => {
+        tick();
+        fixture.detectChanges();
+        
+        component.searchTerm = '';
+        component.filterEstadistiques();
+        fixture.detectChanges();
+
+        const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
+        expect(rows.length).toBe(2); // Solo los usuarios activos
+    }));
+
+    it('should be case insensitive when searching', fakeAsync(() => {
+        tick();
+        fixture.detectChanges();
+        
+        component.searchTerm = 'player2';
+        component.filterEstadistiques();
+        fixture.detectChanges();
+
+        const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
+        expect(rows.length).toBe(1);
+        expect(rows[0].query(By.css('td:nth-child(2)')).nativeElement.textContent.trim())
+            .toBe('Player2');
+    }));
+
+    it('should show no results message when search has no matches', fakeAsync(() => {
+        tick();
+        fixture.detectChanges();
+        
+        component.searchTerm = 'NonexistentPlayer';
+        component.filterEstadistiques();
+        fixture.detectChanges();
+
+        const noResultsMessage = fixture.debugElement.query(By.css('.no-data'));
+        expect(noResultsMessage).toBeTruthy();
+        expect(noResultsMessage.nativeElement.textContent.trim())
             .toBe('No hi ha estadístiques disponibles');
     }));
 }); 
