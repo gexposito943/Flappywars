@@ -5,18 +5,19 @@ import { GameService } from '../../services/game.service';
 import { EstadistiquesModel } from './models/estadistiques.model';
 import { GlobalStats } from '../../interfaces/base-stats.interface';
 import { ApiResponse } from '../../interfaces/api-response.interface';
-
-
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-estadistiques',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule],
     templateUrl: './estadistiques.component.html',
     styleUrls: ['./estadistiques.component.css']
 })
 export class EstadistiquesComponent implements OnInit {
     model = new EstadistiquesModel();
+    searchTerm: string = '';
+    filteredEstadistiques: GlobalStats[] = [];
 
     constructor(
         private gameService: GameService,
@@ -27,6 +28,16 @@ export class EstadistiquesComponent implements OnInit {
         this.loadEstadistiques();
     }
 
+    filterEstadistiques(): void {
+        if (!this.searchTerm.trim()) {
+            this.filteredEstadistiques = this.model.estadistiques;
+        } else {
+            this.filteredEstadistiques = this.model.estadistiques.filter(stat =>
+                stat.username.toLowerCase().includes(this.searchTerm.toLowerCase())
+            );
+        }
+    }
+
     private loadEstadistiques(): void {
         this.model.loading = true;
         this.model.error = false;
@@ -35,6 +46,7 @@ export class EstadistiquesComponent implements OnInit {
             next: (response: ApiResponse<GlobalStats[]>) => {
                 if (response.success && response.ranking) {
                     this.model.setEstadistiquesFromGlobalStats(response.ranking);
+                    this.filteredEstadistiques = this.model.estadistiques;
                 }
             },
             error: (error) => {
