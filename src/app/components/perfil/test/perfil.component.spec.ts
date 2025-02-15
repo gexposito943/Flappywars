@@ -4,6 +4,8 @@ import { RegistreService } from '../../../services/registre.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
+import { Usuari } from '../../../models/usuari.model';
+import { Nivell } from '../../../models/nivell.model';
 
 describe('PerfilComponent', () => {
   let component: PerfilComponent;
@@ -11,25 +13,24 @@ describe('PerfilComponent', () => {
   let mockRegistreService: jasmine.SpyObj<RegistreService>;
   let mockRouter: jasmine.SpyObj<Router>;
 
-  const mockUserData = {
-    id: '1',
-    nom_usuari: 'TestUser',
-    email: 'test@test.com',
-    data_registre: new Date(),
-    nivell: {
-      id: '1',
-      nom: 'Nivell 1',
-      imatge_url: 'test.jpg',
-      imatge: 'test.jpg'
-    },
-    punts_totals: 100
-  };
+  const mockUserData = new Usuari(
+    '1',
+    'TestUser',
+    'test@test.com',
+    new Nivell('1', 'Nivell 1', 'test.jpg', 0),
+    100,
+    new Date(),
+    null,
+    'actiu',
+    0,
+    null
+  );
 
   beforeEach(async () => {
     mockRegistreService = jasmine.createSpyObj('RegistreService', [
       'getUserData',
       'updateUserProfile',
-      'updateStoredUserData'
+      'setUserData'
     ]);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -59,14 +60,14 @@ describe('PerfilComponent', () => {
   });
 
   it('should load user data on init', () => {
-    expect(component.userData).toEqual(mockUserData);
-    expect(component.editedUserData).toEqual(mockUserData);
+    expect(component.model.userData).toEqual(mockUserData);
+    expect(component.model.editedUserData).toEqual(mockUserData);
   });
 
   it('should enable editing mode when edit button is clicked', () => {
     const editButton = fixture.debugElement.query(By.css('.btn-edit'));
     editButton.nativeElement.click();
-    expect(component.isEditing).toBeTrue();
+    expect(component.model.isEditing).toBeTrue();
   });
 
   it('should disable inputs when not in editing mode', () => {
@@ -78,7 +79,7 @@ describe('PerfilComponent', () => {
   });
 
   it('should enable inputs when in editing mode', () => {
-    component.isEditing = true;
+    component.model.startEditing();
     fixture.detectChanges();
     
     const usernameInput = fixture.debugElement.query(By.css('input[name="nom_usuari"]'));
@@ -89,7 +90,7 @@ describe('PerfilComponent', () => {
   });
 
   it('should show save and cancel buttons when in editing mode', () => {
-    component.isEditing = true;
+    component.model.startEditing();
     fixture.detectChanges();
     
     const saveButton = fixture.debugElement.query(By.css('.btn-save'));
@@ -100,16 +101,15 @@ describe('PerfilComponent', () => {
   });
 
   it('should restore original data when cancel is clicked', () => {
-    component.isEditing = true;
-    component.editedUserData = {
-      ...mockUserData,
+    component.model.startEditing();
+    component.model.updateEditedData({
       nom_usuari: 'ChangedName'
-    };
+    });
     
     const cancelButton = fixture.debugElement.query(By.css('.btn-cancel'));
     cancelButton.nativeElement.click();
     
-    expect(component.editedUserData).toEqual(mockUserData);
-    expect(component.isEditing).toBeFalse();
+    expect(component.model.editedUserData).toEqual(mockUserData);
+    expect(component.model.isEditing).toBeFalse();
   });
 });

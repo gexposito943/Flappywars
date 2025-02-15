@@ -166,6 +166,6 @@ export class DashboardComponent implements OnInit {
   }
 
   onViewProfile(): void {
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/perfil']);
   }
 }

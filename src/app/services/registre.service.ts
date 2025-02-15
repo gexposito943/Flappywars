@@ -4,6 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { throwError } from 'rxjs';
+import { ApiResponse } from '../interfaces/api-response.interface';
+import { Usuari } from '../models/usuari.model';
 
 interface Nau {
   id: string;
@@ -13,25 +15,6 @@ interface Nau {
   descripcio: string;
   disponible: boolean;
   data_creacio: string;
-}
-
-interface Usuari {
-  id: string;
-  nom_usuari: string;
-  email: string;
-  contrasenya: string;
-  nivell: number;
-  punts_totals: number;
-  data_registre: string;
-  ultim_acces: string | null;
-  estat: 'actiu' | 'inactiu' | 'bloquejat';
-  intents_login: number;
-  nau_actual: string | null;
-  nau?: {
-    id: string;
-    nom: string;
-    imatge_url: string;
-  };
 }
 
 interface AuthResponse {
@@ -161,5 +144,12 @@ export class RegistreService {
 
   setUserData(userData: any): void {
     localStorage.setItem(this.USER_KEY, JSON.stringify(userData));
+  }
+
+  updateUserProfile(userId: string, userData: Partial<Usuari>): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(
+      `${this.apiUrl}${API_ROUTES.USUARI.PERFIL}/${userId}`, 
+      userData
+    );
   }
 }

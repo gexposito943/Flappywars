@@ -1,3 +1,81 @@
 <div class="perfil-container">
-  <h1>El Meu Perfil</h1>
+  <div class="perfil-header">
+    <h1>El Meu Perfil</h1>
+    <button class="btn btn-back" (click)="onBack()">
+      Tornar al Dashboard
+    </button>
+  </div>
+
+  <div class="perfil-content" *ngIf="model.userData">
+    <div class="perfil-info">
+      <div class="perfil-avatar">
+        <img src="/assets/images/ranawars.png" 
+             alt="Perfil"
+             class="profile-image">
+        <div class="level-info">
+          <span class="level-name">{{ model.userData.nivell.nom }}</span>
+          <span class="total-points">{{ model.userData.punts_totals }} punts</span>
+        </div>
+      </div>
+
+      <div class="perfil-details">
+        <div class="form-group">
+          <label>Nom d'usuari:</label>
+          <input 
+            type="text" 
+            name="nom_usuari"
+            [(ngModel)]="model.editedUserData!.nom_usuari"
+            [readonly]="!model.isEditing"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Correu electrònic:</label>
+          <input 
+            type="email" 
+            name="email"
+            [(ngModel)]="model.editedUserData!.email"
+            [readonly]="!model.isEditing"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Data de registre:</label>
+          <input 
+            type="text" 
+            [value]="model.userData.data_registre | date:'dd/MM/yyyy'"
+            readonly
+          >
+        </div>
+      </div>
+
+      <div class="perfil-actions">
+        <button *ngIf="!model.isEditing" 
+                class="btn btn-edit" 
+                (click)="onEdit()">
+          Editar Perfil
+        </button>
+        <ng-container *ngIf="model.isEditing">
+          <button class="btn btn-save" 
+                  (click)="onSave()"
+                  [disabled]="model.loading">
+            {{ model.loading ? 'Guardant...' : 'Guardar' }}
+          </button>
+          <button class="btn btn-cancel" 
+                  (click)="onCancel()"
+                  [disabled]="model.loading">
+            Cancel·lar
+          </button>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="error-message" *ngIf="model.error">
+      {{ model.error }}
+    </div>
+  </div>
+
+  <div class="loading-overlay" *ngIf="model.loading">
+    <div class="spinner"></div>
+  </div>
 </div>
