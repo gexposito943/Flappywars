@@ -1,7 +1,17 @@
 <div class="estadistiques-container">
   <h1>Estadístiques Globals</h1>
 
-  <table *ngIf="!model.loading && !model.error && model.estadistiques.length > 0">
+  <div class="search-container">
+    <input 
+      type="text" 
+      [(ngModel)]="searchTerm"
+      (input)="filterEstadistiques()"
+      placeholder="Cercar jugador..."
+      class="search-input"
+    >
+  </div>
+
+  <table *ngIf="!model.loading && !model.error && filteredEstadistiques.length > 0">
     <thead>
       <tr>
         <th>Posició</th>
@@ -12,7 +22,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let stat of model.estadistiques">
+      <tr *ngFor="let stat of filteredEstadistiques">
         <td>{{ stat.posicio }}</td>
         <td>{{ stat.username }}</td>
         <td>{{ stat.punts_totals }}</td>
