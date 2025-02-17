@@ -6,7 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { Usuari } from '../../../models/usuari.model';
 import { Nivell } from '../../../models/nivell.model';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import { fakeAsync, tick } from '@angular/core/testing';
 
 describe('PerfilComponent', () => {
   let component: PerfilComponent;
@@ -191,49 +192,42 @@ describe('PerfilComponent', () => {
     );
   });
 
-  it('should not include password in update if change password is not checked', () => {
-    const updatedData = {
-      nom_usuari: 'TestUser',
-      email: 'test@test.com',
-      contrasenya: 'newPassword',
-      canviarContrasenya: false,
-      idioma: 'catala' as 'catala' | 'castella'
-    };
-
-    mockRegistreService.updateUserProfile.and.returnValue(of({ success: true, message: 'Updated' }));
-    
+  it('should show error message when update fails', fakeAsync(() => {
+    mockRegistreService.updateUserProfile.and.returnValue(throwError(() => new Error('Update failed')));
     component.model.startEditing();
-    component.model.updateEditedData(updatedData);
+    fixture.detectChanges();
     
     const saveButton = fixture.debugElement.query(By.css('.btn-save'));
     saveButton.nativeElement.click();
+    tick();
+    fixture.detectChanges();
     
-    expect(mockRegistreService.updateUserProfile).toHaveBeenCalledWith(
-      baseUser.id,
-      jasmine.objectContaining({
-        nom_usuari: 'TestUser',
-        email: 'test@test.com',
-        idioma: 'catala'
-      })
-    );
-  });
+    expect(component.model.error).toBeTruthy();
+  }));
 
-  it('should show error message when update fails', () => {
-    mockRegistreService.updateUserProfile.and.returnValue(of({ success: false, message: 'Error' }));
-    
+  it('should not include password in update if change password is not checked', fakeAsync(() => {
     component.model.startEditing();
+    component.model.canviarContrasenya = false;
+    fixture.detectChanges();
+    
     const saveButton = fixture.debugElement.query(By.css('.btn-save'));
     saveButton.nativeElement.click();
+    tick();
     
-    fixture.detectChanges();
-    
-    const errorMessage = fixture.debugElement.query(By.css('.error-message'));
-    expect(errorMessage).toBeTruthy();
-  });
+    expect(mockRegistreService.updateUserProfile.calls.mostRecent().args[1].contrasenya).toBeUndefined();
+  }));
 
-  it('should format registration date correctly', () => {
+  it('should format registration date correctly', fakeAsync(() => {
+    mockRegistreService.getUserData.and.returnValue(of({
+        ...mockUserData,
+        data_registre: '2024-01-01T00:00:00.000Z'
+    }));
+    
+    component.ngOnInit();
+    tick();
     fixture.detectChanges();
-    const dateInput = fixture.debugElement.query(By.css('input[ng-reflect-name="data_registre"]'));
-    expect(dateInput.nativeElement.value).toContain('01/01/2024');
-  });
+    
+    const dateElement = fixture.debugElement.query(By.css('[data-testid="registration-date"]'));
+    expect(dateElement.nativeElement.textContent).toContain('01/01/2024');
+  }));
 });

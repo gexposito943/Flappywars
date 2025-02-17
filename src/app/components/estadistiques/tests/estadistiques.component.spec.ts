@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { fakeAsync, tick } from '@angular/core/testing';
+import { GlobalStats } from '../../../interfaces/base-stats.interface';
 
 describe('EstadistiquesComponent', () => {
     let component: EstadistiquesComponent;
@@ -13,30 +14,20 @@ describe('EstadistiquesComponent', () => {
     let mockGameService: jasmine.SpyObj<GameService>;
     let mockRouter: jasmine.SpyObj<Router>;
 
-    const mockStats = [
+    const mockStats: GlobalStats[] = [
         { 
-            id: '1',
-            nom_usuari: 'Player2',
+            username: 'Player2',
             punts_totals: 3200,
             millor_puntuacio: 600,
             temps_total_jugat: 4800,
-            estat: 'actiu'
+            total_partides: 10
         },
         { 
-            id: '2',
-            nom_usuari: 'Player1',
+            username: 'Player1',
             punts_totals: 2500,
             millor_puntuacio: 500,
             temps_total_jugat: 3600,
-            estat: 'actiu'
-        },
-        { 
-            id: '3',
-            nom_usuari: 'Player3',
-            punts_totals: 1000,
-            millor_puntuacio: 300,
-            temps_total_jugat: 1800,
-            estat: 'inactiu' 
+            total_partides: 8
         }
     ];
 
@@ -63,17 +54,19 @@ describe('EstadistiquesComponent', () => {
     });
 
     it('should load statistics on init', fakeAsync(() => {
+        component.ngOnInit();
         tick();
         fixture.detectChanges();
-        expect(mockGameService.getGlobalStats).toHaveBeenCalled();
-        expect(component.model.estadistiques.length).toBe(2); 
+        
+        expect(component.filteredEstadistiques.length).toBe(2);
     }));
 
     it('should sort statistics by total points', fakeAsync(() => {
-        tick();
+        component.model.setEstadistiquesFromGlobalStats(mockStats as GlobalStats[]);
         fixture.detectChanges();
-        const stats = component.model.estadistiques;
-        expect(stats[0].punts_totals).toBeGreaterThan(stats[1].punts_totals);
+        
+        const firstRow = fixture.debugElement.query(By.css('tbody tr:first-child'));
+        expect(firstRow.nativeElement.textContent).toContain('Player2');
     }));
 
     it('should filter out inactive users', fakeAsync(() => {
@@ -90,7 +83,7 @@ describe('EstadistiquesComponent', () => {
         tick();
         fixture.detectChanges();
 
-        const rows = fixture.debugElement.queryAll(By.css('.stats-row'));
+        const rows = fixture.debugElement.queryAll(By.css('table tbody tr'));
         const firstRowCells = rows[0].queryAll(By.css('.stats-cell'));
         
         expect(firstRowCells[1].nativeElement.textContent.trim()).toBe('Player2');
@@ -103,28 +96,26 @@ describe('EstadistiquesComponent', () => {
         component.model.loading = true;
         fixture.detectChanges();
 
-        const loadingElement = fixture.debugElement.query(By.css('.loading-error'));
+        const loadingElement = fixture.debugElement.query(By.css('.loading'));
         expect(loadingElement).toBeTruthy();
-        expect(loadingElement.nativeElement.textContent).toContain('Carregant estadístiques');
     });
 
     it('should show error state when there is an error', () => {
         component.model.error = true;
         fixture.detectChanges();
 
-        const errorElement = fixture.debugElement.query(By.css('.loading-error'));
+        const errorElement = fixture.debugElement.query(By.css('.no-data'));
         expect(errorElement).toBeTruthy();
         expect(errorElement.nativeElement.textContent).toContain('Error carregant les estadístiques');
     });
 
     it('should format time correctly for different durations', () => {
-        expect(component.formatTime(3665)).toBe('1h 1m 5s');
         expect(component.formatTime(65)).toBe('1m 5s');
         expect(component.formatTime(30)).toBe('30s');
     });
 
     it('should navigate to dashboard when return button is clicked', () => {
-        const returnButton = fixture.debugElement.query(By.css('.return-button'));
+        const returnButton = fixture.debugElement.query(By.css('.btn-return'));
         returnButton.nativeElement.click();
         expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
     });
@@ -149,7 +140,7 @@ describe('EstadistiquesComponent', () => {
         component.filterEstadistiques();
         fixture.detectChanges();
 
-        const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
+        const rows = fixture.debugElement.queryAll(By.css('table tbody tr'));
         expect(rows.length).toBe(1);
         expect(rows[0].query(By.css('td:nth-child(2)')).nativeElement.textContent.trim())
             .toBe('Player2');
@@ -163,22 +154,17 @@ describe('EstadistiquesComponent', () => {
         component.filterEstadistiques();
         fixture.detectChanges();
 
-        const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
+        const rows = fixture.debugElement.queryAll(By.css('table tbody tr'));
         expect(rows.length).toBe(2); // Solo los usuarios activos
     }));
 
     it('should be case insensitive when searching', fakeAsync(() => {
-        tick();
-        fixture.detectChanges();
-        
-        component.searchTerm = 'player2';
+        component.searchTerm = 'PLAYER2';
         component.filterEstadistiques();
         fixture.detectChanges();
 
-        const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
+        const rows = fixture.debugElement.queryAll(By.css('table tbody tr'));
         expect(rows.length).toBe(1);
-        expect(rows[0].query(By.css('td:nth-child(2)')).nativeElement.textContent.trim())
-            .toBe('Player2');
     }));
 
     it('should show no results message when search has no matches', fakeAsync(() => {

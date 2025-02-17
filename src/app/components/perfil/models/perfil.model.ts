@@ -13,6 +13,7 @@ export class PerfilModel {
     private _loading: boolean = false;
     private _error: string | null = null;
     private _success: string | null = null;
+    canviarContrasenya: boolean = false;
 
     // Getters
     get userData(): Usuari | null {
