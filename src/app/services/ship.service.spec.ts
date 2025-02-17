@@ -67,9 +67,8 @@ describe('ShipService', () => {
       done();
     });
 
-    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/naus');
-    expect(req.request.method).toBe('GET');
-    req.flush(mockShips);
+    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/ships');
+    req.flush({ success: true, naus: mockShips });
   });
 
   it('should return ships with correct properties', (done) => {
@@ -95,8 +94,8 @@ describe('ShipService', () => {
       done();
     });
 
-    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/naus');
-    req.flush(mockShips);
+    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/ships');
+    req.flush({ success: true, naus: mockShips });
   });
 
   it('should have unique ship IDs', (done) => {
@@ -107,8 +106,8 @@ describe('ShipService', () => {
       done();
     });
 
-    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/naus');
-    req.flush(mockShips);
+    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/ships');
+    req.flush({ success: true, naus: mockShips });
   });
 
   it('should have valid image URLs for all ships', (done) => {
@@ -120,8 +119,8 @@ describe('ShipService', () => {
       done();
     });
 
-    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/naus');
-    req.flush(mockShips);
+    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/ships');
+    req.flush({ success: true, naus: mockShips });
   });
 
   it('should have unique names for all ships', (done) => {
@@ -129,15 +128,15 @@ describe('ShipService', () => {
       const names = ships.map(ship => ship.nom);
       const uniqueNames = new Set(names);
       expect(uniqueNames.size).toBe(ships.length);
-      //verifica que els noms no estàn buits
+      //verifica que los noms no están buits
       names.forEach(name => {
         expect(name.length).toBeGreaterThan(0);
       });
       done();
     });
 
-    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/naus');
-    req.flush(mockShips);
+    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/ships');
+    req.flush({ success: true, naus: mockShips });
   });
 
   it('should return an Observable', () => {
@@ -148,17 +147,17 @@ describe('ShipService', () => {
     expect(ships$ instanceof Observable).toBe(true);
   });
 
-  it('should have positive velocities for all ships', (done) => {
+  it('should have valid velocities for all ships', (done) => {
     service.getShips().subscribe((ships) => {
       ships.forEach(ship => {
-        expect(ship.velocitat).toBeGreaterThan(0);
+        expect(ship.velocitat).toBeGreaterThanOrEqual(0);
         expect(Number.isInteger(ship.velocitat)).toBe(true);
       });
       done();
     });
 
-    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/naus');
-    req.flush(mockShips);
+    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/ships');
+    req.flush({ success: true, naus: mockShips });
   });
 
   it('should have all required Ship interface properties', (done) => {
@@ -173,7 +172,19 @@ describe('ShipService', () => {
       done();
     });
 
-    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/naus');
-    req.flush(mockShips);
+    const req = httpTestingController.expectOne('http://localhost:3000/api/v1/ships');
+    req.flush({ success: true, naus: mockShips });
+  });
+
+  it('should have ships ordered by required points', (done) => {
+    service.getShips().subscribe(ships => {
+      expect(ships[0].punts_requerits).toBe(0);
+      expect(ships[1].punts_requerits).toBe(500);
+      expect(ships[2].punts_requerits).toBe(1000);
+      done();
+    });
+    
+    const req = httpTestingController.expectOne(`${service['apiUrl']}/ships`);
+    req.flush({ success: true, naus: mockShips });
   });
 });

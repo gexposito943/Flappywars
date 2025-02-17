@@ -19,7 +19,16 @@ describe('GameComponent', () => {
         mockRegistreService = jasmine.createSpyObj('RegistreService', ['getToken', 'getUserId']);
 
         mockGameService.saveGameResults.and.returnValue(of({ success: true }));
-        mockGameService.getUserShip.and.returnValue(of({ success: true, data: { id: '1' } }));
+        mockGameService.getUserShip.and.returnValue(of({ 
+            success: true, 
+            nau: {
+                id: '1',
+                nom: 'test-ship',
+                velocitat: 100,
+                imatge_url: 'test-url',
+                descripcio: 'test-description'
+            }
+        }));
         mockRegistreService.getToken.and.returnValue('test-token');
         mockRegistreService.getUserId.and.returnValue('test-id');
 
