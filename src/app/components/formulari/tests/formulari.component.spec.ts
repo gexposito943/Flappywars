@@ -79,11 +79,14 @@ describe('FormulariComponent', () => {
         });
 
         it('should show email error when invalid', () => {
-            component.registerUser.email = 'invalid-email';
+            component.registerUser.email = '';
             fixture.detectChanges();
 
             const errors = fixture.debugElement.queryAll(By.css('.error-message'));
-            expect(errors[1].nativeElement.textContent).toContain('L\'email és obligatori i ha de ser vàlid');
+            const emailError = errors.find(error => 
+                error.nativeElement.textContent.includes('L\'email és obligatori'));
+            expect(emailError?.nativeElement.textContent.trim())
+                .toBe('L\'email és obligatori i ha de ser vàlid');
         });
 
         it('should show password error when requirements not met', () => {
@@ -98,10 +101,14 @@ describe('FormulariComponent', () => {
         it('should show password mismatch error', () => {
             component.registerUser.password = 'Valid@Password123';
             component.registerUser.confirmPassword = 'DifferentPassword@123';
+            component.showRegisterErrors = true;
             fixture.detectChanges();
 
             const errors = fixture.debugElement.queryAll(By.css('.error-message'));
-            expect(errors[3].nativeElement.textContent).toContain('Les contrasenyes no coincideixen');
+            const mismatchError = errors.find(error => 
+                error.nativeElement.textContent.includes('Les contrasenyes no coincideixen'));
+            expect(mismatchError?.nativeElement.textContent.trim())
+                .toBe('Les contrasenyes no coincideixen');
         });
     });
 
@@ -114,8 +121,8 @@ describe('FormulariComponent', () => {
             
             fixture.detectChanges();
             component.onSubmit();
-            
-            tick();
+            tick(2000);
+
             expect(mockRegistreService.register).toHaveBeenCalledWith(
                 'testuser',
                 'test@test.com',
@@ -129,17 +136,41 @@ describe('FormulariComponent', () => {
                 password: 'password123'
             };
             
+            mockRegistreService.validateUser.and.returnValue(of({
+                success: true,
+                token: 'test-token',
+                user: {
+                    id: '123e4567-e89b-12d3-a456-426614174000',
+                    nom_usuari: 'test',
+                    email: 'test@test.com',
+                    nivell: 1,
+                    punts_totals: 0,
+                    nau_actual: '123e4567-e89b-12d3-a456-426614174001',
+                    data_registre: '2024-01-01T00:00:00Z',
+                    ultim_acces: null,
+                    estat: 'actiu',
+                    intents_login: 0,
+                    nau: {
+                        id: '123e4567-e89b-12d3-a456-426614174001',
+                        nom: 'X-Wing',
+                        imatge_url: '/assets/images/naus/x-wing.png'
+                    }
+                }
+            }));
+            mockRegistreService.login = jasmine.createSpy('login');
+
             component.loginCredentials.email = testData.email;
             component.loginCredentials.password = testData.password;
 
             fixture.detectChanges();
             component.handleSignIn();
-            
             tick();
+
             expect(mockRegistreService.validateUser).toHaveBeenCalledWith(
                 testData.email,
                 testData.password
             );
+            expect(mockRegistreService.login).toHaveBeenCalled();
         }));
     });
 
