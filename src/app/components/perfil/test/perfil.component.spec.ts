@@ -20,8 +20,8 @@ describe('PerfilComponent', () => {
     'test@test.com',
     new Nivell('1', 'Nivell 1', 'test.jpg', 0),
     100,
-    new Date(),
-    null,
+    new Date('2024-01-01'),
+    new Date('2024-05-01'),
     'actiu',
     0,
     null
@@ -29,6 +29,8 @@ describe('PerfilComponent', () => {
 
   const mockUserData = {
     ...baseUser,
+    data_registre: '2024-01-01',
+    ultim_acces: '2024-05-01T12:00:00Z',
     canviarContrasenya: false,
     idioma: 'catala' as 'catala' | 'castella'
   };
@@ -41,7 +43,11 @@ describe('PerfilComponent', () => {
     ]);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
-    mockRegistreService.getUserData.and.returnValue(mockUserData);
+    mockRegistreService.getUserData.and.returnValue({
+      ...mockUserData,
+      data_registre: new Date(mockUserData.data_registre),
+      ultim_acces: new Date(mockUserData.ultim_acces)
+    });
 
     await TestBed.configureTestingModule({
       imports: [PerfilComponent, FormsModule],
@@ -67,20 +73,8 @@ describe('PerfilComponent', () => {
   });
 
   it('should load user data on init', () => {
-    const userData = new Usuari(
-        baseUser.id,
-        baseUser.nom_usuari,
-        baseUser.email,
-        baseUser.nivell,
-        baseUser.punts_totals,
-        baseUser.data_registre,
-        baseUser.ultim_acces,
-        baseUser.estat,
-        baseUser.intents_login,
-        baseUser.nau_actual
-    );
-    
-    expect(component.model.userData).toEqual(userData);
+    expect(component.model.userData?.data_registre).toEqual(new Date('2024-01-01'));
+    expect(component.model.userData?.ultim_acces).toEqual(new Date('2024-05-01T12:00:00Z'));
     expect(component.model.editedUserData).toEqual({
         nom_usuari: baseUser.nom_usuari,
         email: baseUser.email,
@@ -252,5 +246,11 @@ describe('PerfilComponent', () => {
     
     const errorMessage = fixture.debugElement.query(By.css('.error-message'));
     expect(errorMessage).toBeTruthy();
+  });
+
+  it('should format registration date correctly', () => {
+    fixture.detectChanges();
+    const dateInput = fixture.debugElement.query(By.css('input[placeholder="Data de registre"]'));
+    expect(dateInput.nativeElement.value).toBe('01/01/2024');
   });
 });

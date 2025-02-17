@@ -47,8 +47,6 @@ export class PerfilComponent implements OnInit {
 
   onSave(): void {
     if (!this.model.userData?.id || !this.model.editedUserData) return;
-
-    // Limpiar mensajes anteriores
     this.model.setError(null);
     this.model.setSuccess(null);
 
