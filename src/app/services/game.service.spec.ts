@@ -69,7 +69,7 @@ describe('GameService', () => {
     gameData.completada = 1;
 
     service.saveGameResults(gameData).subscribe();
-    const req = httpMock.expectOne(`${service['apiUrl']}/stats/update`);
+    const req = httpMock.expectOne(`${service['apiUrl']}/game/save`);
     expect(req.request.method).toBe('POST');
   });
 
@@ -77,6 +77,7 @@ describe('GameService', () => {
     service.getAvailableShips().subscribe();
     const req = httpMock.expectOne(`${service['apiUrl']}/ships`);
     expect(req.request.method).toBe('GET');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
   });
 
   it('should get user achievements', () => {
@@ -89,7 +90,7 @@ describe('GameService', () => {
     });
     const req = httpMock.expectOne(`${service['apiUrl']}/achievements`);
     expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('Authorization')).toBe('test-token');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
     req.flush(expectedAchievements);
   });
 
@@ -101,7 +102,7 @@ describe('GameService', () => {
 
       }
     });
-    const req = httpMock.expectOne(`${service['apiUrl']}/stats/user`);
+    const req = httpMock.expectOne(`${service['apiUrl']}/stats/1`);
     req.flush(
       { message: 'Token invàlid' },
       { status: 401, statusText: 'Unauthorized' }
@@ -113,7 +114,7 @@ describe('GameService', () => {
     service.updateUserShip(shipId).subscribe();
     
     const req = httpMock.expectOne(`${service['apiUrl']}/user/ship`);
-    expect(req.request.headers.get('Authorization')).toBe('test-token');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
     req.flush({ success: true });
   });
 
@@ -129,7 +130,7 @@ describe('GameService', () => {
     service.saveGameResults(gameData).subscribe({
       error: (error) => expect(error).toBeTruthy()
     });
-    const req = httpMock.expectOne(`${service['apiUrl']}/stats/update`);
+    const req = httpMock.expectOne(`${service['apiUrl']}/game/save`);
     req.error(new ErrorEvent('Network error'));
   });
 
