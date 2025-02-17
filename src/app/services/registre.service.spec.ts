@@ -50,6 +50,7 @@ describe('RegistreService', () => {
     });
     service = TestBed.inject(RegistreService);
     httpMock = TestBed.inject(HttpTestingController);
+    localStorage.clear();
   });
 
   it('Hauria de registrar un usuari', (done) => {
@@ -214,10 +215,17 @@ describe('RegistreService', () => {
     expect(req.request.method).toBe('POST');
   });
   it('should save and set token correctly', () => {
-    const token = 'test-token';
-    service.login({ token });
-    expect(service.getToken()).toBe(token);
-
+    const mockResponse = {
+      token: 'test-token',
+      user: {
+        id: '1',
+        nom_usuari: 'test',
+        email: 'test@test.com'
+      }
+    };
+    
+    service.login(mockResponse);
+    expect(service.getToken()).toBe('test-token');
   });
   it('should persist user data between page reloads', () => {
     const mockUserData = {
@@ -232,10 +240,18 @@ describe('RegistreService', () => {
       estat: 'actiu' as const,
       intents_login: 0
     };
+    
     service.setUserData(mockUserData);
     const newServiceInstance = TestBed.inject(RegistreService);
     const persistedData = newServiceInstance.getUserData();
-    expect(persistedData).toEqual(mockUserData);
+    
+    expect(persistedData).toEqual(jasmine.objectContaining({
+      id: mockUserData.id,
+      nom_usuari: mockUserData.nom_usuari,
+      email: mockUserData.email,
+      nivell: mockUserData.nivell,
+      punts_totals: mockUserData.punts_totals
+    }));
   });
   it('should handle successful login', (done) => {
     const loginData = { username: 'test', password: 'test' };

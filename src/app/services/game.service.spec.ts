@@ -55,7 +55,7 @@ describe('GameService', () => {
 
     const req = httpMock.expectOne(`${service['apiUrl']}/user/ship`);
     expect(req.request.method).toBe('PUT');
-    expect(req.request.headers.get('Authorization')).toBe('test-token');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
     req.flush(expectedResponse);
   });
 
