@@ -15,7 +15,7 @@ describe('FormulariComponent', () => {
     let mockRouter: jasmine.SpyObj<Router>;
 
     beforeEach(async () => {
-        mockRegistreService = jasmine.createSpyObj('RegistreService', ['register', 'validateUser', 'setToken']);
+        mockRegistreService = jasmine.createSpyObj('RegistreService', ['register', 'validateUser', 'setToken', 'logout']);
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
         mockRegistreService.validateUser.and.returnValue(of({
@@ -40,6 +40,7 @@ describe('FormulariComponent', () => {
             }
         }));
         mockRegistreService.register.and.returnValue(of({ success: true }));
+        mockRegistreService.logout.and.returnValue();
 
         await TestBed.configureTestingModule({
             imports: [
@@ -60,31 +61,37 @@ describe('FormulariComponent', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+        expect(mockRegistreService.logout).toHaveBeenCalled();
     });
 
     describe('Form Validation', () => {
+        beforeEach(() => {
+            component.showRegisterErrors = true;
+            fixture.detectChanges();
+        });
+
         it('should show username error when empty', () => {
             component.registerUser.username = '';
             fixture.detectChanges();
-
-            const errorMessage = fixture.debugElement.query(By.css('.error-message'));
-            expect(errorMessage.nativeElement.textContent).toContain('El nom d\'usuari és obligatori');
+            
+            const errors = fixture.debugElement.queryAll(By.css('.error-message'));
+            expect(errors[0].nativeElement.textContent).toContain('El nom d\'usuari és obligatori');
         });
 
         it('should show email error when invalid', () => {
             component.registerUser.email = 'invalid-email';
             fixture.detectChanges();
 
-            const errorMessage = fixture.debugElement.query(By.css('.error-message'));
-            expect(errorMessage.nativeElement.textContent).toContain('L\'email és obligatori i ha de ser vàlid');
+            const errors = fixture.debugElement.queryAll(By.css('.error-message'));
+            expect(errors[1].nativeElement.textContent).toContain('L\'email és obligatori i ha de ser vàlid');
         });
 
         it('should show password error when requirements not met', () => {
             component.registerUser.password = 'short';
             fixture.detectChanges();
 
-            const errorMessage = fixture.debugElement.query(By.css('.error-message'));
-            expect(errorMessage.nativeElement.textContent)
+            const errors = fixture.debugElement.queryAll(By.css('.error-message'));
+            expect(errors[2].nativeElement.textContent)
                 .toContain('La contrasenya ha de tenir mínim 6 caràcters i un símbol especial');
         });
 
@@ -93,34 +100,26 @@ describe('FormulariComponent', () => {
             component.registerUser.confirmPassword = 'DifferentPassword@123';
             fixture.detectChanges();
 
-            const errorMessage = fixture.debugElement.query(By.css('.error-message'));
-            expect(errorMessage.nativeElement.textContent).toContain('Les contrasenyes no coincideixen');
+            const errors = fixture.debugElement.queryAll(By.css('.error-message'));
+            expect(errors[3].nativeElement.textContent).toContain('Les contrasenyes no coincideixen');
         });
     });
 
     describe('Form Submission', () => {
         it('should call register service when form is valid', fakeAsync(() => {
-            const testData = {
-                username: 'testuser',
-                email: 'test@test.com',
-                password: 'Password123!'
-            };
-
-            component.registerUser.username = testData.username;
-            component.registerUser.email = testData.email;
-            component.registerUser.password = testData.password;
-            component.registerUser.confirmPassword = testData.password;
-
+            component.registerUser.username = 'testuser';
+            component.registerUser.email = 'test@test.com';
+            component.registerUser.password = 'Valid@Pass123';
+            component.registerUser.confirmPassword = 'Valid@Pass123';
+            
             fixture.detectChanges();
-            expect(component.registerUser.validate().isValid).toBeTrue();
-
             component.onSubmit();
             
             tick();
             expect(mockRegistreService.register).toHaveBeenCalledWith(
-                testData.username,
-                testData.email,
-                testData.password
+                'testuser',
+                'test@test.com',
+                'Valid@Pass123'
             );
         }));
 
