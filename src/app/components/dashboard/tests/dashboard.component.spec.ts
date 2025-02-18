@@ -32,14 +32,14 @@ describe('DashboardComponent', () => {
 
     const mockShips = [
         {
-            id: 1,
+            id: '1',
             nom: 'Nau de Combat',
             velocitat: 100,
             imatge_url: 'x-wing.png',
             descripcio: 'Nau de combat versàtil'
         },
         {
-            id: 2,
+            id: '2',
             nom: 'Nau Avançada',
             velocitat: 120,
             imatge_url: 'tie-fighter.png',
@@ -50,17 +50,35 @@ describe('DashboardComponent', () => {
     beforeEach(async () => {
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
         mockRegistreService = jasmine.createSpyObj('RegistreService', ['getUserData', 'logout']);
-        mockGameService = jasmine.createSpyObj('GameService', ['getUserStats']);
-        mockShipService = jasmine.createSpyObj('ShipService', ['getShips']);
+        mockGameService = jasmine.createSpyObj('GameService', ['getUserStats', 'getUserShip']);
+        mockShipService = jasmine.createSpyObj('ShipService', ['getShips', 'updateUserShip']);
 
         mockRegistreService.getUserData.and.returnValue(mockUserData as any);
         mockGameService.getUserStats.and.returnValue(of({
-            millor_puntuacio: 100,
-            total_partides: 5,
-            temps_total_jugat: 300,
-            punts_totals: 1000
-        } as any));
+            success: true,
+            estadistiques: {
+                general: {
+                    punts_totals: 1000,
+                    nivell_actual: { 
+                        nom: 'Nivell 1',
+                        nivell: 1,
+                        imatge: 'url'
+                    }
+                },
+                partides: {
+                    punts_totals: 1000,
+                    millor_puntuacio: 100,
+                    total_partides: 5,
+                    temps_total_jugat: 300
+                }
+            }
+        }));
+        mockGameService.getUserShip.and.returnValue(of({
+            success: true,
+            nau: mockShips[0]
+        }));
         mockShipService.getShips.and.returnValue(of(mockShips as any));
+        mockShipService.updateUserShip.and.returnValue(of({ success: true }));
 
         await TestBed.configureTestingModule({
             imports: [HttpClientTestingModule, DashboardComponent],
@@ -81,12 +99,44 @@ describe('DashboardComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should initialize with user data and ships', fakeAsync(() => {
+    it('should initialize with user data and ships', fakeAsync(async () => {
+        // Mock de las respuestas
+        mockGameService.getUserStats.and.returnValue(of({
+            success: true,
+            estadistiques: {
+                general: {
+                    punts_totals: 1000,
+                    nivell_actual: { 
+                        nom: 'Nivell 1',
+                        nivell: 1,
+                        imatge: 'url'
+                    }
+                },
+                partides: {
+                    punts_totals: 1000,
+                    millor_puntuacio: 100,
+                    total_partides: 5,
+                    temps_total_jugat: 300
+                }
+            }
+        }));
+        
+        mockGameService.getUserShip.and.returnValue(of({
+            success: true,
+            nau: mockShips[0]
+        }));
+
+        // Inicializar componente
+        component.ngOnInit();
+        
+        // Esperar a que se resuelvan las promesas
         tick();
-        expect(mockShipService.getShips).toHaveBeenCalled();
-        expect(mockRegistreService.getUserData).toHaveBeenCalled();
-        expect(mockGameService.getUserStats).toHaveBeenCalled();
+        fixture.detectChanges();
+        
+        // Verificaciones
         expect(component.model.naus.length).toBe(2);
+        expect(mockShipService.getShips).toHaveBeenCalled();
+        expect(mockGameService.getUserStats).toHaveBeenCalled();
     }));
 
 
