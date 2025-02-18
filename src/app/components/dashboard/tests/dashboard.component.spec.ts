@@ -100,7 +100,6 @@ describe('DashboardComponent', () => {
     });
 
     it('should initialize with user data and ships', fakeAsync(async () => {
-        // Mock de las respuestas
         mockGameService.getUserStats.and.returnValue(of({
             success: true,
             estadistiques: {
@@ -125,11 +124,7 @@ describe('DashboardComponent', () => {
             success: true,
             nau: mockShips[0]
         }));
-
-        // Inicializar componente
         component.ngOnInit();
-        
-        // Esperar a que se resuelvan las promesas
         tick();
         fixture.detectChanges();
         

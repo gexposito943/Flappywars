@@ -22,21 +22,17 @@ describe('GameComponent', () => {
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
         mockGameService = jasmine.createSpyObj('GameService', ['saveGameResults', 'getUserShip', 'getDefaultShip']);
         mockRegistreService = jasmine.createSpyObj('RegistreService', ['getToken', 'getUserId']);
-
-        //Crear mocks de imatges
         mockImage = new Image();
         mockImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; //imatge gif vàlida per a test
         
         mockRenderer = jasmine.createSpyObj('GameRenderer', ['render']);
         mockAssets = jasmine.createSpyObj('GameAssets', ['loadAll', 'updateShipImage'], {
-            //Propiedades mock amb imatges vàlides
             background: mockImage,
             ship: mockImage,
             obstacle: mockImage,
             ground: mockImage
         });
 
-        //Configurar respostes mock
         mockGameService.saveGameResults.and.returnValue(of({ success: true }));
         mockGameService.getUserShip.and.returnValue(of({ 
             success: true, 
@@ -66,7 +62,6 @@ describe('GameComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(GameComponent);
         component = fixture.componentInstance;
-
         //Mock del canvas i context
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
@@ -77,12 +72,8 @@ describe('GameComponent', () => {
             writable: true,
             value: { nativeElement: canvas }
         });
-
-        //Injectar mocks en el component
         component['renderer'] = mockRenderer;
         component['assets'] = mockAssets;
-
-        //Esparem es carregen les imatges
         return new Promise<void>(resolve => {
             mockImage.onload = () => resolve();
             if (mockImage.complete) resolve();
