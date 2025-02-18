@@ -8,6 +8,7 @@ export class PerfilModel {
         contrasenya?: string;
         canviarContrasenya: boolean;
         idioma: 'catala' | 'castella';
+        estat: 'actiu' | 'inactiu';
     } | null = null;
     private _isEditing: boolean = false;
     private _loading: boolean = false;
@@ -47,7 +48,8 @@ export class PerfilModel {
             nom_usuari: userData.nom_usuari,
             email: userData.email,
             canviarContrasenya: false,
-            idioma: 'catala'
+            idioma: 'catala',
+            estat: 'actiu'
         };
     }
 
@@ -62,7 +64,8 @@ export class PerfilModel {
                 nom_usuari: this._userData.nom_usuari,
                 email: this._userData.email,
                 canviarContrasenya: false,
-                idioma: 'catala'
+                idioma: 'catala',
+                estat: 'actiu'
             };
         }
     }
@@ -102,6 +105,7 @@ export class PerfilModel {
             this._userData.email = updatedData.email;
             this._editedUserData = {
                 ...updatedData,
+                estat: 'actiu',
                 canviarContrasenya: false
             };
         }
