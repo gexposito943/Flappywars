@@ -3,7 +3,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { EstadistiquesComponent } from '../estadistiques.component';
 import { GameService } from '../../../services/game.service';
 import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Observable } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { GlobalStats } from '../../../interfaces/base-stats.interface';
@@ -93,27 +93,39 @@ describe('EstadistiquesComponent', () => {
     }));
 
     it('should show loading state initially', fakeAsync(() => {
-        component.model.loading = true;
-        component.model.error = false;
-        component.model.setEstadistiquesFromGlobalStats([]);
+        mockGameService.getGlobalStats.and.returnValue(
+            new Observable(observer => {
+                setTimeout(() => {
+                    observer.next({
+                        success: true,
+                        ranking: mockStats
+                    });
+                    observer.complete();
+                }, 1000);
+            })
+        );
+        
+        component.ngOnInit();
         fixture.detectChanges();
 
         const loadingElement = fixture.debugElement.query(By.css('.loading'));
         expect(loadingElement).toBeTruthy();
-        expect(loadingElement?.nativeElement.textContent.trim())
+        expect(loadingElement.nativeElement.textContent.trim())
             .toBe('Carregant estadístiques...');
-    }));
 
-    it('should show error state when there is an error', fakeAsync(() => {
-        component.model.loading = false;
-        component.model.error = true;
+        tick(1000);
         fixture.detectChanges();
-
-        const errorElement = fixture.debugElement.query(By.css('.error'));
-        expect(errorElement).toBeTruthy();
-        expect(errorElement?.nativeElement.textContent.trim())
-            .toBe('Error carregant les estadístiques');
     }));
+
+    it('should show error state when there is an error', () => {
+        mockGameService.getGlobalStats.and.returnValue(throwError(() => 'Error'));
+        fixture = TestBed.createComponent(EstadistiquesComponent);
+        component = fixture.componentInstance;
+        component.ngOnInit();
+        fixture.autoDetectChanges(true);
+        const errorText = fixture.nativeElement.querySelector('.error')?.textContent;
+        expect(errorText?.trim()).toBe('Error carregant les estadístiques');
+    });
 
     it('should format time correctly for different durations', () => {
         expect(component.formatTime(65)).toBe('1m 5s');
@@ -180,14 +192,17 @@ describe('EstadistiquesComponent', () => {
     }));
 
     it('should show no results message when search has no matches', fakeAsync(() => {
-        component.model.loading = false;
-        component.model.error = false;
-        component.model.setEstadistiquesFromGlobalStats([]);
+        component.ngOnInit();
+        tick();
+        fixture.detectChanges();
+        
+        component.searchTerm = 'NonExistentPlayer';
+        component.filterEstadistiques();
         fixture.detectChanges();
 
         const noDataElement = fixture.debugElement.query(By.css('.no-data'));
         expect(noDataElement).toBeTruthy();
-        expect(noDataElement?.nativeElement.textContent.trim())
+        expect(noDataElement.nativeElement.textContent.trim())
             .toBe('No hi ha estadístiques disponibles');
     }));
 }); 

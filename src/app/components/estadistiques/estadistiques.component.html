@@ -36,11 +36,11 @@
     Carregant estadístiques...
   </div>
 
-  <div *ngIf="!model.loading && model.error" class="error">
+  <div *ngIf="model.error" class="error">
     Error carregant les estadístiques
   </div>
 
-  <div *ngIf="!model.loading && !model.error && model.estadistiques.length === 0" class="no-data">
+  <div *ngIf="!model.loading && !model.error && filteredEstadistiques.length === 0" class="no-data">
     No hi ha estadístiques disponibles
   </div>
 
