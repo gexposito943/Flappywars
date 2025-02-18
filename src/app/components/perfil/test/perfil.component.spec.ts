@@ -218,16 +218,20 @@ describe('PerfilComponent', () => {
   }));
 
   it('should format registration date correctly', fakeAsync(() => {
-    mockRegistreService.getUserData.and.returnValue(of({
+    const mockUserWithDate = {
         ...mockUserData,
-        data_registre: '2024-01-01T00:00:00.000Z'
-    }));
+        data_registre: new Date('2024-01-01T00:00:00.000Z')
+    };
+    
+    mockRegistreService.getUserData.and.returnValue(mockUserWithDate);
     
     component.ngOnInit();
     tick();
     fixture.detectChanges();
     
-    const dateElement = fixture.debugElement.query(By.css('[data-testid="registration-date"]'));
-    expect(dateElement.nativeElement.textContent).toContain('01/01/2024');
+    const dateInput = fixture.debugElement.query(
+        By.css('[data-testid="registration-date-input"]')
+    );
+    expect(dateInput.nativeElement.value).toBe('01/01/2024');
   }));
 });
