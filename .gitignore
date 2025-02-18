@@ -43,7 +43,6 @@ Thumbs.db
 
 # Excluir node_modules y otros
 node_modules/
-.env
 *.log
 
 # NO excluir las imágenes
