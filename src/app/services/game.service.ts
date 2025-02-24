@@ -67,7 +67,7 @@ export class GameService {
     ).pipe(
       tap(response => {
         if (response.success) {
-          console.log('Partida guardada exitosamente:', response);
+          console.log('Partida guardada correctament:', response);
         }
       }),
       catchError(this.handleError('saveGameResults'))
@@ -87,21 +87,21 @@ export class GameService {
   getUserShip(): Observable<ShipResponse> {
     const userId = this.registreService.getUserId();
     
-    console.log('Obteniendo nave para usuario:', userId);
+    console.log('Obtenint nau de l\'usuari:', userId);
     
     return this.http.get<ShipResponse>(
       `${this.apiUrl}/user/ship/${userId}`,
       { headers: this.getHeaders() }
     ).pipe(
       tap(response => {
-        console.log('Respuesta getUserShip:', response);
+        console.log('Resposta getUserShip:', response);
       }),
       catchError(error => {
         console.error('Error getUserShip:', error);
         return this.getDefaultShip().pipe(
           map(defaultShip => ({
             success: defaultShip.success,
-            nau: defaultShip.data // Convertir la respuesta al formato esperado
+            nau: defaultShip.data 
           }))
         );
       })
@@ -114,7 +114,7 @@ export class GameService {
       { headers: this.getHeaders() }
     ).pipe(
       tap(response => {
-        console.log('Nave por defecto:', response);
+        console.log('Nau per defecte:', response);
       })
     );
   }
@@ -183,7 +183,7 @@ export class GameService {
       { headers: this.getHeaders() }
     ).pipe(
       catchError(error => {
-        console.error('Error el actualitzar estadístiques:', error);
+        console.error('Error en actualitzar estadístiques:', error);
         return throwError(() => error);
       })
     );
@@ -236,7 +236,7 @@ export class GameService {
         { headers: this.getHeaders() }
     ).pipe(
         catchError(error => {
-            console.error('Error al reiniciar punts:', error);
+            console.error('Error en reiniciar punts:', error);
             return throwError(() => error);
         })
     );
@@ -296,11 +296,11 @@ export class GameService {
 
   deleteUser(userId: string): Observable<ApiResponseModel<void>> {
     return this.http.delete<ApiResponseModel<void>>(
-        `${this.apiUrl}/stats/users/${userId}`,
+        `${this.apiUrl}/usuaris/${userId}`,
         { headers: this.getHeaders() }
     ).pipe(
         catchError(error => {
-            console.error('Error al eliminar usuari:', error);
+            console.error('Error en eliminar usuari:', error);
             return throwError(() => error);
         })
     );
@@ -308,7 +308,7 @@ export class GameService {
 
   isAdmin(): boolean {
     const userData = this.registreService.getUserData();
-    console.log('User Data completo:', userData);
+    console.log('User Data complet:', userData);
     return userData?.rol === 'admin';
   }
 }

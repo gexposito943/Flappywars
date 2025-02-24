@@ -73,8 +73,51 @@ router.post("/game/save", saveGame);
 router.get("/game/history", getGameHistory);
 router.get("/game/load/:partidaId", loadGame);
 
-// Añadir esta ruta en la sección de rutas protegidas
+// Rutes de gestió d'usuaris
 router.put("/usuaris/:userId", updateUserProfile);
+router.delete("/usuaris/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const adminId = req.user.userId;
+
+        // Verifiquem si es admin
+        const [admin] = await db.query(
+            'SELECT rol FROM usuaris WHERE id = ?',
+            [adminId]
+        );
+
+        if (!admin[0] || admin[0].rol !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'No tens permisos per realitzar aquesta acció'
+            });
+        }
+
+        // No es pot eliminar l'usuari administrador
+        if (userId === adminId) {
+            return res.status(400).json({
+                success: false,
+                message: 'No pots eliminar el teu propi usuari'
+            });
+        }
+
+        // Borrar usuari
+        await db.query('DELETE FROM usuaris WHERE id = ?', [userId]);
+
+        res.json({
+            success: true,
+            message: 'Usuari eliminat correctament'
+        });
+
+    } catch (error) {
+        console.error('Error al eliminar usuari:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al eliminar l\'usuari',
+            error: error.message
+        });
+    }
+});
 
 // Logging per debug
 router.use((req, res, next) => {

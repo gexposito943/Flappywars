@@ -51,13 +51,17 @@ export class EstadistiquesComponent implements OnInit {
 
         if (confirm(`Estàs segur que vols eliminar l'usuari ${username}? Aquesta acció no es pot desfer.`)) {
             this.gameService.deleteUser(userId).subscribe({
-                next: () => {
-                    alert('Usuari eliminat correctament');
-                    this.loadEstadistiques(); // Recargar la lista
+                next: (response) => {
+                    if (response.success) {
+                        alert('Usuari eliminat correctament');
+                        this.loadEstadistiques(); // Recargar la lista
+                    } else {
+                        alert('Error al eliminar l\'usuari: ' + response.message);
+                    }
                 },
                 error: (error) => {
                     console.error('Error:', error);
-                    alert('Error al eliminar l\'usuari');
+                    alert('Error al eliminar l\'usuari: ' + (error.error?.message || 'Error desconegut'));
                 }
             });
         }

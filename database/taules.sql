@@ -1,8 +1,8 @@
--- Crear la base de datos
+-- Crear la base de dades
 CREATE DATABASE flappywars_db;
 USE flappywars_db;
 
--- CRUD SIMPLE (tabla sin claves foráneas)
+-- CRUD SIMPLE (taula sense claus forànies)
 CREATE TABLE naus (
     id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     nom VARCHAR(50) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE naus (
     data_creacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla principal de usuarios
+-- Taula principal d'usuaris
 CREATE TABLE usuaris (
     id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     nom_usuari VARCHAR(50) UNIQUE NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE usuaris (
     FOREIGN KEY (nau_actual) REFERENCES naus(id) ON DELETE SET NULL
 );
 
--- Tabla de partidas (1 usuario puede tener muchas partidas)
+-- Taula de partides (1 usuari pot tenir moltes partides)
 CREATE TABLE partides (
     id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     usuari_id CHAR(36) NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE partides (
     FOREIGN KEY (nau_utilitzada) REFERENCES naus(id) ON DELETE CASCADE
 );
 
--- Tabla de niveles
+-- Taula de nivells
 CREATE TABLE nivells (
     id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     nom VARCHAR(100) NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE nivells (
     punts_requerits INT NOT NULL
 );
 
--- Relación N:M entre niveles y naves
+-- Relación N:M entre nivells i naus
 CREATE TABLE nivells_naus (
     nivell_id CHAR(36) NOT NULL,
     nau_id CHAR(36) NOT NULL,
@@ -59,13 +59,13 @@ CREATE TABLE nivells_naus (
     FOREIGN KEY (nau_id) REFERENCES naus(id) ON DELETE CASCADE
 );
 
--- Tabla de obstáculos
+-- Taula d'obstacles
 CREATE TABLE obstacles (
     id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     imatge_url VARCHAR(255)
 );
 
--- Relación N:M entre obstáculos y partidas
+-- Relación N:M entre obstacles i partides
 CREATE TABLE obstacles_partides (
     obstacle_id CHAR(36) NOT NULL,
     partida_id CHAR(36) NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE obstacles_partides (
     FOREIGN KEY (partida_id) REFERENCES partides(id) ON DELETE CASCADE
 );
 
--- Relación N:M entre partidas, usuarios y naves (para registrar posición en tiempo real)
+-- Relació N:M entre partides, usuaris i naus (per registrar posició en temps real)
 CREATE TABLE partida_usuari_nau (
     partida_id CHAR(36) NOT NULL,
     usuari_id CHAR(36) NOT NULL,
@@ -87,18 +87,18 @@ CREATE TABLE partida_usuari_nau (
     FOREIGN KEY (nau_id) REFERENCES naus(id) ON DELETE CASCADE
 );
 
--- Inserts de prueba con punts_requerits en lugar de disponible
+-- Inserts de prova amb punts_requerits en lloc de disponible
 INSERT INTO naus (id, nom, velocitat, descripcio, imatge_url, punts_requerits) VALUES
 (UUID(), 'X-Wing', 1, 'Nau inicial perfecta per començar', 'assets/images/naus/x-wing.png', 0),
 (UUID(), 'TIE Fighter', 2, 'Nau ràpida de l''Imperi', 'assets/images/naus/tie-fighter.png', 500),
 (UUID(), 'Millennium Falcon', 3, 'La nau més ràpida', 'assets/images/naus/millennium-falcon.png', 1000);
 
--- Inserts de niveles
+-- Inserts de nivells
 INSERT INTO nivells (id, nom, imatge_url, punts_requerits) VALUES
 (UUID(), 'Pilot Novell', 'assets/images/nivells/novell.png', 0),
 (UUID(), 'As Espacial', 'assets/images/nivells/as.png', 1000),
 (UUID(), 'Mestre Jedi', 'assets/images/nivells/jedi.png', 300);
 
--- Inserts de obstáculos
+-- Inserts d'obstacles
 INSERT INTO obstacles (id, imatge_url) VALUES
 (UUID(), 'assets/images/obstacles/asteroide.png'),

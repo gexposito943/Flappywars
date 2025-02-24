@@ -42,7 +42,7 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
       try {
       
         const shipResponse = await firstValueFrom(this.gameService.getUserShip());
-        console.log('Nave cargada en el juego:', shipResponse);
+        console.log('Nau carregada en el joc:', shipResponse);
         if (shipResponse?.nau) {
           this.currentShip = shipResponse.nau;
           await this.assets.updateShipImage(this.currentShip.imatge_url);
@@ -51,7 +51,7 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
         this.startGame();
 
       } catch (error) {
-        console.error('Error al inicializar el juego:', error);
+        console.error('Error al inicialitzar el joc:', error);
       }
     }
   }
@@ -111,13 +111,13 @@ export class GameComponent extends BaseGame implements OnInit, OnDestroy {
     const partida = new Partida();
     const gameTime = Math.floor((Date.now() - this.gameStartTime) / 1000);
 
-    console.log('Iniciando guardado de la partida');
+    console.log('Iniciant guardat de la partida');
 
     this.gameService.getUserShip().subscribe({
       next: (shipResponse) => {
-        console.log('Respuesta nave:', shipResponse); 
+        console.log('Resposta nau:', shipResponse); 
         if (!shipResponse?.nau?.id) {
-          console.error('No se pudo obtener la nave, intentando obtener nave por defecto');
+          console.error('No es pot obtenir la nau, intentant obtenir nau per defecte');
           this.gameService.getDefaultShip().subscribe({
             next: (defaultShip) => {
               if (defaultShip?.success && defaultShip?.data?.id) {

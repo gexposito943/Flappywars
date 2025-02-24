@@ -38,7 +38,7 @@ export class ShipService {
     ).pipe(
       map(response => {
         console.log('Resposta naus:', response);
-        // Ordenar naves por puntos requeridos (menor a mayor)
+        // Ordenar naus per punts requerits (menor a major)
         return response.naus.sort((a, b) => 
           (a.punts_requerits || 0) - (b.punts_requerits || 0)
         );

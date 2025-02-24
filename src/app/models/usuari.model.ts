@@ -46,8 +46,6 @@ export class Usuari {
     set estadistiques(value: { millor_puntuacio: number, total_partides: number, temps_total_jugat: number }) {
         this._estadistiques = value;
     }
-
-    // Sugerencia: Añadir métodos de utilidad
     incrementarPunts(punts: number): void {
         this._punts_totals += punts;
     }

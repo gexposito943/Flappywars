@@ -39,7 +39,7 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
       });
 
       if (error.status === 403) {
-        // Solo fer logout si el token està expirat o és invàlid
+        // nomes fer logout si el token està expirat o és invàlid
         const response = error.error;
         console.log('Resposta del servidor:', response);
 

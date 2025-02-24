@@ -130,7 +130,7 @@ export class RegistreService {
         }
       }),
       catchError(error => {
-        console.error('Error detallado en validateUser:', error.error);
+        console.error('Error detallat en validateUser:', error.error);
         this.logout();
         return throwError(() => error);
       })
@@ -169,7 +169,7 @@ export class RegistreService {
 
   setUserData(userData: any): void {
     if (this.isBrowser) {
-        // Mantener la estructura completa del usuario
+        // Mantenir la estructura completa de l'usuari
         const currentData = this.getUserData();
         const updatedData = {
             ...currentData,
