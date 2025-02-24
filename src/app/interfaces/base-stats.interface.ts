@@ -13,6 +13,7 @@ export interface UserStats extends BaseStats {
 }
 
 export interface GlobalStats extends BaseStats {
+    id: string;
     posicio?: number;
     username: string;
 }

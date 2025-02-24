@@ -20,14 +20,17 @@ describe('EstadistiquesComponent', () => {
             punts_totals: 3200,
             millor_puntuacio: 600,
             temps_total_jugat: 4800,
-            total_partides: 10
+            total_partides: 10,
+            id: '1'
         },
         { 
             username: 'Player1',
             punts_totals: 2500,
             millor_puntuacio: 500,
             temps_total_jugat: 3600,
-            total_partides: 8
+            total_partides: 8,
+            id: '2'
+           
         }
     ];
 

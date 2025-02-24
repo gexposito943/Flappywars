@@ -150,6 +150,7 @@ export const loginUser = async (req, res) => {
                 estat: user.estat,
                 intents_login: user.intents_login,
                 nau_actual: user.nau_actual,
+                rol: user.rol,
                 nau: user.nau_actual ? {
                     id: user.nau_actual,
                     nom: user.nom_nau,

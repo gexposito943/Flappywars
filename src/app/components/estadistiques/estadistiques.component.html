@@ -19,15 +19,26 @@
         <th>Punts Totals</th>
         <th>Millor Puntuació</th>
         <th>Temps Total</th>
+        <th *ngIf="isAdmin">Accions</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let stat of filteredEstadistiques">
-        <td>{{ stat.posicio }}</td>
+      <tr *ngFor="let stat of filteredEstadistiques; let i = index">
+        <td>{{ i + 1 }}</td>
         <td>{{ stat.username }}</td>
         <td>{{ stat.punts_totals }}</td>
         <td>{{ stat.millor_puntuacio }}</td>
         <td>{{ formatTime(stat.temps_total_jugat || 0) }}</td>
+        <td *ngIf="isAdmin">
+          <button 
+            class="delete-btn" 
+            (click)="onDeleteUser(stat.id, stat.username)"
+            [disabled]="stat.username === 'admin'"
+            title="Eliminar usuari"
+          >
+            🗑️
+          </button>
+        </td>
       </tr>
     </tbody>
   </table>

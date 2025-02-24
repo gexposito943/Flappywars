@@ -292,4 +292,23 @@ export class GameService {
       ranking: response.ranking || []
     };
   }
+
+
+  deleteUser(userId: string): Observable<ApiResponseModel<void>> {
+    return this.http.delete<ApiResponseModel<void>>(
+        `${this.apiUrl}/stats/users/${userId}`,
+        { headers: this.getHeaders() }
+    ).pipe(
+        catchError(error => {
+            console.error('Error al eliminar usuari:', error);
+            return throwError(() => error);
+        })
+    );
+  }
+
+  isAdmin(): boolean {
+    const userData = this.registreService.getUserData();
+    console.log('User Data completo:', userData);
+    return userData?.rol === 'admin';
+  }
 }

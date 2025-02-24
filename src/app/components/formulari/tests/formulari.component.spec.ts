@@ -32,10 +32,12 @@ describe('FormulariComponent', () => {
                 ultim_acces: null,
                 estat: 'actiu',
                 intents_login: 0,
+                rol: 'user',
                 nau: {
                     id: '123e4567-e89b-12d3-a456-426614174001',
                     nom: 'X-Wing',
-                    imatge_url: '/assets/images/naus/x-wing.png'
+                    imatge_url: '/assets/images/naus/x-wing.png',
+
                 }
             }
         }));
@@ -150,6 +152,7 @@ describe('FormulariComponent', () => {
                     ultim_acces: null,
                     estat: 'actiu',
                     intents_login: 0,
+                    rol: 'user',
                     nau: {
                         id: '123e4567-e89b-12d3-a456-426614174001',
                         nom: 'X-Wing',

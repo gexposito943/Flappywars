@@ -11,13 +11,14 @@ import { FormsModule } from '@angular/forms';
     selector: 'app-estadistiques',
     standalone: true,
     imports: [CommonModule, FormsModule],
-    templateUrl: './estadistiques.component.html',
-    styleUrls: ['./estadistiques.component.css']
+    templateUrl: 'estadistiques.component.html',
+    styleUrls: ['estadistiques.component.css']
 })
 export class EstadistiquesComponent implements OnInit {
     model = new EstadistiquesModel();
     searchTerm: string = '';
     filteredEstadistiques: GlobalStats[] = [];
+    isAdmin = false;
 
     constructor(
         private gameService: GameService,
@@ -25,6 +26,8 @@ export class EstadistiquesComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        this.isAdmin = this.gameService.isAdmin();
+        console.log('Es admin:', this.isAdmin);
         this.loadEstadistiques();
     }
 
@@ -35,6 +38,28 @@ export class EstadistiquesComponent implements OnInit {
             this.filteredEstadistiques = this.model.estadistiques.filter(stat =>
                 stat.username.toLowerCase().includes(this.searchTerm.toLowerCase())
             );
+        }
+    }
+
+    onDeleteUser(userId: string, username: string): void {
+        if (!this.isAdmin) return;
+        
+        if (username === 'admin') {
+            alert('No es pot eliminar l\'usuari administrador');
+            return;
+        }
+
+        if (confirm(`Estàs segur que vols eliminar l'usuari ${username}? Aquesta acció no es pot desfer.`)) {
+            this.gameService.deleteUser(userId).subscribe({
+                next: () => {
+                    alert('Usuari eliminat correctament');
+                    this.loadEstadistiques(); // Recargar la lista
+                },
+                error: (error) => {
+                    console.error('Error:', error);
+                    alert('Error al eliminar l\'usuari');
+                }
+            });
         }
     }
 

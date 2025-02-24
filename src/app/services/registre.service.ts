@@ -27,6 +27,7 @@ interface Usuari {
   estat: 'actiu' | 'inactiu' | 'bloquejat';
   intents_login: number;
   nau_actual: string | null;
+  rol: 'admin' | 'user';
   nau?: {
     id: string;
     nom: string;
@@ -123,12 +124,13 @@ export class RegistreService {
       contrasenya
     }).pipe(
       tap(response => {
+        console.log('Resposta login:', response);
         if (response.success && response.token) {
           this.login(response);
         }
       }),
       catchError(error => {
-        console.error('Error en validateUser:', error);
+        console.error('Error detallado en validateUser:', error.error);
         this.logout();
         return throwError(() => error);
       })

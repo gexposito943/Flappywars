@@ -164,6 +164,7 @@ export const getGlobalStats = async (req, res) => {
   try {
     const [globalStats] = await db.query(`
       SELECT 
+        u.id,
         u.nom_usuari as username,
         u.punts_totals,
         COUNT(p.id) as total_partides,
@@ -251,3 +252,48 @@ export const resetUserStats = async (req, res) => {
     }
 };
 
+// ... código existente ...
+
+export const deleteUser = async (req, res) => {
+  try {
+      const { userId } = req.params;
+      const adminId = req.user.userId; // El ID del usuario que intenta borrar
+
+      // Verificar si el usuario que hace la petición es admin
+      const [admin] = await db.query(
+          'SELECT rol FROM usuaris WHERE id = ?',
+          [adminId]
+      );
+
+      if (!admin[0] || admin[0].rol !== 'admin') {
+          return res.status(403).json({
+              success: false,
+              message: 'No tens permisos per realitzar aquesta acció'
+          });
+      }
+
+      // No permitir que el admin se borre a sí mismo
+      if (userId === adminId) {
+          return res.status(400).json({
+              success: false,
+              message: 'No pots eliminar el teu propi usuari'
+          });
+      }
+
+      // Borrar usuario (las partidas se borrarán en cascada por la configuración de la BD)
+      await db.query('DELETE FROM usuaris WHERE id = ?', [userId]);
+
+      res.json({
+          success: true,
+          message: 'Usuari eliminat correctament'
+      });
+
+  } catch (error) {
+      console.error('Error al eliminar usuari:', error);
+      res.status(500).json({
+          success: false,
+          message: 'Error al eliminar l\'usuari',
+          error: error.message
+      });
+  }
+};
