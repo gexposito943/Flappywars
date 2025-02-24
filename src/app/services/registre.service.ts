@@ -65,6 +65,8 @@ const API_ROUTES = {
 export class RegistreService {
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'user_data';
+  private readonly REFRESH_THRESHOLD = 1020;
+  private refreshTimeout: any;
   private readonly apiUrl = 'http://localhost:3000/api/v1';
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object, private http: HttpClient) {}
@@ -188,5 +190,67 @@ export class RegistreService {
     idioma?: 'catala' | 'castella';
   }): Observable<ApiResponse> {
     return this.http.put<ApiResponse>(`${this.apiUrl}/usuaris/${userId}`, data);
+  }
+
+  private scheduleTokenRefresh(): void {
+    const token = this.getToken();
+    if (!token) return;
+
+    const tokenData = this.decodeToken(token);
+    if (!tokenData) return;
+
+    const expiresIn = (tokenData.exp * 1000) - Date.now();
+    // Programar refresh 17 minuts abans
+    const refreshIn = expiresIn - (this.REFRESH_THRESHOLD * 1000);
+
+    console.log('Token expira en:', Math.floor(expiresIn / 1000 / 60), 'minuts');
+    console.log('Següent refresh en:', Math.floor(refreshIn / 1000 / 60), 'minuts');
+
+    // Netejar timeout anterior si existeix
+    if (this.refreshTimeout) {
+      clearTimeout(this.refreshTimeout);
+    }
+
+    // Programar següent refresh
+    if (refreshIn > 0) {
+      this.refreshTimeout = setTimeout(() => {
+        console.log('Executant refresh token programat');
+        this.refreshToken().subscribe({
+          next: (response) => console.log('Token refrescat correctament'),
+          error: (error) => console.error('Error al refrescar token:', error)
+        });
+      }, refreshIn);
+    } else {
+      // Si el token está próximo a expirar, refrescar inmediatament
+      console.log('Token próximo a expirar, refrescando inmediatament');
+      this.refreshToken().subscribe();
+    }
+  }
+
+  refreshToken(): Observable<any> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, {}).pipe(
+      tap(response => {
+        if (response.success && response.token) {
+          console.log('Token refrescado correctamente');
+          this.login(response);
+          this.scheduleTokenRefresh(); // Programar seguent refresh
+        }
+      }),
+      catchError(error => {
+        console.error('Error en refresh token:', error);
+        this.logout();
+        return throwError(() => error);
+      })
+    );
+  }
+//decodificar token (verifica que tingui el format correcto)
+  private decodeToken(token: string): any {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(window.atob(base64));
+    } catch (e) {
+      return null;
+    }
   }
 }

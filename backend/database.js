@@ -25,7 +25,7 @@ async function connectToDatabase() {
     const [result] = await pool.query('SELECT 1');
     console.log('✅ Connexió exitosa a flappywars_db');
 
-    // Verificar tablas principales
+    // Verificar taules principales
     const requiredTables = [
       'naus',
       'usuaris',

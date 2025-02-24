@@ -1,0 +1,104 @@
+### Registro de usuario
+POST http://localhost:3000/api/v1/register
+Content-Type: application/json
+
+{
+    "nom_usuari": "testUser",
+    "email": "testUser@gmail.com",
+    "contrasenya": "testPassword123"
+}
+
+### Login de usuario
+POST http://localhost:3000/api/v1/login
+Content-Type: application/json
+
+{
+    "email": "pepe@gmail.com",
+    "contrasenya": "Patata123*"
+}
+
+### Obtener estadísticas globales
+GET http://localhost:3000/api/v1/stats/global
+
+### Obtener todas las naves
+GET http://localhost:3000/api/v1/ships
+
+### Obtener nave por defecto
+GET http://localhost:3000/api/v1/ships/default
+
+### Obtener estadísticas de usuario
+GET http://localhost:3000/api/v1/stats/f5e45318-e7b8-11ef-8bba-6ed1ca833271
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJmNWU0NTMxOC1lN2I4LTExZWYtOGJiYS02ZWQxY2E4MzMyNzEiLCJlbWFpbCI6InBlcGVAZ21haWwuY29tIiwiaWF0IjoxNzQwNDE5MzQwLCJleHAiOjE3NDA1MDU3NDB9.a0F4Xrf6MeAs57o8T7Ra9yEUj3Js-DCRCysI4_DmVr8
+
+### Actualizar estadísticas
+POST http://localhost:3000/api/v1/stats/update
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJmNWU0NTMxOC1lN2I4LTExZWYtOGJiYS02ZWQxY2E4MzMyNzEiLCJlbWFpbCI6InBlcGVAZ21haWwuY29tIiwiaWF0IjoxNzQwNDE5MzQwLCJleHAiOjE3NDA1MDU3NDB9.a0F4Xrf6MeAs57o8T7Ra9yEUj3Js-DCRCysI4_DmVr8
+Content-Type: application/json
+
+{
+    "puntuacio": 100,
+    "temps_jugat": 300,
+    "obstacles_superats": 5
+}
+
+### Reiniciar estadísticas de usuario
+POST http://localhost:3000/api/v1/stats/123/reset
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJmNWU0NTMxOC1lN2I4LTExZWYtOGJiYS02ZWQxY2E4MzMyNzEiLCJlbWFpbCI6InBlcGVAZ21haWwuY29tIiwiaWF0IjoxNzQwNDE5MzQwLCJleHAiOjE3NDA1MDU3NDB9.a0F4Xrf6MeAs57o8T7Ra9yEUj3Js-DCRCysI4_DmVr8
+
+### Obtener nave del usuario
+GET http://localhost:3000/api/v1/user/ship/f5e45318-e7b8-11ef-8bba-6ed1ca833271
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJmNWU0NTMxOC1lN2I4LTExZWYtOGJiYS02ZWQxY2E4MzMyNzEiLCJlbWFpbCI6InBlcGVAZ21haWwuY29tIiwiaWF0IjoxNzQwNDE5MzQwLCJleHAiOjE3NDA1MDU3NDB9.a0F4Xrf6MeAs57o8T7Ra9yEUj3Js-DCRCysI4_DmVr8
+
+### Actualizar nave del usuario
+PUT http://localhost:3000/api/v1/user/ship/f5e45318-e7b8-11ef-8bba-6ed1ca833271
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "shipId": 2
+}
+
+### Guardar partida
+POST http://localhost:3000/api/v1/game/save
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "puntuacio": 150,
+    "duracio_segons": 400,
+    "nau_utilitzada": 1,
+    "obstacles_superats": 8,
+    "posicioX": 100,
+    "posicioY": 200,
+    "obstacles": [
+        {
+            "posicioX": 300,
+            "posicioY": 400
+        }
+    ],
+    "completada": true
+}
+
+### Obtener historial de partidas
+GET http://localhost:3000/api/v1/game/history
+Authorization: Bearer {{authToken}}
+
+### Cargar partida específica
+GET http://localhost:3000/api/v1/game/load/{{partidaId}}
+Authorization: Bearer {{authToken}}
+
+### Actualizar perfil de usuario
+PUT http://localhost:3000/api/v1/usuaris/id usuari
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "nom_usuari": "nuevoNombre",
+    "email": "nuevo@email.com",
+    "contrasenya": "nuevaContraseña123"
+}
+
+### Eliminar usuario (solo admin)
+DELETE http://localhost:3000/api/v1/usuaris/123
+Authorization: Bearer {{authToken}}
+

@@ -14,7 +14,6 @@ export const registerUsers = async (req, res) => {
         }
 
         const { nom_usuari, email, contrasenya } = req.body;
-        
         // Verificar usuari
         const [existingUsers] = await db.execute(
             'SELECT * FROM usuaris WHERE nom_usuari = ? OR email = ?',
@@ -29,20 +28,16 @@ export const registerUsers = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(contrasenya, 10);
-
         // Obte la nau inicial (X-Wing)
         const [naus] = await db.execute(
             'SELECT id FROM naus WHERE nom = "X-Wing" AND punts_requerits = 0 LIMIT 1'
         );
-
-
         if (!naus.length) {
             return res.status(500).json({
                 success: false,
                 error: "No s'ha trobat la nau inicial"
             });
         }
-
         // Crear nou usuari
         const [result] = await db.execute(
             `INSERT INTO usuaris (
@@ -258,6 +253,56 @@ export const updateUserProfile = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error actualitzant el perfil"
+        });
+    }
+};
+
+export const refreshToken = async (req, res) => {
+    try {
+        const { userId, email } = req.user;
+
+        const [user] = await db.query(
+            'SELECT * FROM usuaris WHERE id = ? AND estat = "actiu"',
+            [userId]
+        );
+
+        if (!user.length) {
+            return res.status(401).json({
+                success: false,
+                message: 'Usuari no trobat o inactiu'
+            });
+        }
+
+        // Generar nuevo token con exactamente 24 horas
+        const newToken = jwt.sign(
+            { 
+                userId: userId,
+                email: email 
+            },
+            process.env.JWT_SECRET,
+            { 
+                expiresIn: '24h' // Exactamente 24 horas
+            }
+        );
+
+        // Actualizar último acceso
+        await db.query(
+            'UPDATE usuaris SET ultim_acces = NOW() WHERE id = ?',
+            [userId]
+        );
+
+        res.json({
+            success: true,
+            token: newToken,
+            user: user[0] // Incluir datos del usuario actualizados
+        });
+
+    } catch (error) {
+        console.error('Error en refresh token:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al refrescar el token',
+            error: error.message
         });
     }
 };

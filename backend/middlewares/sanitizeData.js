@@ -1,6 +1,5 @@
 import { body, validationResult } from "express-validator";
 
-// Regles de validació específiques per cada tipus de camp
 const validationRules = {
   // Camps d'usuari
   nom_usuari: body('nom_usuari')

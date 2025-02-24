@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const MAX_LOGIN_ATTEMPTS = 5; // Número màxim d'intents fallits
 
 if (!JWT_SECRET) {
-  console.error("ERROR: JWT_SECRET no está definida en las variables de entorno");
+  console.error("ERROR: JWT_SECRET no està definit en les variables d'entorn");
   process.exit(1);
 }
 

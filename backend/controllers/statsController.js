@@ -251,14 +251,10 @@ export const resetUserStats = async (req, res) => {
         });
     }
 };
-
-// ... código existente ...
-
 export const deleteUser = async (req, res) => {
   try {
       const { userId } = req.params;
-      const adminId = req.user.userId; // El ID del usuario que intenta borrar
-
+      const adminId = req.user.userId; 
       // Verificar si el usuario que hace la petición es admin
       const [admin] = await db.query(
           'SELECT rol FROM usuaris WHERE id = ?',
@@ -272,7 +268,7 @@ export const deleteUser = async (req, res) => {
           });
       }
 
-      // No permitir que el admin se borre a sí mismo
+      // No permet que el admin sesborri a sí mateix
       if (userId === adminId) {
           return res.status(400).json({
               success: false,
@@ -280,7 +276,7 @@ export const deleteUser = async (req, res) => {
           });
       }
 
-      // Borrar usuario (las partidas se borrarán en cascada por la configuración de la BD)
+      // Borrar usuari (les partides esborraran en cascada per la configuració de la BD)
       await db.query('DELETE FROM usuaris WHERE id = ?', [userId]);
 
       res.json({
