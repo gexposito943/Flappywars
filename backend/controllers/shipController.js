@@ -2,7 +2,7 @@ import { pool as db } from "../database.js";
 
 export const getShips = async (req, res) => {
   try {
-    const [naus] = await db.query(`
+    const [naus] = await db.execute(`
       SELECT 
         id,
         nom,
@@ -38,7 +38,7 @@ export const getShips = async (req, res) => {
 export const getUserShip = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const [rows] = await db.query(`
+    const [rows] = await db.execute(`
       SELECT 
         n.*,
         u.punts_totals,
@@ -53,7 +53,7 @@ export const getUserShip = async (req, res) => {
     
     if (rows.length === 0) {
       // Obtener X-Wing como a nau per defecte
-      const [defaultShip] = await db.query(`
+      const [defaultShip] = await db.execute(`
         SELECT n.* 
         FROM naus n
         WHERE n.nom = 'X-Wing'
@@ -100,7 +100,7 @@ export const updateUserShip = async (req, res) => {
     const userId = req.params.userId;
     const { shipId } = req.body;
 
-    const [shipData] = await db.query(`
+    const [shipData] = await db.execute(`
       SELECT 
         n.*,
         ni.punts_requerits,
@@ -127,7 +127,7 @@ export const updateUserShip = async (req, res) => {
       });
     }
     
-    await db.query(
+    await db.execute(
       'UPDATE usuaris SET nau_actual = ? WHERE id = ?',
       [shipId, userId]
     );
@@ -158,7 +158,7 @@ export const getUserAvailableShips = async (req, res) => {
     const userId = req.user.userId;
     
     // Eliminada la referencia a la columna 'disponible'
-    const [ships] = await db.query(`
+    const [ships] = await db.execute(`
       SELECT 
         n.*,
         ni.punts_requerits,

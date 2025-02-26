@@ -80,7 +80,7 @@ export const loginUser = async (req, res) => {
         const { email, contrasenya } = req.body;
 
         // Obtenir usuari amb estadístiques 
-        const [users] = await db.query(`
+        const [users] = await db.execute(`
             SELECT 
                 u.*,
                 n.nom as nom_nau,
@@ -119,7 +119,7 @@ export const loginUser = async (req, res) => {
         }
 
         // Actualitzar últim accés
-        await db.query('UPDATE usuaris SET ultim_acces = NOW() WHERE id = ?', [user.id]);
+        await db.execute('UPDATE usuaris SET ultim_acces = NOW() WHERE id = ?', [user.id]);
 
         // Generar token
         const token = jwt.sign(
@@ -176,7 +176,7 @@ export const updateUserProfile = async (req, res) => {
         const { nom_usuari, email, contrasenya } = req.body;
         
         // Verificar que el usuario existe
-        const [user] = await db.query('SELECT * FROM usuaris WHERE id = ?', [userId]);
+        const [user] = await db.execute('SELECT * FROM usuaris WHERE id = ?', [userId]);
         
         if (user.length === 0) {
             return res.status(404).json({
@@ -209,10 +209,10 @@ export const updateUserProfile = async (req, res) => {
         updateQuery = updateQuery.slice(0, -2) + ' WHERE id = ?';
         updateValues.push(userId);
 
-        await db.query(updateQuery, updateValues);
+        await db.execute(updateQuery, updateValues);
 
         // Obtener los datos actualizados del usuario
-        const [updatedUser] = await db.query(`
+        const [updatedUser] = await db.execute(`
             SELECT 
                 u.*,
                 n.nom as nom_nau,
@@ -261,7 +261,7 @@ export const refreshToken = async (req, res) => {
     try {
         const { userId, email } = req.user;
 
-        const [user] = await db.query(
+        const [user] = await db.execute(
             'SELECT * FROM usuaris WHERE id = ? AND estat = "actiu"',
             [userId]
         );
@@ -286,7 +286,7 @@ export const refreshToken = async (req, res) => {
         );
 
         // Actualizar último acceso
-        await db.query(
+        await db.execute(
             'UPDATE usuaris SET ultim_acces = NOW() WHERE id = ?',
             [userId]
         );

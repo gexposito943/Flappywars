@@ -2,10 +2,10 @@ import { pool as db } from '../database.js';
 
 export const getUserStats = async (req, res) => {
   try {
-    const userId =  req.params.userId || req.user.userId;
+    const userId = req.params.userId || req.user.userId;
     
     // Obtenir estadístiques generals de l'usuari
-    const [userStats] = await db.query(`
+    const [userStats] = await db.execute(`
       SELECT 
         u.punts_totals,
         u.nivell,
@@ -26,7 +26,7 @@ export const getUserStats = async (req, res) => {
     `, [userId]);
 
     // Obtenir últimes 5 partides
-    const [ultimesPartides] = await db.query(`
+    const [ultimesPartides] = await db.execute(`
       SELECT 
         p.*,
         n.nom as nau_nom,
@@ -39,7 +39,7 @@ export const getUserStats = async (req, res) => {
     `, [userId]);
 
     // Obtenir següent nivell
-    const [nextLevel] = await db.query(`
+    const [nextLevel] = await db.execute(`
       SELECT *
       FROM nivells
       WHERE punts_requerits > ?
@@ -103,11 +103,11 @@ export const updateStats = async (req, res) => {
     const userId = req.user.userId;
     const { puntuacio, temps_jugat, obstacles_superats } = req.body;
     
-    await db.query('START TRANSACTION');
+    await db.execute('START TRANSACTION');
 
     try {
       // Actualitzar punts totals i verificar nivell
-      const [userUpdate] = await db.query(`
+      const [userUpdate] = await db.execute(`
         UPDATE usuaris 
         SET 
           punts_totals = punts_totals + ?,
@@ -120,7 +120,7 @@ export const updateStats = async (req, res) => {
       `, [puntuacio, puntuacio, userId]);
 
       // Obtenir estadístiques actualitzades
-      const [updatedStats] = await db.query(`
+      const [updatedStats] = await db.execute(`
         SELECT 
           u.*,
           n.nom as nivell_nom,
@@ -130,7 +130,7 @@ export const updateStats = async (req, res) => {
         WHERE u.id = ?
       `, [userId]);
 
-      await db.query('COMMIT');
+      await db.execute('COMMIT');
 
       res.json({
         success: true,
@@ -146,7 +146,7 @@ export const updateStats = async (req, res) => {
       });
 
     } catch (error) {
-      await db.query('ROLLBACK');
+      await db.execute('ROLLBACK');
       throw error;
     }
 
@@ -162,7 +162,7 @@ export const updateStats = async (req, res) => {
 
 export const getGlobalStats = async (req, res) => {
   try {
-    const [globalStats] = await db.query(`
+    const [globalStats] = await db.execute(`
       SELECT 
         u.id,
         u.nom_usuari as username,
@@ -196,11 +196,11 @@ export const resetUserStats = async (req, res) => {
     try {
         const userId = req.params.userId;
         
-        await db.query('START TRANSACTION');
+        await db.execute('START TRANSACTION');
 
         try {
             // Reutilitzem la mateixa estructura SQL però posant els punts a 0
-            const [userUpdate] = await db.query(`
+            const [userUpdate] = await db.execute(`
                 UPDATE usuaris 
                 SET 
                     punts_totals = 0,
@@ -212,7 +212,7 @@ export const resetUserStats = async (req, res) => {
             `, [userId]);
 
             // Reutilitzem la consulta per obtenir les estadístiques actualitzades
-            const [updatedStats] = await db.query(`
+            const [updatedStats] = await db.execute(`
                 SELECT 
                     u.*,
                     n.nom as nivell_nom,
@@ -222,7 +222,7 @@ export const resetUserStats = async (req, res) => {
                 WHERE u.id = ?
             `, [userId]);
 
-            await db.query('COMMIT');
+            await db.execute('COMMIT');
 
             res.json({
                 success: true,
@@ -238,7 +238,7 @@ export const resetUserStats = async (req, res) => {
             });
 
         } catch (error) {
-            await db.query('ROLLBACK');
+            await db.execute('ROLLBACK');
             throw error;
         }
 
@@ -251,12 +251,13 @@ export const resetUserStats = async (req, res) => {
         });
     }
 };
+
 export const deleteUser = async (req, res) => {
   try {
       const { userId } = req.params;
       const adminId = req.user.userId; 
       // Verificar si el usuario que hace la petición es admin
-      const [admin] = await db.query(
+      const [admin] = await db.execute(
           'SELECT rol FROM usuaris WHERE id = ?',
           [adminId]
       );
@@ -277,7 +278,7 @@ export const deleteUser = async (req, res) => {
       }
 
       // Borrar usuari (les partides esborraran en cascada per la configuració de la BD)
-      await db.query('DELETE FROM usuaris WHERE id = ?', [userId]);
+      await db.execute('DELETE FROM usuaris WHERE id = ?', [userId]);
 
       res.json({
           success: true,
