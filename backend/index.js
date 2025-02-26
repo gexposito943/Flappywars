@@ -13,7 +13,6 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
-
 // Middlewares
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',

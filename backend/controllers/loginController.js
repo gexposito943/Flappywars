@@ -281,7 +281,7 @@ export const refreshToken = async (req, res) => {
             },
             process.env.JWT_SECRET,
             { 
-                expiresIn: '24h' // Exactamente 24 horas
+                expiresIn: '24h' 
             }
         );
 
@@ -294,7 +294,7 @@ export const refreshToken = async (req, res) => {
         res.json({
             success: true,
             token: newToken,
-            user: user[0] // Incluir datos del usuario actualizados
+            user: user[0] 
         });
 
     } catch (error) {

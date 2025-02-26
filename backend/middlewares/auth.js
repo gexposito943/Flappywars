@@ -5,7 +5,7 @@ import { pool as db } from "../database.js";
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const MAX_LOGIN_ATTEMPTS = 5; // Número màxim d'intents fallits
+const MAX_LOGIN_ATTEMPTS = 5; 
 
 if (!JWT_SECRET) {
   console.error("ERROR: JWT_SECRET no està definit en les variables d'entorn");

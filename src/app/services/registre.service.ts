@@ -231,9 +231,9 @@ export class RegistreService {
     return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, {}).pipe(
       tap(response => {
         if (response.success && response.token) {
-          console.log('Token refrescado correctamente');
+          console.log('Token refrescat correctament');
           this.login(response);
-          this.scheduleTokenRefresh(); // Programar seguent refresh
+          this.scheduleTokenRefresh(); // Programar següent refresh
         }
       }),
       catchError(error => {

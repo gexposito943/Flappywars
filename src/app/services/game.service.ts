@@ -49,22 +49,8 @@ export class GameService {
 
   // GESTIÓ DE PARTIDES
   saveGameResults(gameData: Partida): Observable<any> {
-    const payload = {
-      puntuacio: gameData.puntuacio,
-      duracio_segons: gameData.duracio_segons,
-      nau_utilitzada: gameData.nau_utilitzada,
-      obstacles_superats: gameData.obstacles_superats,
-      posicioX: gameData.posicioX,
-      posicioY: gameData.posicioY,
-      obstacles: gameData.obstacles,
-      completada: gameData.completada
-    };
-
-    return this.http.post<any>(
-      `${this.apiUrl}/game/save`,
-      payload,
-      { headers: this.getHeaders() }
-    ).pipe(
+    const payload = this.mapPartidaToPayload(gameData);
+    return this.http.post<any>(`${this.apiUrl}/game/save`, payload).pipe(
       tap(response => {
         if (response.success) {
           console.log('Partida guardada correctament:', response);
