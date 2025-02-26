@@ -79,6 +79,7 @@ export class RegistreService {
     if (this.isBrowser && response.token && response.user) {
       localStorage.setItem(this.TOKEN_KEY, response.token);
       localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+      this.scheduleTokenRefresh();
     }
   }
 
@@ -129,6 +130,7 @@ export class RegistreService {
         console.log('Resposta login:', response);
         if (response.success && response.token) {
           this.login(response);
+          this.scheduleTokenRefresh();
         }
       }),
       catchError(error => {
@@ -139,7 +141,7 @@ export class RegistreService {
     );
   }
 
-  private isValidJWT(token: string): boolean {
+  public isValidJWT(token: string): boolean {
     if (!token) return false;
     const actualToken = token.startsWith('Bearer ') ? token.split(' ')[1] : token;
     const parts = actualToken.split('.');
@@ -192,7 +194,7 @@ export class RegistreService {
     return this.http.put<ApiResponse>(`${this.apiUrl}/usuaris/${userId}`, data);
   }
 
-  private scheduleTokenRefresh(): void {
+  public scheduleTokenRefresh(): void {
     const token = this.getToken();
     if (!token) return;
 
@@ -243,7 +245,6 @@ export class RegistreService {
       })
     );
   }
-//decodificar token (verifica que tingui el format correcto)
   private decodeToken(token: string): any {
     try {
       const base64Url = token.split('.')[1];
@@ -252,5 +253,23 @@ export class RegistreService {
     } catch (e) {
       return null;
     }
+  }
+
+  public checkTokenValidity(): boolean {
+    const token = this.getToken();
+    if (!token || !this.isValidJWT(token)) return false;
+    
+    const tokenData = this.decodeToken(token);
+    if (!tokenData) return false;
+    
+    // Verificar si el token está a punt de expirar (menys de 5 minuts)
+    const expiresIn = (tokenData.exp * 1000) - Date.now();
+    if (expiresIn < 300000) { // 5 minuts en milisegundos
+      console.log('Token a punt de expirar, refrescant...');
+      this.refreshToken().subscribe();
+      return false;
+    }
+    
+    return true;
   }
 }

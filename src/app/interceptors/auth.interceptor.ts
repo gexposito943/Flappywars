@@ -38,26 +38,28 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
         error: error
       });
 
-      if (error.status === 403) {
-        // nomes fer logout si el token està expirat o és invàlid
-        const response = error.error;
-        console.log('Resposta del servidor:', response);
-
-        if (response?.message?.includes('expired') || 
-            response?.message?.includes('invalid')) {
-          console.log('Token expirat o invàlid, fent logout');
-          registreService.logout();
-          router.navigate(['/']);
-        } else {
-          console.log('Error 403 però no relacionat amb el token');
+      // Si el error es 401 o 403, intentar refrescar el token
+      if (error.status === 401 || error.status === 403) {
+        const errorMsg = error.error?.message || '';
+        
+        if (errorMsg.includes('expired') || errorMsg.includes('invalid') || 
+            errorMsg.includes('jwt')) {
+          console.log('Token expirado o inválido, intentando refrescar...');
+          
+          // Intentar refrescar el token
+          registreService.refreshToken().subscribe({
+            next: () => {
+              console.log('Token refrescado con éxito');
+            },
+            error: (refreshError) => {
+              console.error('Error al refrescar token:', refreshError);
+              registreService.logout();
+              router.navigate(['/']);
+            }
+          });
         }
       }
-
-      if (error.status === 403 && error.error?.details === 'jwt malformed') {
-        console.log('Token malformat detectat, fent logout');
-        registreService.logout();
-        router.navigate(['/']);
-      }
+      
       return throwError(() => error);
     })
   );

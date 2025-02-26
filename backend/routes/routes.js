@@ -19,6 +19,7 @@ import {
   getUserShip,
   updateUserShip
 } from "../controllers/shipController.js";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -30,6 +31,120 @@ router.post("/register", registerUsers);
 router.post("/login", loginUser);
 router.get("/stats/global", getGlobalStats);
 router.get('/ships', getShips);
+
+// Añadir la ruta de refresh token ANTES del middleware de autenticación
+router.post("/refresh-token", async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'No token provided'
+      });
+    }
+    
+    try {
+      // Verificar el token pero ignorar la expiración
+      const decoded = jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true });
+      
+      // Obtener datos del usuario
+      const [user] = await db.query(
+        'SELECT * FROM usuaris WHERE id = ? AND estat = "actiu"',
+        [decoded.userId]
+      );
+      
+      if (!user.length) {
+        return res.status(401).json({
+          success: false,
+          message: 'Usuari no trobat o inactiu'
+        });
+      }
+      
+      // Generar nuevo token
+      const newToken = jwt.sign(
+        { 
+          userId: decoded.userId,
+          email: decoded.email 
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1m' } // Para pruebas
+      );
+      
+      // Actualizar último acceso
+      await db.query(
+        'UPDATE usuaris SET ultim_acces = NOW() WHERE id = ?',
+        [decoded.userId]
+      );
+      
+      res.json({
+        success: true,
+        token: newToken,
+        user: user[0]
+      });
+      
+    } catch (error) {
+      if (error.name !== 'TokenExpiredError') {
+        return res.status(403).json({
+          success: false,
+          message: 'Token inválido',
+          error: error.message
+        });
+      }
+      
+      // Si es TokenExpiredError, continuamos con el proceso
+      const decoded = jwt.decode(token);
+      
+      if (!decoded || !decoded.userId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Token malformado'
+        });
+      }
+      
+      // Resto del código igual que arriba
+      const [user] = await db.query(
+        'SELECT * FROM usuaris WHERE id = ? AND estat = "actiu"',
+        [decoded.userId]
+      );
+      
+      if (!user.length) {
+        return res.status(401).json({
+          success: false,
+          message: 'Usuari no trobat o inactiu'
+        });
+      }
+      
+      const newToken = jwt.sign(
+        { 
+          userId: decoded.userId,
+          email: decoded.email 
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1m' }
+      );
+      
+      await db.query(
+        'UPDATE usuaris SET ultim_acces = NOW() WHERE id = ?',
+        [decoded.userId]
+      );
+      
+      res.json({
+        success: true,
+        token: newToken,
+        user: user[0]
+      });
+    }
+  } catch (error) {
+    console.error('Error en refresh token:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al refrescar el token',
+      error: error.message
+    });
+  }
+});
 
 // Ruta per la nau per defecte
 router.get('/ships/default', async (req, res) => {

@@ -63,9 +63,24 @@ export const authenticateToken = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Error verificando token:', error);
+    
+    if (error.name === 'TokenExpiredError') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Token d\'autenticació expirat',
+        details: 'expired'
+      });
+    } else if (error.name === 'JsonWebTokenError') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Token d\'autenticació invàlid',
+        details: 'invalid'
+      });
+    }
+    
     return res.status(403).json({ 
       success: false, 
-      message: 'Token d\'autenticació invàlid',
+      message: 'Error d\'autenticació',
       error: error.message 
     });
   }

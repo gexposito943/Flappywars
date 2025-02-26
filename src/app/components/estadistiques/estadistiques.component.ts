@@ -26,7 +26,9 @@ export class EstadistiquesComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.isAdmin = this.gameService.isAdmin();
+        this.isAdmin = typeof this.gameService.isAdmin === 'function' 
+            ? this.gameService.isAdmin() 
+            : false;
         console.log('Es admin:', this.isAdmin);
         this.loadEstadistiques();
     }
