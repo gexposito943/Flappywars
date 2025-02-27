@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { pool, connectToDatabase } from './database.js';
+import { connect } from './database.js';
 import { logRequest } from './middlewares/logger.js';
 import routes from './routes/routes.js';
 import path from 'path';
@@ -57,7 +57,8 @@ const PORT = process.env.PORT || 3000;
 // Inicialització de la base de dades
 async function initializeServer() {
   try {
-    const dbConnected = await connectToDatabase();
+    
+    const dbConnected = await connect();
     if (!dbConnected) {
       console.error('❌ Error fatal: No s\'ha pogut connectar a la base de dades');
       process.exit(1);
