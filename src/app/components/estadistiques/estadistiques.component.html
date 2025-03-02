@@ -23,8 +23,8 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let stat of filteredEstadistiques; let i = index">
-        <td>{{ i + 1 }}</td>
+      <tr *ngFor="let stat of paginatedEstadistiques; let i = index">
+        <td>{{ (model.currentPage - 1) * model.itemsPerPage + i + 1 }}</td>
         <td>{{ stat.username }}</td>
         <td>{{ stat.punts_totals }}</td>
         <td>{{ stat.millor_puntuacio }}</td>
@@ -42,6 +42,34 @@
       </tr>
     </tbody>
   </table>
+
+  <!-- Paginación -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button 
+      [disabled]="model.currentPage === 1"
+      (click)="onPageChange(model.currentPage - 1)"
+      class="page-btn"
+    >
+      ←
+    </button>
+
+    <button 
+      *ngFor="let page of getPageNumbers()"
+      [class.active]="page === model.currentPage"
+      (click)="onPageChange(page)"
+      class="page-btn"
+    >
+      {{ page }}
+    </button>
+
+    <button 
+      [disabled]="model.currentPage === totalPages"
+      (click)="onPageChange(model.currentPage + 1)"
+      class="page-btn"
+    >
+      →
+    </button>
+  </div>
 
   <div *ngIf="model.loading" class="loading">
     Carregant estadístiques...

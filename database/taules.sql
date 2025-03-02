@@ -26,6 +26,7 @@ CREATE TABLE usuaris (
     estat ENUM('actiu', 'inactiu', 'bloquejat') DEFAULT 'actiu',
     intents_login INT DEFAULT 0,
     nau_actual CHAR(36),
+    
     FOREIGN KEY (nau_actual) REFERENCES naus(id) ON DELETE SET NULL
 );
 

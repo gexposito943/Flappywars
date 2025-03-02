@@ -41,6 +41,27 @@ export class EstadistiquesComponent implements OnInit {
                 stat.username.toLowerCase().includes(this.searchTerm.toLowerCase())
             );
         }
+        this.model.currentPage = 1; // Reset a la primera página al filtrar
+    }
+
+    get paginatedEstadistiques(): GlobalStats[] {
+        const startIndex = (this.model.currentPage - 1) * this.model.itemsPerPage;
+        const endIndex = startIndex + this.model.itemsPerPage;
+        return this.filteredEstadistiques.slice(startIndex, endIndex);
+    }
+
+    get totalPages(): number {
+        return Math.ceil(this.filteredEstadistiques.length / this.model.itemsPerPage);
+    }
+
+    onPageChange(page: number): void {
+        if (page >= 1 && page <= this.totalPages) {
+            this.model.currentPage = page;
+        }
+    }
+
+    getPageNumbers(): number[] {
+        return Array.from({ length: this.totalPages }, (_, i) => i + 1);
     }
 
     onDeleteUser(userId: string, username: string): void {
