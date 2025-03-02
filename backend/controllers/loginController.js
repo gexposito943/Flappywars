@@ -103,15 +103,16 @@ export const loginUser = async (req, res) => {
 
         const user = users[0];
 
-        if (!contrasenya || !user.contrasenya) {
-            return res.status(400).json({
+        if (!user) {
+            console.log('Usuario no encontrado:', email);
+            return res.status(401).json({
                 success: false,
-                message: 'Falten credencials'
+                message: 'Credenciales incorrectas'
             });
         }
 
-        const validPassword = await bcrypt.compare(contrasenya, user.contrasenya);
-        if (!validPassword) {
+        const isPasswordValid = await bcrypt.compare(contrasenya, user.contrasenya);
+        if (!isPasswordValid) {
             return res.status(401).json({
                 success: false,
                 message: 'Credencials incorrectes'
