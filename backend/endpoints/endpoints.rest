@@ -3,9 +3,9 @@ POST http://localhost:3000/api/v1/register
 Content-Type: application/json
 
 {
-    "nom_usuari": "test",
-    "email": "test@gmail.com",
-    "contrasenya": "testPassword123"
+    "nom_usuari": "aaa",
+    "email": "aaa@gmail.com",
+    "contrasenya": "aaa123"
 }
 
 ### Login de usuario
@@ -13,8 +13,8 @@ POST http://localhost:3000/api/v1/login
 Content-Type: application/json
 
 {
-    "email": "test@gmail.com",
-    "contrasenya": "testPassword123"
+    "email": "aaa@gmail.com",
+    "contrasenya": "aaa123"
 }
 
 ### Obtener estadísticas globales
@@ -28,11 +28,11 @@ GET http://localhost:3000/api/v1/ships/default
 
 ### Obtener estadísticas de usuario
 GET http://localhost:3000/api/v1/stats/84b279ea-f46f-11ef-8bba-6ed1ca833271
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4NGIyNzllYS1mNDZmLTExZWYtOGJiYS02ZWQxY2E4MzMyNzEiLCJlbWFpbCI6InRlc3RAZ21haWwuY29tIiwiaWF0IjoxNzQwNTk0NTcwLCJleHAiOjE3NDA2ODA5NzB9.T3o5_MQ8bbonc-1mct2d8RPbKz8YZSrHxzaTtm_bmQw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjYmI5NGIwMC1mNzk4LTExZWYtYjgzNi0wNDQyMWFlYzVhMmMiLCJlbWFpbCI6ImFkZXVAZ21haWwuY29tIiwiaWF0IjoxNzQwOTQyMTI1LCJleHAiOjE3NDEwMjg1MjV9.-SvuxU0M4n2qRDS3e8h1d_L9P-dDlVeBeauG_g4hsH4
 
 ### Actualizar estadísticas
 POST http://localhost:3000/api/v1/stats/update
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4NGIyNzllYS1mNDZmLTExZWYtOGJiYS02ZWQxY2E4MzMyNzEiLCJlbWFpbCI6InRlc3RAZ21haWwuY29tIiwiaWF0IjoxNzQwNTk0NTcwLCJleHAiOjE3NDA2ODA5NzB9.T3o5_MQ8bbonc-1mct2d8RPbKz8YZSrHxzaTtm_bmQw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0OWJkNGIxYS1mNzliLTExZWYtYjgzNi0wNDQyMWFlYzVhMmMiLCJlbWFpbCI6ImFhYUBnbWFpbC5jb20iLCJpYXQiOjE3NDA5NDMxOTQsImV4cCI6MTc0MTAyOTU5NH0.bj5vDWsg4e4cV1YwjER3HuKZD1YjkOYDHaHpT762PO8
 Content-Type: application/json
 
 {
@@ -50,17 +50,17 @@ GET http://localhost:3000/api/v1/user/ship/f5e45318-e7b8-11ef-8bba-6ed1ca833271
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJmNWU0NTMxOC1lN2I4LTExZWYtOGJiYS02ZWQxY2E4MzMyNzEiLCJlbWFpbCI6InBlcGVAZ21haWwuY29tIiwiaWF0IjoxNzQwNDE5MzQwLCJleHAiOjE3NDA1MDU3NDB9.a0F4Xrf6MeAs57o8T7Ra9yEUj3Js-DCRCysI4_DmVr8
 
 ### Actualizar nave del usuario
-PUT http://localhost:3000/api/v1/user/ship/f5e45318-e7b8-11ef-8bba-6ed1ca833271
-Authorization: Bearer {{authToken}}
+PUT http://localhost:3000/api/v1/user/ship/cbb94b00-f798-11ef-b836-04421aec5a2c
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjYmI5NGIwMC1mNzk4LTExZWYtYjgzNi0wNDQyMWFlYzVhMmMiLCJlbWFpbCI6ImFkZXVAZ21haWwuY29tIiwiaWF0IjoxNzQwOTQyMTI1LCJleHAiOjE3NDEwMjg1MjV9.-SvuxU0M4n2qRDS3e8h1d_L9P-dDlVeBeauG_g4hsH4
 Content-Type: application/json
 
 {
-    "shipId": 2
+    "nau.id": 1
 }
 
 ### Guardar partida
 POST http://localhost:3000/api/v1/game/save
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjYmI5NGIwMC1mNzk4LTExZWYtYjgzNi0wNDQyMWFlYzVhMmMiLCJlbWFpbCI6ImFkZXVAZ21haWwuY29tIiwiaWF0IjoxNzQwOTQyMTI1LCJleHAiOjE3NDEwMjg1MjV9.-SvuxU0M4n2qRDS3e8h1d_L9P-dDlVeBeauG_g4hsH4
 Content-Type: application/json
 
 {
@@ -81,7 +81,7 @@ Content-Type: application/json
 
 ### Obtener historial de partidas
 GET http://localhost:3000/api/v1/game/history
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjYmI5NGIwMC1mNzk4LTExZWYtYjgzNi0wNDQyMWFlYzVhMmMiLCJlbWFpbCI6ImFkZXVAZ21haWwuY29tIiwiaWF0IjoxNzQwOTQyMTI1LCJleHAiOjE3NDEwMjg1MjV9.-SvuxU0M4n2qRDS3e8h1d_L9P-dDlVeBeauG_g4hsH4
 
 ### Cargar partida específica
 GET http://localhost:3000/api/v1/game/load/{{partidaId}}

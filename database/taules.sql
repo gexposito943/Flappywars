@@ -26,7 +26,7 @@ CREATE TABLE usuaris (
     estat ENUM('actiu', 'inactiu', 'bloquejat') DEFAULT 'actiu',
     intents_login INT DEFAULT 0,
     nau_actual CHAR(36),
-    
+    rol ENUM ('user','admin') DEFAULT 'user',
     FOREIGN KEY (nau_actual) REFERENCES naus(id) ON DELETE SET NULL
 );
 
@@ -103,3 +103,17 @@ INSERT INTO nivells (id, nom, imatge_url, punts_requerits) VALUES
 -- Inserts d'obstacles
 INSERT INTO obstacles (id, imatge_url) VALUES
 (UUID(), 'assets/images/obstacles/asteroide.png'),
+
+--Inser usuari admin
+INSERT INTO usuaris (id, nom_usuari, email, contrasenya, nivell, punts_totals, estat, rol, nau_actual) 
+VALUES (
+    UUID(), 
+    'admin', 
+    'admin@gmail.com', 
+    '$2b$10$3euPcmQFCiblsZeEu5s7p.ELGjfYcuVYVS.szlEWprZsEumvp3teG', 
+    10, 
+    9999, 
+    'actiu', 
+    'admin',
+    (SELECT id FROM naus WHERE nom = 'Millennium Falcon' LIMIT 1)
+);

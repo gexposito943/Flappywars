@@ -103,7 +103,8 @@ export const updateStats = async (req, res) => {
     const userId = req.user.userId;
     const { puntuacio, temps_jugat, obstacles_superats } = req.body;
     
-    await db.execute('START TRANSACTION');
+    // CAMBIO AQUÍ: Usar query en lugar de execute
+    await db.query('START TRANSACTION');
 
     try {
       // Actualitzar punts totals i verificar nivell
@@ -130,7 +131,8 @@ export const updateStats = async (req, res) => {
         WHERE u.id = ?
       `, [userId]);
 
-      await db.execute('COMMIT');
+      // CAMBIO AQUÍ: Usar query en lugar de execute
+      await db.query('COMMIT');
 
       res.json({
         success: true,
@@ -146,7 +148,8 @@ export const updateStats = async (req, res) => {
       });
 
     } catch (error) {
-      await db.execute('ROLLBACK');
+      // CAMBIO AQUÍ: Usar query en lugar de execute
+      await db.query('ROLLBACK');
       throw error;
     }
 
@@ -196,7 +199,8 @@ export const resetUserStats = async (req, res) => {
     try {
         const userId = req.params.userId;
         
-        await db.execute('START TRANSACTION');
+        // CAMBIO AQUÍ: Usar query en lugar de execute
+        await db.query('START TRANSACTION');
 
         try {
             // Reutilitzem la mateixa estructura SQL però posant els punts a 0
@@ -222,7 +226,8 @@ export const resetUserStats = async (req, res) => {
                 WHERE u.id = ?
             `, [userId]);
 
-            await db.execute('COMMIT');
+            // CAMBIO AQUÍ: Usar query en lugar de execute
+            await db.query('COMMIT');
 
             res.json({
                 success: true,
@@ -238,7 +243,8 @@ export const resetUserStats = async (req, res) => {
             });
 
         } catch (error) {
-            await db.execute('ROLLBACK');
+            // CAMBIO AQUÍ: Usar query en lugar de execute
+            await db.query('ROLLBACK');
             throw error;
         }
 

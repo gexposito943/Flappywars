@@ -36,7 +36,7 @@ export const saveGame = async (req, res) => {
       throw new Error(`La nau amb ID ${nau_utilitzada} no existeix`);
     }
     
-    await db.execute('START TRANSACTION');
+    await db.query('START TRANSACTION');
 
     try {
       console.log('Insertant partida amb dades:', {
@@ -98,7 +98,7 @@ export const saveGame = async (req, res) => {
         WHERE id = ?
       `, [puntuacio, puntuacio, userId]);
 
-      await db.execute('COMMIT');
+      await db.query('COMMIT');
       
       res.json({ 
         success: true,
@@ -108,7 +108,7 @@ export const saveGame = async (req, res) => {
 
     } catch (error) {
       console.error('Error en la transacción:', error);
-      await db.execute('ROLLBACK');
+      await db.query('ROLLBACK');
       throw error;
     }
 
