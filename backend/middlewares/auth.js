@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { pool as db } from "../database.js";
+import { query } from "../database.js";
 
 dotenv.config();
 
@@ -28,7 +28,7 @@ export const authenticateToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Verificar estat de l'usuari
-    const [user] = await db.query(`
+    const user = await query(`
       SELECT id, estat, intents_login, ultim_acces 
       FROM usuaris 
       WHERE id = ?
@@ -49,7 +49,7 @@ export const authenticateToken = async (req, res, next) => {
     }
 
     // Actualitzar últim accés
-    await db.query(`
+    await query(`
       UPDATE usuaris 
       SET ultim_acces = CURRENT_TIMESTAMP 
       WHERE id = ?
@@ -91,7 +91,7 @@ export const checkLoginAttempts = async (req, res, next) => {
   const { email } = req.body;
   
   try {
-    const [user] = await db.query(
+    const user = await query(
       'SELECT intents_login, estat FROM usuaris WHERE email = ?',
       [email]
     );
@@ -105,7 +105,7 @@ export const checkLoginAttempts = async (req, res, next) => {
       }
 
       if (user[0].intents_login >= MAX_LOGIN_ATTEMPTS) {
-        await db.query(
+        await query(
           'UPDATE usuaris SET estat = "bloquejat" WHERE email = ?',
           [email]
         );

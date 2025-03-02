@@ -1,4 +1,4 @@
-import { pool as db } from "../database.js";
+import { query, transaction } from "../database.js";
 
 export const saveGame = async (req, res) => {
   try {
@@ -27,10 +27,7 @@ export const saveGame = async (req, res) => {
     }
 
     // Verificar que la nau existeix
-    const [nau] = await db.execute(
-      'SELECT id FROM naus WHERE id = ?',
-      [nau_utilitzada]
-    );
+    const [nau] = await query('SELECT id FROM naus WHERE id = ?', [nau_utilitzada]);
 
     if (nau.length === 0) {
       throw new Error(`La nau amb ID ${nau_utilitzada} no existeix`);
@@ -49,11 +46,11 @@ export const saveGame = async (req, res) => {
       });
 
       // Generar UUID per la partida
-      const [uuidResult] = await db.execute('SELECT UUID() as uuid');
+      const [uuidResult] = await connection.query('SELECT UUID() as uuid');
       const partidaId = uuidResult[0].uuid;
 
       // Insertar partida amb UUID específic
-      await db.execute(`
+      await connection.query(`
         INSERT INTO partides 
         (id, usuari_id, puntuacio, duracio_segons, nau_utilitzada, 
          obstacles_superats, completada)
@@ -64,7 +61,7 @@ export const saveGame = async (req, res) => {
       console.log('Partida insertada con ID:', partidaId);
 
       // Guardar posició actual jugador
-      await db.execute(`
+      await connection.query(`
         INSERT INTO partida_usuari_nau 
         (partida_id, usuari_id, nau_id, posicioX, posicioY)
         VALUES (?, ?, ?, ?, ?)
@@ -72,12 +69,12 @@ export const saveGame = async (req, res) => {
 
       // Guardar obstacles si existeixen
       if (obstacles && obstacles.length > 0) {
-        const [defaultObstacle] = await db.execute('SELECT id FROM obstacles LIMIT 1');
+        const [defaultObstacle] = await connection.query('SELECT id FROM obstacles LIMIT 1');
         const obstacleId = defaultObstacle[0].id;
 
         // Insertar cada obstáculo individualmente
         for (const obs of obstacles) {
-          await db.execute(`
+          await connection.query(`
             INSERT INTO obstacles_partides 
             (partida_id, obstacle_id, posicioX, posicioY)
             VALUES (?, ?, ?, ?)
@@ -86,7 +83,7 @@ export const saveGame = async (req, res) => {
       }
 
       // Actualitzar estadístiques
-      await db.execute(`
+      await connection.query(`
         UPDATE usuaris u
         SET 
           punts_totals = punts_totals + ?,
@@ -126,7 +123,7 @@ export const getGameHistory = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const [partides] = await db.execute(`
+    const [partides] = await query(`
       SELECT 
         p.*,
         n.nom as nom_nau,
@@ -179,7 +176,7 @@ export const loadGame = async (req, res) => {
     const userId = req.user.userId;
 
     // Obtener dades bàsiques de la partida i posició del jugador
-    const [partida] = await db.execute(`
+    const [partida] = await query(`
       SELECT 
         p.*,
         n.nom as nom_nau,
@@ -200,7 +197,7 @@ export const loadGame = async (req, res) => {
     }
 
     // Obtener obstacles de la partida
-    const [obstacles] = await db.execute(`
+    const [obstacles] = await query(`
       SELECT 
         op.posicioX,
         op.posicioY,

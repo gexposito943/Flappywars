@@ -1,11 +1,11 @@
-import { pool as db } from '../database.js';
+import { query, transaction } from '../database.js';
 
 export const getUserStats = async (req, res) => {
   try {
     const userId = req.params.userId || req.user.userId;
     
     // Obtenir estadístiques generals de l'usuari
-    const [userStats] = await db.execute(`
+    const [userStats] = await query(`
       SELECT 
         u.punts_totals,
         u.nivell,
@@ -26,7 +26,7 @@ export const getUserStats = async (req, res) => {
     `, [userId]);
 
     // Obtenir últimes 5 partides
-    const [ultimesPartides] = await db.execute(`
+    const [ultimesPartides] = await query(`
       SELECT 
         p.*,
         n.nom as nau_nom,
@@ -39,7 +39,7 @@ export const getUserStats = async (req, res) => {
     `, [userId]);
 
     // Obtenir següent nivell
-    const [nextLevel] = await db.execute(`
+    const [nextLevel] = await query(`
       SELECT *
       FROM nivells
       WHERE punts_requerits > ?
@@ -120,32 +120,32 @@ export const updateStats = async (req, res) => {
         WHERE id = ?
       `, [puntuacio, puntuacio, userId]);
 
-      // Obtenir estadístiques actualitzades
-      const [updatedStats] = await db.execute(`
-        SELECT 
-          u.*,
-          n.nom as nivell_nom,
-          n.imatge_url as nivell_imatge
-        FROM usuaris u
-        LEFT JOIN nivells n ON u.nivell = n.punts_requerits
-        WHERE u.id = ?
-      `, [userId]);
+        // Obtenir estadístiques actualitzades
+        const [updatedStats] = await connection.query(`
+          SELECT 
+            u.*,
+            n.nom as nivell_nom,
+            n.imatge_url as nivell_imatge
+          FROM usuaris u
+          LEFT JOIN nivells n ON u.nivell = n.punts_requerits
+          WHERE u.id = ?
+        `, [userId]);
 
       // CAMBIO AQUÍ: Usar query en lugar de execute
       await db.query('COMMIT');
 
-      res.json({
-        success: true,
-        message: 'Estadístiques actualitzades correctament',
-        estadistiques: {
-          punts_totals: updatedStats[0].punts_totals,
-          nivell: {
-            nivell: updatedStats[0].nivell,
-            nom: updatedStats[0].nivell_nom,
-            imatge: updatedStats[0].nivell_imatge
-          }
+    res.json({
+      success: true,
+      message: 'Estadístiques actualitzades correctament',
+      estadistiques: {
+        punts_totals: updatedStats[0].punts_totals,
+        nivell: {
+          nivell: updatedStats[0].nivell,
+          nom: updatedStats[0].nivell_nom,
+          imatge: updatedStats[0].nivell_imatge
         }
-      });
+      }
+    });
 
     } catch (error) {
       // CAMBIO AQUÍ: Usar query en lugar de execute
@@ -165,7 +165,7 @@ export const updateStats = async (req, res) => {
 
 export const getGlobalStats = async (req, res) => {
   try {
-    const [globalStats] = await db.execute(`
+    const [globalStats] = await query(`
       SELECT 
         u.id,
         u.nom_usuari as username,
@@ -215,32 +215,32 @@ export const resetUserStats = async (req, res) => {
                 WHERE id = ?
             `, [userId]);
 
-            // Reutilitzem la consulta per obtenir les estadístiques actualitzades
-            const [updatedStats] = await db.execute(`
-                SELECT 
-                    u.*,
-                    n.nom as nivell_nom,
-                    n.imatge_url as nivell_imatge
-                FROM usuaris u
-                LEFT JOIN nivells n ON u.nivell = n.punts_requerits
-                WHERE u.id = ?
-            `, [userId]);
+                // Reutilitzem la consulta per obtenir les estadístiques actualitzades
+                const [updatedStats] = await connection.query(`
+                    SELECT 
+                        u.*,
+                        n.nom as nivell_nom,
+                        n.imatge_url as nivell_imatge
+                    FROM usuaris u
+                    LEFT JOIN nivells n ON u.nivell = n.punts_requerits
+                    WHERE u.id = ?
+                `, [userId]);
 
             // CAMBIO AQUÍ: Usar query en lugar de execute
             await db.query('COMMIT');
 
-            res.json({
-                success: true,
-                message: 'Punts reiniciats correctament',
-                estadistiques: {
-                    punts_totals: 0,
-                    nivell: {
-                        nivell: updatedStats[0].nivell,
-                        nom: updatedStats[0].nivell_nom,
-                        imatge: updatedStats[0].nivell_imatge
-                    }
+        res.json({
+            success: true,
+            message: 'Punts reiniciats correctament',
+            estadistiques: {
+                punts_totals: 0,
+                nivell: {
+                    nivell: updatedStats[0].nivell,
+                    nom: updatedStats[0].nivell_nom,
+                    imatge: updatedStats[0].nivell_imatge
                 }
-            });
+            }
+        });
 
         } catch (error) {
             // CAMBIO AQUÍ: Usar query en lugar de execute
@@ -263,7 +263,7 @@ export const deleteUser = async (req, res) => {
       const { userId } = req.params;
       const adminId = req.user.userId; 
       // Verificar si el usuario que hace la petición es admin
-      const [admin] = await db.execute(
+      const [admin] = await query(
           'SELECT rol FROM usuaris WHERE id = ?',
           [adminId]
       );
@@ -284,7 +284,7 @@ export const deleteUser = async (req, res) => {
       }
 
       // Borrar usuari (les partides esborraran en cascada per la configuració de la BD)
-      await db.execute('DELETE FROM usuaris WHERE id = ?', [userId]);
+      await query('DELETE FROM usuaris WHERE id = ?', [userId]);
 
       res.json({
           success: true,
